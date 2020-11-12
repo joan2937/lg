@@ -1,0 +1,110 @@
+
+/*TEXT
+
+rgpiod is a daemon to allow remote access to a SBC's GPIO.
+
+Once launched the daemon runs in the background accepting commands from the socket interface. 
+ 
+The daemon requires no special privileges and commands may be issued by normal users.
+ 
+TEXT*/
+
+/*TEXT Features
+
+The following features are available by issuing socket commands to the
+daemon.
+
+[ul]
+reading and writing GPIO singly and in groups
+software timed PWM
+GPIO callbacks
+pipe notification of GPIO events
+I2C wrapper
+SPI wrapper
+serial link wrapper
+file handling
+creating and running scripts
+[ul]
+
+TEXT*/
+
+/*TEXT Launch options
+rgpiod [options] &
+
+TEXT*/
+
+/*O
+-c dir     |set the configuration directory (default current directory) 
+-l         |disable remote socket interface (default enabled) 
+-n address |allow IP address to use the socket interface, name (e.g. paul) or dotted quad (e.g. 192.168.1.66). If the -n option is not used all addresses are allowed (unless overridden by the -l option). Multiple -n options are allowed.  If -l has been used only -n localhost has any effect 
+-p value   |set the socket port (1024-32000, default 8889) 
+-v         |display rgpiod version and exit 
+-w dir     |set working directory (default launch directory) 
+-x         |enable access control (default off)
+O*/
+
+/*TEXT Permissions
+
+The rgpiod daemon has an optional access control system to control access to its functions.
+
+See [+Permits+].
+
+
+TEXT*/
+
+/*TEXT Scripts
+
+Scripts are programs to be stored and executed by the rgpiod daemon.
+They are intended to mitigate any performance problems associated with
+the rgpiod daemon server/client model.
+
+See [+Scripts+].
+
+TEXT*/
+/*TEXT Socket commands
+
+Each socket command consists of a header and for commands with
+parameters an extension.
+
+The header is a lgCmd_t with the following structure.
+
+. .
+typedef struct
+{
+   union
+   {
+      uint32_t magic;
+      int32_t status;
+   };
+   uint32_t size;
+   uint16_t cmd;
+   uint16_t doubles;
+   uint16_t longs;
+   uint16_t shorts;
+} lgCmd_t, *lgCmd_p;
+. .
+
+The magic value is 0x6c67646d (ASCII lgdm).
+
+The size is the overall size in bytes of the optional extension.
+
+The cmd is the command code.  See the file lgSocketCommandCodes.h
+for the command codes.
+
+The doubles, longs, shorts is the number of 8-byte, 4-byte, and 2-byte
+quantities in the extension.  This information is used to
+network order the bytes of the message.  The extension should consist of
+doubles 8-byte quantites, followed by longs 4-byte quantities, followed by
+shorts 2-byte quantities, followed by as many 1-byte quantities needed to
+make a total of size bytes.
+
+If you wish to construct a client to talk to the rgpiod daemon the following
+are a good source of information.
+[ul]
+rpgio.py - a Python client
+rgpio.c - a C client
+rgs.c - a C command line client
+lgCmd.c - a useful summary of the socket commands
+[ul]
+TEXT*/
+

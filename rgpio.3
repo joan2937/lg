@@ -1,0 +1,5416 @@
+
+." Process this file with
+." groff -man -Tascii lgd_if.3
+."
+.TH rgpio 3 2020-2020 Linux "lg archive"
+.SH NAME
+rgpio - A C library to manipulate a remote SBC's GPIO.
+
+.SH SYNOPSIS
+
+#include <rgpio.h>
+
+
+gcc -Wall -o prog prog.c -lrgpio
+
+ ./prog
+.SH DESCRIPTION
+
+
+.ad l
+
+.nh
+
+.br
+
+.br
+rgpio is a C library which allows remote control of the GPIO and
+other functions of Linux SBCs running the rgpiod daemon.
+
+.br
+
+.br
+The rgpiod daemon must be running on the SBCs you wish to control.
+
+.br
+
+.br
+.SS Features
+.br
+
+.br
+
+.br
+o reading and writing GPIO singly and in groups
+
+.br
+o software timed PWM and waves
+
+.br
+o GPIO callbacks
+
+.br
+o pipe notification of GPIO alerts
+
+.br
+o I2C wrapper
+
+.br
+o SPI wrapper
+
+.br
+o serial link wrapper
+
+.br
+o simple file handling
+
+.br
+o creating and running scripts on the rgpiod daemon
+
+.br
+o a simple interface to start and stop new threads
+
+.br
+
+.br
+.SS Usage
+.br
+
+.br
+Include <rgpio.h> in your source files.
+
+.br
+
+.br
+Assuming your source is in prog.c use the following command to build
+
+.br
+
+.br
+
+.EX
+gcc -Wall -o prog prog.c -lrgpio
+.br
+
+.EE
+
+.br
+
+.br
+to run make sure the rgpiod daemon is running
+
+.br
+
+.br
+
+.EX
+rgpiod&
+.br
+
+.br
+ ./prog
+.br
+
+.EE
+
+.br
+
+.br
+For examples see the lg archive file.
+
+.br
+
+.br
+.SS Notes
+.br
+
+.br
+All the functions which return an int return < 0 on error
+
+.br
+
+.br
+
+.SH OVERVIEW
+
+.br
+.SS ESSENTIAL
+.br
+
+.br
+rgpiod_start               Connects to a rgpiod daemon
+.br
+rgpiod_stop                Disconnects from a rgpiod daemon
+.br
+.SS FILES
+.br
+
+.br
+file_open                  Opens a file
+.br
+file_close                 Closes a file
+.br
+
+.br
+file_read                  Reads bytes from a file
+.br
+file_write                 Writes bytes to a file
+.br
+
+.br
+file_seek                  Seeks to a position within a file
+.br
+
+.br
+file_list                  List files which match a pattern
+.br
+.SS GPIO
+.br
+
+.br
+gpiochip_open              Opens a gpiochip device
+.br
+gpiochip_close             Closes a gpiochip device
+.br
+
+.br
+gpio_get_chip_info         Gets gpiochip information
+.br
+gpio_get_line_info         Gets gpiochip line information
+.br
+gpio_get_mode              Gets the mode of a GPIO
+.br
+
+.br
+gpio_claim_input           Claims a GPIO for input
+.br
+gpio_claim_output          Claims a GPIO for output
+.br
+gpio_claim_alert           Claims a GPIO for alerts
+.br
+gpio_free                  Frees a GPIO
+.br
+
+.br
+group_claim_input          Claims a group of GPIO for inputs
+.br
+group_claim_output         Claims a group of GPIO for outputs
+.br
+group_free                 Frees a group of GPIO
+.br
+
+.br
+gpio_read                  Reads a GPIO
+.br
+gpio_write                 Writes a GPIO
+.br
+
+.br
+group_read                 Reads a group of GPIO
+.br
+group_write                Writes a group of GPIO
+.br
+
+.br
+tx_pulse                   Starts pulses on a GPIO
+.br
+tx_pwm                     Starts PWM on a GPIO
+.br
+tx_servo                   Starts servo pulses on a GPIO.
+.br
+tx_wave                    Starts a wave on a group of GPIO
+.br
+tx_busy                    See if tx is active on a GPIO or group
+.br
+tx_room                    See if more room for tx on a GPIO or group
+.br
+
+.br
+gpio_set_debounce_time     Sets the debounce time for a GPIO
+.br
+gpio_set_watchdog_time     Sets the watchdog time for a GPIO
+.br
+
+.br
+callback                   Starts a GPIO callback
+.br
+callback_cancel            Stops a GPIO callback
+.br
+.SS I2C
+.br
+
+.br
+i2c_open                   Opens an I2C device
+.br
+i2c_close                  Closes an I2C device
+.br
+
+.br
+i2c_write_quick            smbus write quick
+.br
+
+.br
+i2c_read_byte              smbus read byte
+.br
+i2c_write_byte             smbus write byte
+.br
+
+.br
+i2c_read_byte_data         smbus read byte data
+.br
+i2c_write_byte_data        smbus write byte data
+.br
+
+.br
+i2c_read_word_data         smbus read word data
+.br
+i2c_write_word_data        smbus write word data
+.br
+
+.br
+i2c_read_block_data        smbus read block data
+.br
+i2c_write_block_data       smbus write block data
+.br
+
+.br
+i2c_read_i2c_block_data    smbus read I2C block data
+.br
+i2c_write_i2c_block_data   smbus write I2C block data
+.br
+
+.br
+i2c_read_device            Reads the raw I2C device
+.br
+i2c_write_device           Writes the raw I2C device
+.br
+
+.br
+i2c_process_call           smbus process call
+.br
+i2c_block_process_call     smbus block process call
+.br
+
+.br
+i2c_zip                    Performs multiple I2C transactions
+.br
+.SS NOTIFICATIONS
+.br
+
+.br
+notify_open                Request a notification handle
+.br
+notify_close               Close a notification
+.br
+notify_pause               Pause notifications
+.br
+notify_resume              Start notifications for selected GPIO
+.br
+.SS SCRIPTS
+.br
+
+.br
+script_store               Store a script
+.br
+script_run                 Run a stored script
+.br
+script_update              Set a scripts parameters
+.br
+script_status              Get script status and parameters
+.br
+script_stop                Stop a running script
+.br
+script_delete              Delete a stored script
+.br
+.SS SERIAL
+.br
+
+.br
+serial_open                Opens a serial device
+.br
+serial_close               Closes a serial device
+.br
+
+.br
+serial_read_byte           Reads a byte from a serial device
+.br
+serial_write_byte          Writes a byte to a serial device
+.br
+
+.br
+serial_read                Reads bytes from a serial device
+.br
+serial_write               Writes bytes to a serial device
+.br
+
+.br
+serial_data_available      Returns number of bytes ready to be read
+.br
+.SS SHELL
+.br
+
+.br
+shell                      Executes a shell command
+.br
+.SS SPI
+.br
+
+.br
+spi_open                   Opens a SPI device
+.br
+spi_close                  Closes a SPI device
+.br
+
+.br
+spi_read                   Reads bytes from a SPI device
+.br
+spi_write                  Writes bytes to a SPI device
+.br
+spi_xfer                   Transfers bytes with a SPI device
+.br
+.SS THREADS
+.br
+
+.br
+thread_start               Start a new thread
+.br
+thread_stop                Stop a previously started thread
+.br
+.SS UTILITIES
+.br
+
+.br
+lgu_get_sbc_name           Get the SBC name
+.br
+
+.br
+lgu_get_internal           Get a SBC configuration value
+.br
+lgu_set_internal           Set a SBC configuration value
+.br
+
+.br
+lgu_time                   Returns the number of seconds since the epoch
+.br
+lgu_timestamp              Returns the number of nanoseconds since the epoch
+.br
+
+.br
+lgu_sleep                  Sleeps for a number of seconds
+.br
+
+.br
+lgu_set_user               Set the user (and associated permissions)
+.br
+
+.br
+lgu_set_share_id           Set the share id for a resource
+.br
+lgu_use_share_id           Use this share id when asking for a resource
+.br
+
+.br
+lgu_rgpio_version          Get the rgpio library version
+.br
+lgu_error_text             Get the error text for an error code
+.br
+.SH FUNCTIONS
+
+.IP "\fBint rgpiod_start(const char *addrStr, const char *portStr)\fP"
+.IP "" 4
+Connect to the rgpiod daemon.  Reserving command and
+notification streams.
+
+.br
+
+.br
+
+.EX
+addrStr: specifies the host or IP address of the SBC running the
+.br
+         rgpiod daemon.  It may be NULL in which case localhost
+.br
+         is used unless overridden by the LG_ADDR environment
+.br
+         variable.
+.br
+
+.br
+portStr: specifies the port address used by the SBC running the
+.br
+         rgpiod daemon.  It may be NULL in which case "8889"
+.br
+         is used unless overridden by the LG_PORT environment
+.br
+         variable.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns a sbc (>= 0).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+This sbc value is passed to the other functions to specify
+the SBC to be operated on.
+
+.IP "\fBvoid rgpiod_stop(int sbc)\fP"
+.IP "" 4
+Terminates the connection to a rgpiod daemon and frees
+resources used by the library.
+
+.br
+
+.br
+
+.EX
+sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+
+.EE
+
+.IP "\fBint file_open(int sbc, const char *file, int mode)\fP"
+.IP "" 4
+This function returns a handle to a file opened in a specified mode.
+
+.br
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+
+.br
+
+.EX
+ sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+file: the file to open.
+.br
+mode: the file open mode.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns a handle (>= 0).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+File
+
+.br
+
+.br
+A file may only be opened if permission is granted by an entry in
+the [files] section of the permits file.  This is intended to allow
+remote access to files in a controlled manner.
+
+.br
+
+.br
+Mode
+
+.br
+
+.br
+The mode may have the following values.
+
+.br
+
+.br
+Macro           Value   Meaning
+.br
+LG_FILE_READ      1     open file for reading
+.br
+LG_FILE_WRITE     2     open file for writing
+.br
+LG_FILE_RW        3     open file for reading and writing
+.br
+
+.br
+
+.br
+The following values may be or'd into the mode.
+
+.br
+
+.br
+Macro            Value   Meaning
+.br
+LG_FILE_APPEND   4       Writes append data to the end of the file
+.br
+LG_FILE_CREATE   8       The file is created if it doesn't exist
+.br
+LG_FILE_TRUNC    16      The file is truncated
+.br
+
+.br
+
+.br
+Newly created files are owned by the user who launched the daemon
+with permissions owner read and write.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+#include <stdio.h>
+.br
+#include <rgpio.h>
+.br
+
+.br
+int main(int argc, char *argv[])
+.br
+{
+.br
+   int sbc, handle, c;
+.br
+   char buf[60000];
+.br
+
+.br
+   sbc = rgpiod_start(NULL, NULL);
+.br
+
+.br
+   if (sbc < 0) return 1;
+.br
+
+.br
+   handle = file_open(sbc, "/ram/lg.c", LG_FILE_READ);
+.br
+
+.br
+   if (handle >= 0)
+.br
+   {
+.br
+      while ((c=file_read(sbc, handle, buf, sizeof(buf)-1)))
+.br
+      {
+.br
+         buf[c] = 0;
+.br
+         printf("%s", buf);
+.br
+      }
+.br
+
+.br
+      file_close(sbc, handle);
+.br
+   }
+.br
+
+.br
+   rgpiod_stop(sbc);
+.br
+}
+.br
+
+.EE
+
+.IP "\fBint file_close(int sbc, int handle)\fP"
+.IP "" 4
+This function closes the file.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBfile_open\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+file_close(sbc, handle);
+.br
+
+.EE
+
+.IP "\fBint file_write(int sbc, int handle, const char *buf, int count)\fP"
+.IP "" 4
+This function writes count bytes from buf to the the file.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBfile_open\fP).
+.br
+   buf: the array of bytes to write.
+.br
+ count: the number of bytes to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+if (file_write(sbc, handle, buf, 100) == 0)
+.br
+{
+.br
+   // file written okay
+.br
+}
+.br
+else
+.br
+{
+.br
+   // error
+.br
+}
+.br
+
+.EE
+
+.IP "\fBint file_read(int sbc, int handle, char *buf, int count)\fP"
+.IP "" 4
+This function reads up to count bytes from the the file.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBfile_open\fP).
+.br
+   buf: an array to receive the read data.
+.br
+ count: the maximum number of bytes to read.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes read and updates buf.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+   bytes = file_read(sbc, handle, buf, sizeof(buf));
+.br
+
+.br
+   if (bytes >= 0)
+.br
+   {
+.br
+      // process read data
+.br
+   }
+.br
+
+.EE
+
+.IP "\fBint file_seek(int sbc, int handle, int32_t seekOffset, int seekFrom)\fP"
+.IP "" 4
+This function seeks to a position within the file.
+
+.br
+
+.br
+
+.EX
+       sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+    handle: >= 0 (as returned by \fBfile_open\fP).
+.br
+seekOffset: the number of bytes to move.  Positive offsets
+.br
+            move forward, negative offsets backwards.
+.br
+  seekFrom: one of LG_FROM_START (0), LG_FROM_CURRENT (1),
+.br
+            or LG_FROM_END (2).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the new file position.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+file_seek(sbc, handle, 123, LG_FROM_START); // Start plus 123
+.br
+
+.br
+size = file_seek(sbc, handle, 0, LG_FROM_END); // End, return size
+.br
+
+.br
+pos = file_seek(sbc, handle, 0, LG_FROM_CURRENT); // Current position
+.br
+
+.EE
+
+.IP "\fBint file_list(int sbc, const char *fpat, char *buf, int count)\fP"
+.IP "" 4
+This function returns a list of files which match a pattern.
+
+.br
+
+.br
+
+.EX
+  sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ fpat: file pattern to match.
+.br
+  buf: an array to receive the matching file names.
+.br
+count: the maximum number of bytes to read.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes read and updates buf with
+the matching filenames (the filenames are separated by newline
+characters).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+#include <stdio.h>
+.br
+#include <rgpio.h>
+.br
+
+.br
+int main(int argc, char *argv[])
+.br
+{
+.br
+   int sbc, handle, c;
+.br
+   char buf[60000];
+.br
+
+.br
+   sbc = rgpiod_start(NULL, NULL);
+.br
+
+.br
+   if (sbc < 0) return 1;
+.br
+
+.br
+   c = file_list(sbc, "/ram/p*.c", buf, sizeof(buf));
+.br
+
+.br
+   if (c >= 0)
+.br
+   {
+.br
+      buf[c] = 0;
+.br
+      printf("%s", buf);
+.br
+   }
+.br
+
+.br
+   rgpiod_stop(sbc);
+.br
+}
+.br
+
+.EE
+
+.IP "\fBint gpiochip_open(int sbc, int gpioDev)\fP"
+.IP "" 4
+This returns a handle to a gpiochip device.
+
+.br
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+
+.br
+
+.EX
+    sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+gpioDev: >= 0
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns a handle (>= 0).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+h = gpiochip_open(sbc, 0); // open gpiochip0
+.br
+
+.br
+if (h >= 0)
+.br
+{
+.br
+   // open ok
+.br
+}
+.br
+else
+.br
+{
+.br
+   // open error
+.br
+}
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBint gpiochip_close(int sbc, int handle)\fP"
+.IP "" 4
+This closes a gpiochip device.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+status = gpiochip_close(sbc, h); // close gpiochip
+.br
+
+.br
+if (status < 0)
+.br
+{
+.br
+   // close failed
+.br
+}
+.br
+
+.EE
+
+.IP "\fBint gpio_get_chip_info(int sbc, int handle, lgChipInfo_p chipInfo)\fP"
+.IP "" 4
+This returns summary information of an opened gpiochip.
+
+.br
+
+.br
+
+.EX
+     sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+  handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+chipInfo: address to store returned chip info.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns a list of okay status, number of
+lines, name, and label.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint gpio_get_line_info(int sbc, int handle, int gpio, lgLineInfo_p lineInfo)\fP"
+.IP "" 4
+This returns detailed information of a GPIO of
+an opened gpiochip.
+
+.br
+
+.br
+
+.EX
+     sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+  handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+    gpio: the GPIO.
+.br
+lineInfo: address to store returned line info.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns a list of okay status, offset,
+line flags, name, and user.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint gpio_get_mode(int sbc, int handle, int gpio)\fP"
+.IP "" 4
+This returns the mode of a GPIO.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+  gpio: the GPIO to be read.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the mode of the GPIO.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Mode bit   Value   Meaning
+.br
+0           1      Kernel: In use by the kernel
+.br
+1           2      Kernel: Output
+.br
+2           4      Kernel: Active low
+.br
+3           8      Kernel: Open drain
+.br
+4          16      Kernel: Open source
+.br
+5          32      Kernel: ---
+.br
+6          64      Kernel: ---
+.br
+7          128     Kernel: ---
+.br
+8          256     LG: Input
+.br
+9          512     LG: Output
+.br
+10         1024    LG: Alert
+.br
+11         2048    LG: Group
+.br
+12         4096    LG: ---
+.br
+13         8192    LG: ---
+.br
+14         16384   LG: ---
+.br
+15         32768   LG: ---
+.br
+
+.IP "\fBint gpio_claim_input(int sbc, int handle, int lFlags, int gpio)\fP"
+.IP "" 4
+This claims a GPIO for input.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+lFlags: line flags for the GPIO.
+.br
+  gpio: the GPIO to be claimed.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The line flags may be used to set the GPIO
+as active low, open drain, or open source.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+status = gpio_claim_input(sbc, h, 0, 23); // open GPIO 23 for input
+.br
+
+.EE
+
+.IP "\fBint gpio_claim_output(int sbc, int handle, int lFlags, int gpio, int value)\fP"
+.IP "" 4
+This claims a GPIO for output.
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+lFlags: line flags for the GPIO.
+.br
+  gpio: the GPIO to be claimed.
+.br
+ value: the initial value for the GPIO.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The line flags may be used to set the GPIO
+as active low, open drain, or open source.
+
+.br
+
+.br
+If value is zero the GPIO will be initialised low (0).  If any other
+value is used the GPIO will be initialised high (1).
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+status = gpio_claim_output(sbc, h, 0, 35, 1); // open GPIO 35 for high output
+.br
+
+.EE
+
+.IP "\fBint gpio_free(int sbc, int handle, int gpio)\fP"
+.IP "" 4
+This frees a GPIO.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+  gpio: the GPIO to be freed.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The GPIO may now be claimed by another user or for a different purpose.
+
+.IP "\fBint group_claim_input(int sbc, int handle, int lFlags, int count, const int *gpios)\fP"
+.IP "" 4
+This claims a group of GPIO for inputs.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+lFlags: line flags for each GPIO.
+.br
+ count: the number of GPIO to claim.
+.br
+ gpios: the group GPIO.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The line flags may be used to set the group as active low,
+open drain, or open source.
+
+.br
+
+.br
+gpios is an array of one or more GPIO. The first GPIO in the array
+is called the group leader and is used to reference the group as a whole.
+
+.IP "\fBint group_claim_output(int sbc, int handle, int lFlags, int count, const int *gpios, const int *values)\fP"
+.IP "" 4
+This claims a group of GPIO to be used as outputs.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+lFlags: line flags for each GPIO.
+.br
+ count: the number of GPIO to claim.
+.br
+ gpios: the group GPIO.
+.br
+values: the initial value for each GPIO.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The line flags may be used to set the group as active low, open drain, or open source.
+
+.br
+
+.br
+gpios is an array of one or more GPIO. The first GPIO in the array is
+called the group leader and is used to reference the group as a whole.
+
+.br
+
+.br
+values is a list of initialisation values for the GPIO. If a value
+is zero the corresponding GPIO will be initialised low (0).
+If any other value is used the corresponding GPIO will be
+initialised high (1).
+
+.IP "\fBint group_free(int sbc, int handle, int gpio)\fP"
+.IP "" 4
+This frees all the group GPIO.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+  gpio: the group leader.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The GPIO may now be claimed by another user or for a different purpose.
+
+.IP "\fBint gpio_read(int sbc, int handle, int gpio)\fP"
+.IP "" 4
+This returns the level of a GPIO.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+  gpio: the GPIO to be read.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0 (low) or 1 (high).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+This command will work for any claimed GPIO (even if a member
+of a group).  For an output GPIO the value returned
+will be that last written to the GPIO.
+
+.IP "\fBint gpio_write(int sbc, int handle, int gpio, int value)\fP"
+.IP "" 4
+This sets the level of an output GPIO.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+  gpio: the GPIO to be written.
+.br
+ value: the value to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+This command will work for any GPIO claimed as an output (even if
+a member of a group).
+
+.br
+
+.br
+If level is zero the GPIO will be set low (0). If any other value
+is used the GPIO will be set high (1).
+
+.IP "\fBint group_read(int sbc, int handle, int gpio, uint64_t *groupBits)\fP"
+.IP "" 4
+This returns the levels read from a group.
+
+.br
+
+.br
+
+.EX
+      sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+   handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+     gpio: the offset of a member of the GPIO group to be read.
+.br
+groupBits: a pointer to a 64-bit memory area for the returned value.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the group size and updates groupBits.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+This command will work for an output group as well as an input group. For an output group the value returned will be that last written to the group GPIO.
+
+.br
+
+.br
+Note that this command will also work on an individual GPIO claimed as an input or output as that is treated as a group with one member.
+
+.br
+
+.br
+After a successful read groupBits is set as follows.
+
+.br
+
+.br
+Bit 0 is the level of the group leader.
+Bit 1 is the level of the second GPIO in the group.
+Bit x is the level of GPIO x+1 of the group.
+
+.IP "\fBint group_write(int sbc, int handle, int gpio, uint64_t groupBits, uint64_t groupMask)\fP"
+.IP "" 4
+This sets the levels of an output output group.
+
+.br
+
+.br
+
+.EX
+      sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+   handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+     gpio: the offset of a member of the GPIO group to be written.
+.br
+groupBits: the level to set if the corresponding bit in groupMask is set.
+.br
+groupMask: a mask indicating the group GPIO to be updated.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The values of each GPIO of the group are set according to the bits
+of group_bits.
+
+.br
+
+.br
+Bit 0 sets the level of the group leader.
+Bit 1 sets the level of the second GPIO in the group.
+Bit x sets the level of GPIO x+1 in the group.
+
+.br
+
+.br
+However this may be overridden by the group_mask. A GPIO is only
+updated if the corresponding bit in the mask is 1.
+
+.IP "\fBint tx_pulse(int sbc, int handle, int gpio, int pulse_on, int pulse_off, int pulse_offset, int pulse_cycles)\fP"
+.IP "" 4
+This starts software timed pulses on an output GPIO.
+
+.br
+
+.br
+
+.EX
+         sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+      handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+        gpio:  GPIO to be written.
+.br
+    pulse_on: pulse high time in microseconds.
+.br
+   pulse_off: pulse low time in microseconds.
+.br
+pulse_offset: offset from nominal pulse start position.
+.br
+pulse_cycles: the number of pulses to be sent, 0 for infinite.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the number of entries left in the PWM queue for the GPIO.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+If both pulse_on and pulse_off are zero pulses will be switched off
+for that GPIO.  The active pulse, if any, will be stopped and any
+queued pulses will be deleted.
+
+.br
+
+.br
+Each successful call to this function consumes one PWM queue entry.
+
+.br
+
+.br
+pulse_cycles cycles are transmitted (0 means infinite).
+Each cycle consists of pulse_on microseconds of GPIO high
+followed by pulse_off microseconds of GPIO low.
+
+.br
+
+.br
+PWM is characterised by two values, its frequency
+(number of cycles per second) and its duty cycle
+(percentage of high time per cycle).
+
+.br
+
+.br
+The set frequency will be 1000000 / (pulse_on + pulse_off) Hz.
+
+.br
+
+.br
+The set duty cycle will be pulse_on / (pulse_on + pulse_off) * 100 %.
+
+.br
+
+.br
+E.g. if pulse_on is 50 and pulse_off is 100 the frequency will
+be 6666.67 Hz and the duty cycle will be 33.33 %.
+
+.br
+
+.br
+pulse_offset is a microsecond offset from the natural start
+of the pulse cycle.
+
+.br
+
+.br
+For instance if the PWM frequency is 10 Hz the natural start of
+each cycle is at seconds 0, then 0.1, 0.2, 0.3 etc. In this case
+if the offset is 20000 microseconds the cycle will start at
+seconds 0.02, 0.12, 0.22, 0.32 etc.
+
+.br
+
+.br
+Another pulse command may be issued to the GPIO before the last
+has finished.
+
+.br
+
+.br
+If the last pulse had infinite cycles then it will be replaced by
+the new settings at the end of the current cycle. Otherwise it will
+be replaced by the new settings when all its cycles are compete.
+
+.br
+
+.br
+Multiple pulse settings may be queued in this way.
+
+.IP "\fBint tx_pwm(int sbc, int handle, int gpio, float pwmFrequency, float pwmDutyCycle, int pwmOffset, int pwmCycles)\fP"
+.IP "" 4
+This starts software timed PWM on an output GPIO.
+
+.br
+
+.br
+
+.EX
+         sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+      handle: >= 0 (as returned by \fBgpiochip_open\fP)
+.br
+        gpio: the GPIO to be pulsed
+.br
+pwmFrequency: PWM frequency in Hz (0=off, 0.1-10000)
+.br
+pwmDutyCycle: PWM duty cycle in % (0-100)
+.br
+   pwmOffset: offset from nominal pulse start position
+.br
+   pwmCycles: the number of pulses to be sent, 0 for infinite
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the number of entries left in the PWM queue for the GPIO.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Each successful call to this function consumes one PWM queue entry.
+
+.br
+
+.br
+PWM is characterised by two values, its frequency (number of cycles
+per second) and its duty cycle (percentage of high time per cycle).
+
+.br
+
+.br
+Another PWM command may be issued to the GPIO before the last has finished.
+
+.br
+
+.br
+If the last pulse had infinite cycles then it will be replaced by
+the new settings at the end of the current cycle. Otherwise it will
+be replaced by the new settings when all its cycles are compete.
+
+.br
+
+.br
+Multiple PWM settings may be queued in this way.
+
+.IP "\fBint tx_servo(int sbc, int handle, int gpio, int pulseWidth, int servoFrequency, int servoOffset, int servoCycles)\fP"
+.IP "" 4
+This starts software timed servo pulses on an output GPIO.
+
+.br
+
+.br
+I would only use software timed servo pulses for testing purposes.  The
+timing jitter will cause the servo to fidget.  This may cause it to
+overheat and wear out prematurely.
+
+.br
+
+.br
+
+.EX
+        handle: >= 0 (as returned by \fBgpiochip_open\fP)
+.br
+          gpio: the GPIO to be pulsed
+.br
+    pulseWidth: pulse high time in microseconds (0=0ff, 500-2500)
+.br
+servoFrequency: the number of pulses per second (40-500)
+.br
+   servoOffset: offset from nominal pulse start position
+.br
+   servoCycles: the number of pulses to be sent, 0 for infinite
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the number of entries left in the PWM queue for the GPIO.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Each successful call to this function consumes one PWM queue entry.
+
+.br
+
+.br
+Another servo command may be issued to the GPIO before the last
+has finished.
+
+.br
+
+.br
+If the last pulse had infinite cycles then it will be replaced by
+the new settings at the end of the current cycle. Otherwise it will
+be replaced by the new settings when all its cycles are complete.
+
+.br
+
+.br
+Multiple servo settings may be queued in this way.
+
+.IP "\fBint tx_wave(int sbc, int handle, int gpio, int count, lgPulse_p pulses)\fP"
+.IP "" 4
+This starts a software timed wave on an output group.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+  gpio:  group leader.
+.br
+ count: the number of pulses in the wave.
+.br
+pulses: the pulses.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the number of entries left in the wave queue for the group.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Each successful call to this function consumes one wave queue entry.
+
+.br
+
+.br
+This command starts a wave of pulses.
+
+.br
+
+.br
+pulses is an array of pulses to be transmitted on the group.
+
+.br
+
+.br
+Each pulse is defined by the following triplet:
+
+.br
+
+.br
+bits: the levels to set for the selected GPIO
+.br
+mask: the GPIO to select
+.br
+delay: the delay in microseconds before the next pulse
+
+.br
+
+.br
+Another wave command may be issued to the group before the
+last has finished transmission. The new wave will start
+when the previous wave has competed.
+
+.br
+
+.br
+Multiple waves may be queued in this way.
+
+.IP "\fBint tx_busy(int sbc, int handle, int gpio, int kind)\fP"
+.IP "" 4
+This returns true if transmissions of the specified kind
+are active on the GPIO or group.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+  gpio: the GPIO or group to be tested.
+.br
+  kind: LG_TX_PWM or LG_TX_WAVE.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 1 for busy and 0 for not busy.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+
+.IP "\fBint tx_room(int sbc, int handle, int gpio, int kind)\fP"
+.IP "" 4
+This returns the number of entries there are to queue further
+transmissions of the specified kind on a GPIO or GPIO group.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+  gpio: the GPIO or group to be tested.
+.br
+  kind: LG_TX_PWM or LG_TX_WAVE.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the number of free entries (0 for none).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+
+.IP "\fBint gpio_set_debounce_time(int sbc, int handle, int gpio, int debounce_us)\fP"
+.IP "" 4
+This sets the debounce time for a GPIO.
+
+.br
+
+.br
+
+.EX
+        sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+     handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+       gpio: the GPIO to be configured.
+.br
+debounce_us: the debounce time in microseconds.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+This only affects alerts.
+
+.br
+
+.br
+An alert will only be issued if the edge has been stable for at
+least debounce microseconds.
+
+.br
+
+.br
+Generally this is used to debounce mechanical switches
+(e.g. contact bounce).
+
+.br
+
+.br
+Suppose that a square wave at 5 Hz is being generated on a GPIO.
+Each edge will last 100000 microseconds. If a debounce time
+of 100001 is set no alerts will be generated, If a debounce time
+of 99999 is set 10 alerts will be generated per second.
+
+.br
+
+.br
+Note that level changes will be timestamped debounce microseconds
+after the actual level change.
+
+.IP "\fBint gpio_set_watchdog_time(int sbc, int handle, int gpio, int watchdog_us)\fP"
+.IP "" 4
+This sets the watchdog time for a GPIO.
+
+.br
+
+.br
+
+.EX
+        sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+     handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+       gpio: the GPIO to be configured.
+.br
+watchdog_us: the watchdog time in microseconds.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+This only affects alerts.
+
+.br
+
+.br
+A watchdog alert will be sent if no edge alert has been issued
+for that GPIO in the previous watchdog microseconds.
+
+.br
+
+.br
+Note that only one watchdog alert will be sent per stream of
+edge alerts.  The watchdog is reset by the sending of a new
+edge alert.
+
+.br
+
+.br
+The level is set to LG_TIMEOUT (2) for a watchdog alert.
+
+.IP "\fBint gpio_claim_alert(int sbc, int handle, int lFlags, int eFlags, int gpio, int nfyHandle)\fP"
+.IP "" 4
+This claims a GPIO to be used as a source of alerts on level changes.
+
+.br
+
+.br
+
+.EX
+      sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+   handle: >= 0 (as returned by \fBgpiochip_open\fP).
+.br
+     gpio: >= 0, as legal for the gpiochip. 
+.br
+.br
+.br
+   lFlags: line flags for the GPIO.
+.br
+   eFlags: event flags for the GPIO.
+.br
+nfyHandle: >=0, a notification handle (use -1 for callbacks).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+
+.br
+
+.br
+The line flags may be used to set the GPIO as active low,
+open drain, or open source.
+
+.br
+
+.br
+The event flags are used to generate alerts for a rising edge,
+falling edge, or both edges.
+
+.br
+
+.br
+Use a notification handle of -1 unless you plan to read the alerts
+from a notification pipe you have opened.
+
+.IP "\fBint callback(int sbc, int handle, int gpio, int edge, CBFunc_t f, void *userdata)\fP"
+.IP "" 4
+This function initialises a new callback.
+
+.br
+
+.br
+
+.EX
+     sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+  handle: >= 0,(as returned by \fBgpiochip_open\fP).
+.br
+    gpio: >= 0, as legal for the gpiochip.
+.br
+    edge: RISING_EDGE, FALLING_EDGE, or BOTH_EDGES.
+.br
+       f: the callback function.
+.br
+userdata: a pointer to arbitrary user data.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns a callback id.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The user supplied callback receives the chip, GPIO, edge, timestamp,
+and the userdata pointer, whenever the GPIO has the identified edge.
+
+.br
+
+.br
+The reported level will be one of
+
+.br
+
+.br
+0: change to low (a falling edge)
+1: change to high (a rising edge)
+2: no level change (a watchdog timeout)
+
+.br
+
+.br
+The timestamp is when the change happened reported as the
+number of nanoseconds since the epoch (start of 1970).
+
+.br
+
+.br
+If you want to track the level of more than one GPIO do so by
+maintaining the state in the callback.  Do not use \fBgpio_read\fP.
+Remember the alert that triggered the callback may have
+happened several milliseconds before and the GPIO may have
+changed level many times since then.
+
+.IP "\fBint callback_cancel(int callback_id)\fP"
+.IP "" 4
+This function cancels a callback identified by its id.
+
+.br
+
+.br
+
+.EX
+callback_id: >= 0 (as returned by \fBcallback\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+
+.IP "\fBint i2c_open(int sbc, int i2c_bus, int i2c_addr, int i2c_flags)\fP"
+.IP "" 4
+This returns a handle for the device at address i2c_addr on bus i2c_bus.
+
+.br
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+
+.br
+
+.EX
+      sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+  i2c_bus: >= 0.
+.br
+ i2c_addr: 0-0x7F.
+.br
+i2c_flags: 0.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns a handle (>= 0).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+No flags are currently defined.  This parameter should be set to zero.
+
+.br
+
+.br
+For the SMBus commands the low level transactions are shown at the end
+of the function description.  The following abbreviations are used.
+
+.br
+
+.br
+
+.EX
+S       (1 bit) : Start bit
+.br
+P       (1 bit) : Stop bit
+.br
+Rd/Wr   (1 bit) : Read/Write bit. Rd equals 1, Wr equals 0.
+.br
+A, NA   (1 bit) : Accept and not accept bit.
+.br
+.br
+.br
+Addr    (7 bits): I2C 7 bit address.
+.br
+i2c_reg (8 bits): A byte which often selects a register.
+.br
+Data    (8 bits): A data byte.
+.br
+Count   (8 bits): A byte defining the length of a block operation.
+.br
+
+.br
+[..]: Data sent by the device.
+.br
+
+.EE
+
+.IP "\fBint i2c_close(int sbc, int handle)\fP"
+.IP "" 4
+This closes the I2C device
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint i2c_write_quick(int sbc, int handle, int bitVal)\fP"
+.IP "" 4
+This sends a single bit (in the Rd/Wr bit) to the device.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+bitVal: 0-1, the value to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Quick command. SMBus 2.0 5.5.1
+
+.EX
+S Addr bit [A] P
+.br
+
+.EE
+
+.IP "\fBint i2c_write_byte(int sbc, int handle, int byteVal)\fP"
+.IP "" 4
+This sends a single byte to the device.
+
+.br
+
+.br
+
+.EX
+    sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+byteVal: 0-0xFF, the value to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Send byte. SMBus 2.0 5.5.2
+
+.EX
+S Addr Wr [A] byteVal [A] P
+.br
+
+.EE
+
+.IP "\fBint i2c_read_byte(int sbc, int handle)\fP"
+.IP "" 4
+This reads a single byte from the device.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the byte read (0-255).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Receive byte. SMBus 2.0 5.5.3
+
+.EX
+S Addr Rd [A] [Data] NA P
+.br
+
+.EE
+
+.IP "\fBint i2c_write_byte_data(int sbc, int handle, int i2c_reg, int byteVal)\fP"
+.IP "" 4
+This writes a single byte to the specified register of the device.
+
+.br
+
+.br
+
+.EX
+    sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+i2c_reg: 0-255, the register to write.
+.br
+byteVal: 0-0xFF, the value to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Write byte. SMBus 2.0 5.5.4
+
+.EX
+S Addr Wr [A] i2c_reg [A] byteVal [A] P
+.br
+
+.EE
+
+.IP "\fBint i2c_write_word_data(int sbc, int handle, int i2c_reg, int wordVal)\fP"
+.IP "" 4
+This writes a single 16 bit word to the specified register of the device.
+
+.br
+
+.br
+
+.EX
+    sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+i2c_reg: 0-255, the register to write.
+.br
+wordVal: 0-0xFFFF, the value to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Write word. SMBus 2.0 5.5.4
+
+.EX
+S Addr Wr [A] i2c_reg [A] wval_Low [A] wVal_High [A] P
+.br
+
+.EE
+
+.IP "\fBint i2c_read_byte_data(int sbc, int handle, int i2c_reg)\fP"
+.IP "" 4
+This reads a single byte from the specified register of the device.
+
+.br
+
+.br
+
+.EX
+    sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+i2c_reg: 0-255, the register to read.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the read byte (0-255).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Read byte. SMBus 2.0 5.5.5
+
+.EX
+S Addr Wr [A] i2c_reg [A] S Addr Rd [A] [Data] NA P
+.br
+
+.EE
+
+.IP "\fBint i2c_read_word_data(int sbc, int handle, int i2c_reg)\fP"
+.IP "" 4
+This reads a single 16 bit word from the specified register of the device.
+
+.br
+
+.br
+
+.EX
+    sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+i2c_reg: 0-255, the register to read.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the read word (0-65535).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Read word. SMBus 2.0 5.5.5
+
+.EX
+S Addr Wr [A] i2c_reg [A]
+.br
+   S Addr Rd [A] [DataLow] A [DataHigh] NA P
+.br
+
+.EE
+
+.IP "\fBint i2c_process_call(int sbc, int handle, int i2c_reg, int wordVal)\fP"
+.IP "" 4
+This writes 16 bits of data to the specified register of the device
+and reads 16 bits of data in return.
+
+.br
+
+.br
+
+.EX
+    sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+i2c_reg: 0-255, the register to write/read.
+.br
+wordVal: 0-0xFFFF, the value to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the read word (0-65535).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Process call. SMBus 2.0 5.5.6
+
+.EX
+S Addr Wr [A] i2c_reg [A] wVal_Low [A] wVal_High [A]
+.br
+   S Addr Rd [A] [DataLow] A [DataHigh] NA P
+.br
+
+.EE
+
+.IP "\fBint i2c_write_block_data(int sbc, int handle, int i2c_reg, const char *buf, int count)\fP"
+.IP "" 4
+This writes up to 32 bytes to the specified register of the device.
+
+.br
+
+.br
+
+.EX
+    sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+i2c_reg: 0-255, the register to write.
+.br
+    buf: an array with the data to send.
+.br
+  count: 1-32, the number of bytes to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Block write. SMBus 2.0 5.5.7
+
+.EX
+S Addr Wr [A] i2c_reg [A] count [A] buf0 [A] buf1 [A] ...
+.br
+   [A] bufn [A] P
+.br
+
+.EE
+
+.IP "\fBint i2c_read_block_data(int sbc, int handle, int i2c_reg, char *buf)\fP"
+.IP "" 4
+This reads a block of up to 32 bytes from the specified register of
+the device.
+
+.br
+
+.br
+
+.EX
+    sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+i2c_reg: 0-255, the register to read.
+.br
+    buf: an array to receive the read data.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes read and updates buf.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The amount of returned data is set by the device.
+
+.br
+
+.br
+Block read. SMBus 2.0 5.5.7
+
+.EX
+S Addr Wr [A] i2c_reg [A]
+.br
+   S Addr Rd [A] [Count] A [buf0] A [buf1] A ... A [bufn] NA P
+.br
+
+.EE
+
+.IP "\fBint i2c_block_process_call(int sbc, int handle, int i2c_reg, char *buf, int count)\fP"
+.IP "" 4
+This writes data bytes to the specified register of the device
+and reads a device specified number of bytes of data in return.
+
+.br
+
+.br
+
+.EX
+    sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+i2c_reg: 0-255, the register to write/read.
+.br
+    buf: an array with the data to send and to receive the read data.
+.br
+  count: 1-32, the number of bytes to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes read and updates buf.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The smbus 2.0 documentation states that a minimum of 1 byte may be
+sent and a minimum of 1 byte may be received.  The total number of
+bytes sent/received must be 32 or less.
+
+.br
+
+.br
+Block write-block read. SMBus 2.0 5.5.8
+
+.EX
+S Addr Wr [A] i2c_reg [A] count [A] buf0 [A] ...
+.br
+   S Addr Rd [A] [Count] A [Data] ... A P
+.br
+
+.EE
+
+.IP "\fBint i2c_read_i2c_block_data(int sbc, int handle, int i2c_reg, char *buf, int count)\fP"
+.IP "" 4
+This reads count bytes from the specified register of the device.
+The count may be 1-32.
+
+.br
+
+.br
+
+.EX
+    sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+i2c_reg: 0-255, the register to read.
+.br
+    buf: an array to receive the read data.
+.br
+  count: 1-32, the number of bytes to read.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes read and updates buf.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+
+.EX
+S Addr Wr [A] i2c_reg [A]
+.br
+   S Addr Rd [A] [buf0] A [buf1] A ... A [bufn] NA P
+.br
+
+.EE
+
+.IP "\fBint i2c_write_i2c_block_data(int sbc, int handle, int i2c_reg, const char *buf, int count)\fP"
+.IP "" 4
+This writes 1 to 32 bytes to the specified register of the device.
+
+.br
+
+.br
+
+.EX
+    sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+i2c_reg: 0-255, the register to write.
+.br
+    buf: the data to write.
+.br
+  count: 1-32, the number of bytes to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+
+.EX
+S Addr Wr [A] i2c_reg [A] buf0 [A] buf1 [A] ... [A] bufn [A] P
+.br
+
+.EE
+
+.IP "\fBint i2c_read_device(int sbc, int handle, char *buf, int count)\fP"
+.IP "" 4
+This reads count bytes from the raw device into buf.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+   buf: an array to receive the read data bytes.
+.br
+ count: >0, the number of bytes to read.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes read and updates buf.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+
+.EX
+S Addr Rd [A] [buf0] A [buf1] A ... A [bufn] NA P
+.br
+
+.EE
+
+.IP "\fBint i2c_write_device(int sbc, int handle, const char *buf, int count)\fP"
+.IP "" 4
+This writes count bytes from buf to the raw device.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBi2c_open\fP).
+.br
+   buf: an array containing the data bytes to write.
+.br
+ count: >0, the number of bytes to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+
+.EX
+S Addr Wr [A] buf0 [A] buf1 [A] ... [A] bufn [A] P
+.br
+
+.EE
+
+.IP "\fBint i2c_zip(int sbc, int handle, const char *inBuf, int inCount, char *outBuf, int outCount)\fP"
+.IP "" 4
+This function executes a sequence of I2C operations.  The
+operations to be performed are specified by the contents of inBuf
+which contains the concatenated command codes and associated data.
+
+.br
+
+.br
+
+.EX
+     sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+  handle: >= 0, as returned by a call to \fBlgI2cOpen\fP
+.br
+   inBuf: pointer to the concatenated I2C commands, see below
+.br
+ inCount: size of command buffer
+.br
+  outBuf: pointer to buffer to hold returned data
+.br
+outCount: size of output buffer
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes read and updates outBuf.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The following command codes are supported:
+
+.br
+
+.br
+Name      Cmd & Data   Meaning
+.br
+End       0            No more commands
+.br
+Escape    1            Next P is two bytes
+.br
+On        2            Switch combined flag on
+.br
+Off       3            Switch combined flag off
+.br
+Address   4 P          Set I2C address to P
+.br
+Flags     5 lsb msb    Set I2C flags to lsb + (msb << 8)
+.br
+Read      6 P          Read P bytes of data
+.br
+Write     7 P ...      Write P bytes of data
+.br
+
+.br
+
+.br
+The address, read, and write commands take a parameter P.
+Normally P is one byte (0-255).  If the command is preceded by
+the Escape command then P is two bytes (0-65535, least significant
+byte first).
+
+.br
+
+.br
+The address defaults to that associated with the handle.
+The flags default to 0.  The address and flags maintain their
+previous value until updated.
+
+.br
+
+.br
+The returned I2C data is stored in consecutive locations of outBuf.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+Set address 0x53, write 0x32, read 6 bytes
+.br
+Set address 0x1E, write 0x03, read 6 bytes
+.br
+Set address 0x68, write 0x1B, read 8 bytes
+.br
+End
+.br
+
+.br
+0x04 0x53   0x07 0x01 0x32   0x06 0x06
+.br
+0x04 0x1E   0x07 0x01 0x03   0x06 0x06
+.br
+0x04 0x68   0x07 0x01 0x1B   0x06 0x08
+.br
+0x00
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBint notify_open(int sbc)\fP"
+.IP "" 4
+Get a free notification handle.
+
+.br
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+
+.br
+
+.EX
+sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns a handle (>= 0).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+A notification is a method for being notified of GPIO state
+changes via a pipe.
+
+.br
+
+.br
+Pipes are only accessible from the local machine so this function
+serves no purpose if you are using the library from a remote machine.
+The in-built (socket) notifications provided by \fBcallback\fP
+should be used instead.
+
+.br
+
+.br
+The notification pipes are created in the library working directory.
+
+.br
+
+.br
+Notifications for handle x will be available at the pipe
+named lgd-nfyx (where x is the handle number). E.g. if the
+function returns 15 then the notifications must be
+read from lgd-nfy15.
+
+.br
+
+.br
+Each notification occupies 16 bytes in the fifo and has the
+following structure.
+
+.br
+
+.br
+
+.EX
+typedef struct
+.br
+{
+.br
+   uint64_t timestamp; // alert time in nanoseconds
+.br
+   uint8_t chip;       // gpiochip device number
+.br
+   uint8_t gpio;       // offset into gpio device
+.br
+   uint8_t level;      // 0=low, 1=high, 2=timeout
+.br
+   uint8_t flags;      // none currently defined
+.br
+} lgGpioReport_t;
+.br
+
+.EE
+
+.br
+
+.br
+timestamp: the number of nanoseconds since the epoch (start of 1970)
+chip: the gpiochip device number (NOT the handle).
+.br
+gpio: the GPIO.
+.br
+level: indicates the level of the GPIO
+.br
+flags: no flags are currently defined
+
+.br
+
+.br
+For future proofing it is probably best to ignore any notification
+with non-zero flags.
+
+.br
+
+.br
+
+.IP "\fBint notify_resume(int sbc, int handle)\fP"
+.IP "" 4
+Resume notifications on a handle.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBnotify_open\fP)
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint notify_pause(int sbc, int handle)\fP"
+.IP "" 4
+Pauses notifications on a handle.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBnotify_open\fP)
+.br
+
+.EE
+
+.br
+
+.br
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Notifications for the handle are suspended until
+\fBnotify_resume\fP is called.
+
+.IP "\fBint notify_close(int sbc, int handle)\fP"
+.IP "" 4
+Stop notifications and releases the handle.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBnotify_open\fP)
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint script_store(int sbc, const char *script)\fP"
+.IP "" 4
+This function stores a script for later execution.
+
+.br
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+
+.br
+See \fBscripts.html\fP for details.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+script: the text of the script.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns a handle (>=0).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint script_run(int sbc, int handle, int count, const uint32_t *param)\fP"
+.IP "" 4
+This function runs a stored script.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBscript_store\fP).
+.br
+ count: 0-10, the number of parameters.
+.br
+ param: an array of parameters.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+param is an array of up to 10 parameters which may be referenced in
+the script as p0 to p9.
+
+.IP "\fBint script_update(int sbc, int handle, int count, const uint32_t *param)\fP"
+.IP "" 4
+This function sets the parameters of a script.  The script may or
+may not be running.  The first numPar parameters of the script are
+overwritten with the new values.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBscript_store\fP).
+.br
+ count: 0-10, the number of parameters.
+.br
+ param: an array of parameters.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+param is an array of up to 10 parameters which may be referenced in
+the script as p0 to p9.
+
+.IP "\fBint script_status(int sbc, int handle, uint32_t *param)\fP"
+.IP "" 4
+This function returns the run status of a stored script as well
+as the current values of parameters 0 to 9.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBscript_store\fP).
+.br
+ param: an array to hold the returned 10 parameters.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the script status and updates param.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The script status may be
+
+.br
+
+.br
+
+.EX
+LG_SCRIPT_INITING
+.br
+LG_SCRIPT_READY
+.br
+LG_SCRIPT_RUNNING
+.br
+LG_SCRIPT_WAITING
+.br
+LG_SCRIPT_ENDED
+.br
+LG_SCRIPT_HALTED
+.br
+LG_SCRIPT_FAILED
+.br
+
+.EE
+
+.br
+
+.br
+The current value of script parameters 0 to 9 are returned in param.
+
+.IP "\fBint script_stop(int sbc, int handle)\fP"
+.IP "" 4
+This function stops a running script.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBscript_store\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint script_delete(int sbc, int handle)\fP"
+.IP "" 4
+This function deletes a stored script.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBscript_store\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint serial_open(int sbc, const char *ser_tty, int ser_baud, int ser_flags)\fP"
+.IP "" 4
+This function opens a serial device at a specified baud rate
+with specified flags.  The device must be present in /dev.
+
+.br
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+
+.br
+
+.EX
+      sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+  ser_tty: the serial device to open.
+.br
+ ser_baud: the baud rate in bits per second, see below.
+.br
+ser_flags: 0.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+The baud rate must be one of 50, 75, 110, 134, 150,
+200, 300, 600, 1200, 1800, 2400, 4800, 9600, 19200,
+38400, 57600, 115200, or 230400.
+
+.br
+
+.br
+No flags are currently defined.  This parameter should be set to zero.
+
+.IP "\fBint serial_close(int sbc, int handle)\fP"
+.IP "" 4
+This function closes the serial device.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBserial_open\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint serial_write_byte(int sbc, int handle, int byteVal)\fP"
+.IP "" 4
+This function writes byteVal to the serial port.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBserial_open\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint serial_read_byte(int sbc, int handle)\fP"
+.IP "" 4
+This function reads a byte from the serial port.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBserial_open\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the read byte (0-255).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint serial_write(int sbc, int handle, const char *buf, int count)\fP"
+.IP "" 4
+This function writes count bytes from buf to the the serial port.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBserial_open\fP).
+.br
+   buf: the array of bytes to write.
+.br
+ count: the number of bytes to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint serial_read(int sbc, int handle, char *buf, int count)\fP"
+.IP "" 4
+This function reads up to count bytes from the the serial port
+and writes them to buf.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBserial_open\fP).
+.br
+   buf: an array to receive the read data.
+.br
+ count: the maximum number of bytes to read.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes read and updates buf.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+If no data is ready zero is returned.
+
+.IP "\fBint serial_data_available(int sbc, int handle)\fP"
+.IP "" 4
+Returns the number of bytes available to be read from the
+device.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBserial_open\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes available.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint shell(int sbc, const char *scriptName, const char *scriptString)\fP"
+.IP "" 4
+This function uses the system call to execute a shell script
+with the given string as its parameter.
+
+.br
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+
+.br
+
+.EX
+         sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+  scriptName: the name of the script, only alphanumeric characters,
+.br
+              '-' and '_' are allowed in the name.
+.br
+scriptString: the string to pass to the script.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+scriptName must exist in a directory named cgi in the daemon's
+configuration directory and must be executable.
+
+.br
+
+.br
+The returned exit status is normally 256 times that set by the
+shell script exit function.  If the script can't be found 32512 will
+be returned.
+
+.br
+
+.br
+The following table gives some example returned statuses.
+
+.br
+
+.br
+Script exit status   Returned system call status
+.br
+1                    256
+.br
+5                    1280
+.br
+10                   2560
+.br
+200                  51200
+.br
+script not found     32512
+.br
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+// pass two parameters, hello and world
+.br
+status = shell_(sbc, "scr1", "hello world");
+.br
+
+.br
+// pass three parameters, hello, string with spaces, and world
+.br
+status = shell_(sbc, "scr1", "hello 'string with spaces' world");
+.br
+
+.br
+// pass one parameter, hello string with spaces world
+.br
+status = shell_(sbc, "scr1", "\"hello string with spaces world\"");
+.br
+
+.EE
+
+.IP "\fBint spi_open(int sbc, int spi_device, int spi_channel, int spi_baud, int spi_flags)\fP"
+.IP "" 4
+This function returns a handle for the SPI device on the channel.
+Data will be transferred at baud bits per second.  The flags may
+be used to modify the default behaviour.
+
+.br
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+
+.br
+
+.EX
+        sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+ spi_device: >= 0
+.br
+spi_channel: >= 0
+.br
+   spi_baud: SPI speed in bits per second.
+.br
+  spi_flags: see below.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns a handle (>= 0).
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+spi_flags consists of the least significant 2 bits.
+
+.br
+
+.br
+
+.EX
+1  0
+.br
+m  m
+.br
+
+.EE
+
+.br
+
+.br
+mm defines the SPI mode.
+
+.br
+
+.br
+
+.EX
+Mode POL PHA
+.br
+ 0    0   0
+.br
+ 1    0   1
+.br
+ 2    1   0
+.br
+ 3    1   1
+.br
+
+.EE
+
+.br
+
+.br
+
+.br
+
+.br
+The other bits in flags should be set to zero.
+
+.IP "\fBint spi_close(int sbc, int handle)\fP"
+.IP "" 4
+This functions closes the SPI device identified by the handle.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBspi_open\fP).
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint spi_read(int sbc, int handle, char *buf, int count)\fP"
+.IP "" 4
+This function reads count bytes of data from the SPI
+device
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBspi_open\fP).
+.br
+   buf: an array to receive the read data bytes.
+.br
+ count: the number of bytes to read.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes read and updates buf.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint spi_write(int sbc, int handle, const char *buf, int count)\fP"
+.IP "" 4
+This function writes count bytes of data from buf to the SPI
+device
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBspi_open\fP).
+.br
+   buf: the data bytes to write.
+.br
+ count: the number of bytes to write.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes written.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint spi_xfer(int sbc, int handle, const char *txBuf, char *rxBuf, int count)\fP"
+.IP "" 4
+This function transfers count bytes of data from txBuf to the SPI
+device  Simultaneously count bytes of
+data are read from the device and placed in rxBuf.
+
+.br
+
+.br
+
+.EX
+   sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+handle: >= 0 (as returned by \fBspi_open\fP).
+.br
+ txBuf: the data bytes to write.
+.br
+ rxBuf: the received data bytes.
+.br
+ count: the number of bytes to transfer.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes transferred and updates rxBuf.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBpthread_t *thread_start(lgThreadFunc_t thread_func, void *userdata)\fP"
+.IP "" 4
+Starts a new thread of execution with thread_func as the main routine.
+
+.br
+
+.br
+
+.EX
+thread_func: the main function for the new thread.
+.br
+   userdata: a pointer to an arbitrary argument.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns a pointer to a pthread_t.
+
+.br
+
+.br
+On failure returns NULL.
+
+.br
+
+.br
+The function is passed the single argument userdata.
+
+.br
+
+.br
+The thread can be cancelled by passing the pointer to pthread_t to
+\fBthread_stop\fP.
+
+.IP "\fBvoid thread_stop(pthread_t *pth)\fP"
+.IP "" 4
+Cancels the thread pointed at by pth.
+
+.br
+
+.br
+
+.EX
+pth: the thread to be stopped.
+.br
+
+.EE
+
+.br
+
+.br
+No value is returned.
+
+.br
+
+.br
+The thread to be stopped should have been started with \fBthread_start\fP.
+
+.IP "\fBint lgu_get_internal(int sbc, int config_id, uint64_t *config_value)\fP"
+.IP "" 4
+Returns the value of a sbc configuration item.
+
+.br
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+
+.br
+
+.EX
+         sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+   config_id: the configuration item.
+.br
+config_value: pointer for returned value.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0 and updates config_value.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint lgu_set_internal(int sbc, int config_id, uint64_t config_value)\fP"
+.IP "" 4
+Sets the value of a sbc configuration item.
+
+.br
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+
+.br
+
+.EX
+         sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+   config_id: the configuration item.
+.br
+config_value: the value to set.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint lgu_get_sbc_name(int sbc, char *buf, int count)\fP"
+.IP "" 4
+Return the lgd server name.
+
+.br
+
+.br
+
+.EX
+  sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+  buf: the server name is copied to this buffer.
+.br
+count: the maximum number of characters to copy.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns the count of bytes copied and updates buf.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBint lgu_set_user(int sbc, char *user, char *secretsFile)\fP"
+.IP "" 4
+Sets the rgpiod daemon user.  The user then has the
+associated permissions.
+
+.br
+
+.br
+
+.EX
+        sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+       user: the user to set ("" defaults to the default user).
+.br
+secretsFile: the path to the shared secret file ("" defaults
+.br
+             to "~/.lg_secret").
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 1 if the user was set, 0 otherwise.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+if (lgu_set_user(sbc, "gpio", "")
+.br
+{
+.br
+   printf("using user gpio permissions");
+.br
+}
+.br
+else
+.br
+{
+.br
+   printf("using default permissions");
+.br
+}
+.br
+
+.EE
+
+.IP "\fBint lgu_set_share_id(int sbc, int handle, int share_id)\fP"
+.IP "" 4
+Sets the share id of an owned object.
+
+.br
+
+.br
+
+.EX
+     sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+  handle: >= 0
+.br
+share_id: >= 0, 0 stops sharing.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Normally objects associated with a handle are only accessible
+to the program which created them (and are automatically
+deleted when the program ends).
+
+.br
+
+.br
+If a non-zero share is set the object is accessible to any
+software which knows the share and the handle (and are not
+automatically deleted when the program ends).
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+lgu_set_share_id(sbc, handle, 23);
+.br
+
+.EE
+
+.IP "\fBint lgu_use_share_id(int sbc, int share_id)\fP"
+.IP "" 4
+Sets the share id to be used when asking to use an object
+owned by another creator.
+
+.br
+
+.br
+
+.EX
+     sbc: >= 0 (as returned by \fBrgpiod_start\fP).
+.br
+share_id: >= 0, 0 stops sharing.
+.br
+
+.EE
+
+.br
+
+.br
+If OK returns 0.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.br
+
+.br
+Normally objects associated with a handle are only accessible
+to the program which created them (and are automatically
+deleted when the program ends).
+
+.br
+
+.br
+If a non-zero share is set the object is accessible to any
+software which knows the share and the handle.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+lgu_use_share_id(sbc, 23);
+.br
+
+.EE
+
+.IP "\fBuint32_t lgu_rgpio_version(void)\fP"
+.IP "" 4
+Return the rgpio version.
+
+.br
+
+.br
+If OK returns the rgpio version.
+
+.br
+
+.br
+On failure returns a negative error code.
+
+.IP "\fBconst char *lgu_error(int errnum)\fP"
+.IP "" 4
+Return a text description for an error code.
+
+.br
+
+.br
+
+.EX
+errnum: the error code.
+.br
+
+.EE
+
+.IP "\fBvoid lgu_sleep(double sleepSecs)\fP"
+.IP "" 4
+Delay execution for a given number of seconds.
+
+.br
+
+.br
+
+.EX
+sleepSecs: the number of seconds to delay.
+.br
+
+.EE
+
+.IP "\fBdouble lgu_time(void)\fP"
+.IP "" 4
+Return the current time in seconds since the Epoch.
+
+.IP "\fBuint64_t lgu_timestamp(void)\fP"
+.IP "" 4
+Return the current time in nanoseconds since the Epoch.
+.SH PARAMETERS
+
+.br
+
+.br
+
+.IP "\fB*addrStr\fP" 0
+A string specifying the host or IP address of the SBC running
+the rgpiod daemon.  It may be NULL in which case localhost
+is used unless overridden by the LG_ADDR environment
+variable.
+
+.br
+
+.br
+
+.IP "\fBbitVal\fP" 0
+A value of 0 or 1.
+
+.br
+
+.br
+
+.IP "\fB*buf\fP" 0
+A buffer to hold data being sent or being received.
+
+.br
+
+.br
+
+.IP "\fBbyteVal\fP: 0-255" 0
+An 8-bit byte value.
+
+.br
+
+.br
+
+.IP "\fBcallback_id\fP" 0
+A value >= 0, as returned by a call to the \fBcallback\fP.
+
+.br
+
+.br
+The id is passed to \fBcallback_cancel\fP to cancel the callback.
+
+.br
+
+.br
+
+.IP "\fBCBFunc_t\fP" 0
+
+.EX
+typedef void (*CBFunc_t)
+.br
+   (int sbc, int chip, int gpio, int level, uint64_t timestamp, void * userdata);
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBchar\fP" 0
+A single character, an 8 bit quantity able to store 0-255.
+
+.br
+
+.br
+
+.IP "\fBchipInfo\fP" 0
+A pointer to a lgChipInfo_t object.
+
+.br
+
+.br
+
+.IP "\fBconfig_id\fP" 0
+A number identifying a configuration item.
+
+.br
+
+.br
+
+.EX
+LG_CFG_ID_DEBUG_LEVEL 0
+.br
+LG_CFG_ID_MIN_DELAY   1
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBconfig_value\fP" 0
+The value of a configuration item.
+
+.br
+
+.br
+
+.IP "\fB*config_value\fP" 0
+The value of a configuration item.
+
+.br
+
+.br
+
+.IP "\fBcount\fP" 0
+The number of bytes to be transferred in a file, I2C, SPI, or serial
+command.
+
+.br
+
+.br
+
+.IP "\fBdebounce_us\fP" 0
+The debounce time in microseconds.
+
+.br
+
+.br
+
+.IP "\fBdouble\fP" 0
+A floating point number.
+
+.br
+
+.br
+
+.IP "\fBedge\fP" 0
+Used to identify a GPIO level transition of interest.  A rising edge is
+a level change from 0 to 1.  A falling edge is a level change from 1 to 0.
+
+.br
+
+.br
+
+.EX
+RISING_EDGE   1
+.br
+FALLING_EDGE  2
+.br
+BOTH_EDGES   3
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBeFlags\fP" 0
+The type of GPIO edge to generate an alert.  See \fBgpio_claim_alert\fP.
+
+.br
+
+.br
+
+.EX
+RISING_EDGE   1
+.br
+FALLING_EDGE  2
+.br
+BOTH_EDGES   3
+.br
+
+.EE
+
+.br
+
+.br
+
+.br
+
+.br
+
+.IP "\fBerrnum\fP" 0
+A negative number indicating a function call failed and the nature
+of the error.
+
+.br
+
+.br
+
+.IP "\fBf\fP" 0
+A function.
+
+.br
+
+.br
+
+.IP "\fB*file\fP" 0
+A full file path.  To be accessible the path must match an entry in
+the [files] section of the permits file.
+
+.br
+
+.br
+
+.IP "\fBfloat\fP" 0
+A floating point number.
+
+.br
+
+.br
+
+.IP "\fB*fpat\fP" 0
+A file path which may contain wildcards.  To be accessible the path
+must match an entry in the [files] section of the permits file.
+
+.br
+
+.br
+
+.IP "\fBgpio\fP" 0
+A 0 based offset of a GPIO within a gpiochip.
+
+.br
+
+.br
+
+.IP "\fBgpioDev\fP: >= 0" 0
+The device number of a gpiochip.
+
+.br
+
+.br
+
+.IP "\fB*gpios\fP" 0
+An array of GPIO numbers.
+
+.br
+
+.br
+
+.IP "\fBgroupBits\fP" 0
+A 64-bit value used to set the levels of a GPIO group.
+
+.br
+
+.br
+Set bit x to set GPIO x of the group high.
+
+.br
+
+.br
+Clear bit x to set GPIO x of the group low.
+
+.br
+
+.br
+
+.IP "\fB*groupBits\fP" 0
+A 64-bit value denoting the levels of a GPIO group.
+
+.br
+
+.br
+If bit x is set then GPIO x of the group is high.
+
+.br
+
+.br
+
+.IP "\fBgroupMask\fP" 0
+A 64-bit value used to determine which members of a GPIO group
+should be updated.
+
+.br
+
+.br
+Set bit x to update GPIO x of the group.
+
+.br
+
+.br
+Clear bit x to leave GPIO x of the group unaltered.
+
+.br
+
+.br
+
+.IP "\fBhandle\fP: >= 0" 0
+A number referencing an object opened by one of
+
+.br
+
+.br
+
+.br
+
+.br
+\fBfile_open\fP
+.br
+\fBgpiochip_open\fP
+.br
+\fBi2c_open\fP
+.br
+\fBnotify_open\fP
+.br
+\fBserial_open\fP
+\fBscript_store\fP
+.br
+\fBspi_open\fP
+
+.br
+
+.br
+
+.IP "\fBi2c_addr\fP: 0-0x7F" 0
+The address of a device on the I2C bus.
+
+.br
+
+.br
+
+.IP "\fBi2c_bus\fP: >= 0" 0
+An I2C bus number.
+
+.br
+
+.br
+
+.IP "\fBi2c_flags\fP: 0" 0
+Flags which modify an I2C open command.  None are currently defined.
+
+.br
+
+.br
+
+.IP "\fBi2c_reg\fP: 0-255" 0
+A register of an I2C device.
+
+.br
+
+.br
+
+.IP "\fB*inBuf\fP" 0
+A buffer used to pass data to a function.
+
+.br
+
+.br
+
+.IP "\fBinCount\fP" 0
+The size of an input buffer.
+
+.br
+
+.br
+
+.IP "\fBint\fP" 0
+A whole number, negative or positive.
+
+.br
+
+.br
+
+.IP "\fBint32_t\fP" 0
+A 32-bit signed value.
+
+.br
+
+.br
+
+.IP "\fBkind\fP: LG_TX_PWM or LG_TX_WAVE" 0
+A type of transmission: PWM or wave.
+
+.br
+
+.br
+
+.IP "\fBlFlags\fP" 0
+Line flags for the GPIO.
+
+.br
+
+.br
+The following values may be or'd to form the value.
+
+.br
+
+.br
+
+.EX
+LG_SET_ACTIVE_LOW
+.br
+LG_SET_OPEN_DRAIN
+.br
+LG_SET_OPEN_SOURCE
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBlgChipInfo_p\fP" 0
+A pointer to a lgChipInfo_t object.
+
+.br
+
+.br
+
+.EX
+typedef struct lgChipInfo_s
+.br
+{
+.br
+   uint32_t lines;                // number of GPIO
+.br
+   char name[LG_GPIO_NAME_LEN];   // Linux name
+.br
+   char label[LG_GPIO_LABEL_LEN]; // functional name
+.br
+} lgChipInfo_t, *lgChipInfo_p;
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBlgLineInfo_p\fP" 0
+A pointer to a lgLineInfo_t object.
+
+.br
+
+.br
+
+.EX
+typedef struct lgLine_s
+.br
+{
+.br
+   uint32_t offset;               // GPIO number
+.br
+   uint32_t lFlags;
+.br
+   char name[LG_GPIO_NAME_LEN];   // GPIO name
+.br
+   char user[LG_GPIO_USER_LEN];   // user
+.br
+} lgLineInfo_t, *lgLineInfo_p;
+.br
+
+.EE
+
+.br
+
+.br
+
+.br
+
+.br
+
+.IP "\fBlgPulse_p\fP" 0
+A pointer to a lgPulse_t object.
+
+.br
+
+.br
+
+.EX
+typedef struct lgPulse_s
+.br
+{
+.br
+   uint64_t bits;
+.br
+   uint64_t mask;
+.br
+   int64_t delay;
+.br
+} lgPulse_t, *lgPulse_p;
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBlgThreadFunc_t\fP" 0
+
+.EX
+typedef void *(lgThreadFunc_t) (void *);
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBlineInfo\fP" 0
+A pointer to a lgLineInfo_t object.
+
+.br
+
+.br
+
+.IP "\fBmode\fP" 0
+A file open mode.
+
+.br
+
+.br
+
+.EX
+LG_FILE_READ  1
+.br
+LG_FILE_WRITE 2
+.br
+LG_FILE_RW    3
+.br
+
+.EE
+
+.br
+
+.br
+The following values can be or'd into the mode.
+
+.br
+
+.br
+
+.EX
+LG_FILE_APPEND 4
+.br
+LG_FILE_CREATE 8
+.br
+LG_FILE_TRUNC  16
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBnfyHandle\fP: >= 0" 0
+This associates a notification with a GPIO alert.
+
+.br
+
+.br
+
+.IP "\fB*outBuf\fP" 0
+A buffer used to return data from a function.
+
+.br
+
+.br
+
+.IP "\fBoutCount\fP" 0
+The size of an output buffer.
+
+.br
+
+.br
+
+.IP "\fB*param\fP" 0
+An array of script parameters.
+
+.br
+
+.br
+
+.IP "\fB*portStr\fP" 0
+A string specifying the port address used by the SBC running
+the rgpiod daemon.  It may be NULL in which case "8889"
+is used unless overridden by the LG_PORT environment
+variable.
+
+.br
+
+.br
+
+.IP "\fB*pth\fP" 0
+A thread identifier, returned by \fBthread_start\fP.
+
+.br
+
+.br
+
+.IP "\fBpthread_t\fP" 0
+A thread identifier.
+
+.br
+
+.br
+
+.IP "\fBpulse_cycles\fP: >= 0" 0
+The number of pulses to generate.  A value of 0 means infinite.#
+
+.br
+
+.br
+
+.IP "\fBpulse_off\fP: >= 0" 0
+The off period for a pulse in microseconds.
+
+.br
+
+.br
+
+.IP "\fBpulse_offset\fP: >= 0" 0
+The offset in microseconds from the nominal pulse start.
+
+.br
+
+.br
+
+.IP "\fBpulse_on\fP: >= 0" 0
+The on period for a pulse in microseconds.
+
+.br
+
+.br
+
+.IP "\fBpulses\fP" 0
+An pointer to an array of lgPulse_t objects.
+
+.br
+
+.br
+
+.IP "\fBpulseWidth\fP: 0, 500-2500 microseconds" 0
+Servo pulse width
+
+.br
+
+.br
+
+.IP "\fBpwmCycles\fP: >= 0" 0
+The number of PWM pulses to generate.  A value of 0 means infinite.
+
+.br
+
+.br
+
+.IP "\fBpwmDutyCycle\fP: 0-100 %" 0
+PWM duty cycle %
+
+.br
+
+.br
+
+.IP "\fBpwmFrequency\fP: 0.1-10000 Hz" 0
+PWM frequency
+
+.br
+
+.br
+
+.IP "\fBpwmOffset\fP: >= 0" 0
+The offset in microseconds from the nominal PWM pulse start.
+
+.br
+
+.br
+
+.IP "\fB*rxBuf\fP" 0
+A pointer to a buffer to receive data.
+
+.br
+
+.br
+
+.IP "\fBsbc\fP" 0
+An integer defining a connected SBC.  The value is returned by
+\fBrgpiod_start\fP upon success.
+
+.br
+
+.br
+
+.IP "\fB*script\fP" 0
+A pointer to the text of a script.
+
+.br
+
+.br
+
+.IP "\fB*scriptName\fP" 0
+The name of a \fBshell_\fP script to be executed.  The script must
+be present in the cgi directory of the daemon's configuration
+directory and must have execute permission.
+
+.br
+
+.br
+
+.IP "\fB*scriptString\fP" 0
+The string to be passed to a \fBshell_\fP script to be executed.
+
+.br
+
+.br
+
+.IP "\fB*secretsFile\fP" 0
+The file containing the shared secret for a user.  If the shared
+secret for a user matches that known by the rgpiod daemon the user can
+"log in" to the daemon.
+
+.br
+
+.br
+
+.IP "\fBseekFrom\fP" 0
+
+.EX
+LG_FROM_START   0
+.br
+LG_FROM_CURRENT 1
+.br
+LG_FROM_END     2
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBseekOffset\fP" 0
+The number of bytes to move forward (positive) or backwards (negative)
+from the seek position (start, current, or end of file).
+
+.br
+
+.br
+
+.IP "\fBser_baud\fP" 0
+The speed of serial communication in bits per second.
+
+.br
+
+.br
+
+.IP "\fBser_flags\fP" 0
+Flags which modify a serial open command.  None are currently defined.
+
+.br
+
+.br
+
+.IP "\fB*ser_tty\fP" 0
+The name of a serial tty device, e.g. /dev/ttyAMA0, /dev/ttyUSB0, /dev/tty1.
+
+.br
+
+.br
+
+.IP "\fBservoCycles\fP: >= 0" 0
+The number of servo pulses to generate.  A value of 0 means infinite.
+
+.br
+
+.br
+
+.IP "\fBservoFrequency\fP: 40-500 Hz" 0
+Servo pulse frequency
+
+.br
+
+.br
+
+.IP "\fBservoOffset\fP: >= 0" 0
+The offset in microseconds from the nominal servo pulse start.
+
+.br
+
+.br
+
+.IP "\fBshare_id\fP" 0
+Objects created with a non-zero share_id are persistent and may be
+used by other software which knows the share_id.
+
+.br
+
+.br
+
+.IP "\fBsleepSecs\fP" 0
+The number of seconds to delay.
+
+.br
+
+.br
+
+.IP "\fBspi_baud\fP" 0
+The speed of SPI communication in bits per second.
+
+.br
+
+.br
+
+.IP "\fBspi_channel\fP: >= 0" 0
+A SPI channel.
+
+.br
+
+.br
+
+.IP "\fBspi_device\fP: >= 0" 0
+A SPI device.
+
+.br
+
+.br
+
+.IP "\fBspi_flags\fP" 0
+See \fBspi_open\fP and \fBbb_spi_open\fP.
+
+.br
+
+.br
+
+.IP "\fBthread_func\fP" 0
+A function of type gpioThreadFunc_t used as the main function of a
+thread.
+
+.br
+
+.br
+
+.IP "\fB*txBuf\fP" 0
+An array of bytes to transmit.
+
+.br
+
+.br
+
+.IP "\fBuint32_t\fP" 0
+A 32-bit unsigned value.
+
+.br
+
+.br
+
+.IP "\fBuint64_t\fP" 0
+A 64-bit unsigned value.
+
+.br
+
+.br
+
+.IP "\fB*user\fP" 0
+A name known by the rgpiod daemon and associated with a set of user
+permissions.
+
+.br
+
+.br
+
+.IP "\fB*userdata\fP" 0
+A pointer to arbitrary user data.  This may be used to identify the instance.
+
+.br
+
+.br
+You must ensure that the pointer is in scope at the time it is processed.  If
+it is a pointer to a global this is automatic.  Do not pass the address of a
+local variable.  If you want to pass a transient object then use the
+following technique.
+
+.br
+
+.br
+In the calling function:
+
+.br
+
+.br
+
+.EX
+user_type *userdata;
+.br
+.br
+.br
+user_type my_userdata;
+.br
+
+.br
+userdata = malloc(sizeof(user_type));
+.br
+.br
+.br
+*userdata = my_userdata;
+.br
+
+.EE
+
+.br
+
+.br
+In the receiving function:
+
+.br
+
+.br
+
+.EX
+user_type my_userdata = *(user_type*)userdata;
+.br
+
+.br
+free(userdata);
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBvalue\fP: 0-1" 0
+A GPIO level.
+
+.br
+
+.br
+
+.IP "\fB*values\fP" 0
+An array of GPIO values.
+
+.br
+
+.br
+
+.IP "\fBvoid\fP" 0
+Denoting no parameter is required
+
+.br
+
+.br
+
+.IP "\fBwatchdog_us\fP" 0
+The watchdog time in microseconds.
+
+.br
+
+.br
+
+.IP "\fBwordVal\fP: 0-65535" 0
+A 16-bit word value.
+
+.br
+
+.br
+.SH rgpio Error Codes
+
+.EX
+
+.br
+typedef enum
+.br
+{
+.br
+   lgif_bad_send           = -2000,
+.br
+   lgif_bad_recv           = -2001,
+.br
+   lgif_bad_getaddrinfo    = -2002,
+.br
+   lgif_bad_connect        = -2003,
+.br
+   lgif_bad_socket         = -2004,
+.br
+   lgif_bad_noib           = -2005,
+.br
+   lgif_duplicate_callback = -2006,
+.br
+   lgif_bad_malloc         = -2007,
+.br
+   lgif_bad_callback       = -2008,
+.br
+   lgif_notify_failed      = -2009,
+.br
+   lgif_callback_not_found = -2010,
+.br
+   lgif_unconnected_sbc    = -2011,
+.br
+   lgif_too_many_pis       = -2012,
+.br
+} lgifError_t;
+.br
+
+.br
+
+.EE
+
+.SH SEE ALSO
+
+rgpiod(1), rgs(1), lgpio(3)

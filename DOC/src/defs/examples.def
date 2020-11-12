@@ -1,0 +1,54 @@
+The following examples show various ways lg may be used to communicate with sensors via the GPIO.
+
+Although many are complete programs they are intended to be a starting point in producing your own code, not an end point.
+
+?0|Index
+
+?0|lgpio C
+
+?0|lgpio Python
+
+?0|rgpio C
+
+?0|rgpio Python
+
+?0|rgs shell
+
+
+?1|C|lgpio C
+
+Examples of C lgpio programs.
+
+If your program is called foobar.c then build with
+
+gcc -Wall-o foobar foobar.c -llgpio
+
+
+?1|Python|lgpio Python
+
+The lgpio Python code may be run on any Linux SBC with Python installed.  It allows control of the local GPIO.
+
+
+?1|C|rgpio C
+
+Examples of C rgpio programs.
+
+If your program is called foobar.c then build with
+
+gcc -Wall-o foobar foobar.c -lrgpio
+
+
+?1|Python|rgpio Python
+
+The rgpio Python code may be run on any SBC with Python installed.  It allows control of the GPIO on one or more networked SBCs.
+
+The Python machine need not be Linux, it may run Windows, Mac, etc, anything as long as it supports Python.
+
+Each SBC needs the rgpiod daemon to be running.  The rgpiod daemon may be started with the command rgpiod &.
+
+
+?1|rgs|rgs shell
+
+
+?1|Index|Index
+

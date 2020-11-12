@@ -1,0 +1,24 @@
+#!/bin/bash
+
+mkdir -p MAN
+
+rm -rf tmp
+rm -f HTML/*.html
+rm -f MAN/*.[13]
+
+echo ">rgs"
+bin/smakdoc.py  src/defs/rgs.def  man  >MAN/rgs.1
+
+echo ">rgpiod"
+cat src/defs/{rgpiod,permits,scripts}.def >temp.def
+bin/dmakdoc.py  rgpiod  temp.def  man >MAN/rgpiod.1
+rm temp.def
+
+echo ">lgpio.h"
+bin/cmakdoc.py lgpio  ../lgpio.h  man  >MAN/lgpio.3
+
+echo ">rgpio.h"
+bin/cmakdoc.py rgpio  ../rgpio.h  man  >MAN/rgpio.3
+
+cp MAN/*.[13] ..
+

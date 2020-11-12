@@ -1,0 +1,3712 @@
+
+." Process this file with
+." groff -man -Tascii foo.1
+."
+.TH rgs 1 2020-2020 Linux "lg archive"
+.SH NAME
+rgs - a shell command to manipulate a remote SBC's GPIO.
+
+.SH SYNOPSIS
+
+.B rgpiod &
+
+then
+
+.B rgs {command}+
+
+.SH DESCRIPTION
+
+.ad l
+
+.nh
+
+
+.br
+rgs is a program which allows remote control of the GPIO and
+other functions of Linux SBCs running the rgpiod daemon.
+
+.br
+The rgpiod daemon must be running on the SBCs you wish to control.
+
+.br
+.SS Features
+.br
+
+.br
+o reading and writing GPIO singly and in groups
+
+.br
+o software timed PWM and waves
+
+.br
+o GPIO callbacks
+
+.br
+o pipe notification of GPIO events
+
+.br
+o I2C wrapper
+
+.br
+o SPI wrapper
+
+.br
+o serial link wrapper
+
+.br
+o simple file handling
+
+.br
+o creating and running scripts on the rgpiod daemon
+
+.br
+.SS Usage
+.br
+rgs {command}+
+
+.br
+rgs will show the result of the command on screen.
+
+.br
+The rgs process returns an exit status (which can be displayed with
+the command echo $?).
+
+.br
+
+.EX
+RGS_OK            0
+.br
+RGS_CONNECT_ERR 255
+.br
+RGS_OPTION_ERR  254
+.br
+RGS_SCRIPT_ERR  253
+.br
+.br
+.br
+
+.EE
+
+.br
+If an error was detected a message will have been written to stderr.
+This is likely to be more informative than the message returned by rgs.
+
+.br
+Several commands may be entered on a line.  If present PROC and PARSE must
+be the last command on a line.
+
+.br
+.SS Notes
+.br
+rgs does not show the status of successful commands unless the
+command itself returns data.  The status (0) will be returned to
+rgs but will be discarded.
+
+.br
+When a command takes a number as a parameter it may be entered as hex
+(precede by 0x), octal (precede by 0), or decimal.
+
+.br
+E.g. 23 is 23 decimal, 0x100 is 256 decimal, 070 is 56 decimal.
+
+.br
+Some commands can return a variable number of data bytes.  By
+default this data is displayed as decimal.  The rgs -a option
+can be used to force the display as ASCII and the rgs -x
+option can be used to force the display as hex.
+
+.br
+E.g. assuming the transmitted serial data is the letters ABCDEONM
+
+.br
+
+.EX
+$ rgs serr 4 100 # assumes serial data available from handle 4
+.br
+8 65 66 67 68 69 79 78 77
+.br
+
+.br
+$ rgs -a serr 4 100
+.br
+8 ABCDEONM
+.br
+
+.br
+$ rgs -x serr 4 100
+.br
+8 41 42 43 44 45 4f 4e 4d
+.br
+
+.EE
+
+.br
+.SS Permissions
+.br
+Generally objects created on the rgpiod daemon exist for the duration of the
+socket connection.
+
+.br
+For a Python script this will be for the duration of the script.  For a
+program linked with rgpio this will be for the duration of the program.
+
+.br
+For rgs it is the command line.
+
+.br
+This means that the following command will achieve little
+
+.br
+
+.EX
+rgs go 0 # get handle to gpiochip 0
+.br
+
+.EE
+
+.br
+The daemon will delete the handle as soon as the rgs command has finished.
+
+.br
+To preserve the handle it must be shared.
+
+.br
+A lot of the examples will show the command c 1 (use share id 1).
+This means the handle is preserved and may be used in subsequent commands.
+
+.br
+
+.EX
+rgs c 1 go 0 # get and preserve handle to gpiochip 0
+.br
+
+.EE
+
+.br
+If a command is privileged it is indicated in the notes for the
+command.  The examples given here assume the daemon access control
+system is not active (so any user can use privileged commands).
+
+.br
+
+.SH OVERVIEW
+.SS FILES
+.B FO file mode 
+File open
+.P
+.B FC h 
+File close
+.P
+.B FR h num 
+File read
+.P
+.B FW h bvs 
+File write
+.P
+.B FS h num from 
+File seek
+.P
+.B FL pat num 
+File list
+.P
+.SS GPIO
+.br
+.B GO gc 
+gpiochip open device
+.P
+.B GC h 
+gpiochip close device
+.P
+.B GIC h 
+gpiochip information
+.P
+.B GIL h g 
+gpiochip line information
+.P
+.B GMODE h g 
+GPIO get mode
+.P
+.B GSI h g 
+GPIO claim for input (simple)
+.P
+.B GSIX h lf g 
+GPIO claim for input
+.P
+.B GSO h g 
+GPIO claim for output (simple)
+.P
+.B GSOX h lf g v 
+GPIO claim for output
+.P
+.B GSA h g nfyh 
+GPIO claim for alerts (simple)
+.P
+.B GSAX h lf ef g nfyh 
+GPIO claim for alerts
+.P
+.B GSF h g 
+GPIO free
+.P
+.B GSGI h g* 
+GPIO group claim for inputs (simple)
+.P
+.B GSGIX h lf g* 
+GPIO group claim for inputs
+.P
+.B GSGO h g* 
+GPIO group claim for outputs (simple)
+.P
+.B GSGOX h lf g* v* 
+GPIO group claim for outputs
+.P
+.B GSGF h g 
+GPIO group free
+.P
+.B GR h g 
+GPIO read
+.P
+.B GW h g v 
+GPIO write
+.P
+.B GGR h g 
+GPIO group read
+.P
+.B GGW h g gbits 
+GPIO group write (simple)
+.P
+.B GGWX h g gbits gmask 
+GPIO group write
+.P
+.B GP h g mon moff 
+GPIO tx pulse (simple)
+.P
+.B GPX h g mon moff off cyc 
+GPIO tx pulse
+.P
+.B P h g pf pdc 
+GPIO tx PWM (simple)
+.P
+.B PX h g pf pdc off cyc 
+GPIO tx PWM
+.P
+.B S h g spw 
+GPIO tx servo pulses (simple)
+.P
+.B SX h g spw sf off cyc 
+GPIO tx servo pulses
+.P
+.B GWAVE h g p* 
+GPIO group tx wave
+.P
+.B GBUSY h g k 
+GPIO or group tx busy
+.br
+.P
+.B GROOM h g k 
+GPIO or group tx entries
+.P
+.B GDEB h g us 
+GPIO debounce time
+.P
+.B GWDOG h g us 
+GPIO watchdog time
+.P
+.SS I2C
+.B I2CO ib id if 
+I2C open device
+.P
+.B I2CC h 
+I2C close device
+.P
+.B I2CWQ h bit 
+SMB Write Quick: write bit
+.P
+.B I2CRS h 
+SMB Read Byte: read byte
+.P
+.B I2CWS h bv 
+SMB Write Byte: write byte
+.P
+.B I2CRB h r 
+SMB Read Byte Data: read byte from register
+.P
+.B I2CWB h r bv 
+SMB Write Byte Data: write byte to register
+.P
+.B I2CRW h r 
+SMB Read Word Data: read word from register
+.P
+.B I2CWW h r wv 
+SMB Write Word Data: write word to register
+.P
+.B I2CRK h r 
+SMB Read Block Data: read data from register
+.P
+.B I2CWK h r bvs 
+SMB Write Block Data: write data to register
+.P
+.B I2CWI h r bvs 
+SMB Write I2C Block Data
+.P
+.B I2CRI h r num 
+SMB Read I2C Block Data: read bytes from register
+.P
+.B I2CRD h num 
+I2C read device
+.P
+.B I2CWD h bvs 
+I2C write device
+.P
+.B I2CPC h r wv 
+SMB Process Call: exchange register with word
+.P
+.B I2CPK h r bvs 
+SMB Block Process Call: exchange data bytes with register
+.P
+.B I2CZ h bvs 
+I2C zip
+.P
+.SS NOTIFICATIONS
+.B NO  
+Notification open
+.P
+.B NC h 
+Notification close
+.P
+.B NP h 
+Notification pause
+.P
+.B NR h 
+Notification resume
+.P
+.SS SCRIPTS
+.B PROC t 
+Script store
+.P
+.B PROCR h pars 
+Script run
+.P
+.B PROCU h pars 
+Script update parameters
+.P
+.B PROCP h 
+Script get status and parameters
+.P
+.B PROCS h 
+Script stop
+.P
+.B PROCD h 
+Script delete
+.P
+.B PARSE t 
+Script validate
+.P
+.SS SERIAL
+.B SERO dev b sef 
+Serial open device
+.P
+.B SERC h 
+Serial close device
+.P
+.B SERRB  
+Serial read byte
+.P
+.B SERWB h bv 
+Serial write byte
+.P
+.B SERR h num 
+Serial read bytes
+.P
+.B SERW h bvs 
+Serial write bytes
+.P
+.B SERDA h 
+Serial data available
+.P
+.SS SHELL
+.B SHELL name str 
+Execute a shell command
+.P
+.SS SPI
+.B SPIO spd spc b spf 
+SPI open device
+.P
+.B SPIC h 
+SPI close device
+.P
+.B SPIR h num 
+SPI read bytes
+.P
+.B SPIW h bvs 
+SPI write bytes
+.P
+.B SPIX h bvs 
+SPI transfer bytes
+.P
+.SS UTILITIES
+.B LGV  
+Get lg library version
+.P
+.B SBC  
+Get SBC's host name
+.P
+.B CGI cid 
+Get internal configuration setting
+.P
+.B CSI cid v 
+Set internal configuration setting
+.P
+.B T/TICK  
+Get nanoseconds since the epoch
+.P
+.B MICS v 
+Microseconds delay
+.P
+.B MILS v 
+Milliseconds delay
+.P
+.B U/USER  
+Set user
+.P
+.B C/SHARE  
+Set share
+.P
+.B LCFG  
+Reload permits configuration file
+.P
+.B PCD  
+Print daemon configuration directory
+.P
+.B PWD  
+Print daemon working directory
+.P
+
+.SH COMMANDS
+
+.br
+.SS FILES
+.br
+
+.IP "\fBFO file mode\fP - File open"
+.IP "" 4
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+This function returns a handle to a file opened in a specified mode.
+
+.br
+Upon success a handle (>=0) is returned.  On error a negative status code
+will be returned.
+
+.br
+The mode may have the following values.
+
+.br
+
+.EX
+        Value   Meaning
+READ      1     open file for reading
+WRITE     2     open file for writing
+RW        3     open file for reading and writing
+
+.EE
+
+.br
+The following values may be or'd into the mode.
+
+.br
+
+.EX
+         Value   Meaning
+APPEND     4     All writes append data to the end of the file
+CREATE     8     The file is created if it doesn't exist
+TRUNC     16     The file is truncated
+
+.EE
+
+.br
+Newly created files are owned by the user that launched the daemon
+with permissions owner read and write.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+ls /ram/*.c
+.br
+/ram/q.c     /ram/qdhtxx.c  /ram/q-errcod.c  /ram/q_t1.c
+.br
+/ram/q-c1.c  /ram/Q-err.c   /ram/q-group.c   /ram/q_t2.c
+.br
+
+.br
+$ rgs c 1 fo /ram/q.c 1  # read access
+.br
+1
+.br
+
+.br
+$ rgs c 1 fo /ram/new.c 1 # file does not exist
+.br
+-58
+.br
+ERROR: file open failed
+.br
+
+.br
+$rgs c 1 fo /ram/new.c 9 # can not create file
+.br
+-67
+.br
+ERROR: no permission to access file
+.br
+
+.EE
+
+.br
+
+.IP "\fBFC h\fP - File close"
+.IP "" 4
+This command closes a file previously opened by \fBFO\fP.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 fc 1 # First close okay.
+.br
+
+.br
+$ rgs c 1 fc 1 # Second fails.
+.br
+-5
+.br
+ERROR: unknown handle
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBFR h num\fP - File read"
+.IP "" 4
+This command returns up to \fBnum\fP bytes of data read from the file.
+
+.br
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 fr 0 10
+.br
+5 48 49 128 144 255
+.br
+
+.br
+$ rgs c 1 fr 0 10
+.br
+0
+.br
+
+.EE
+
+.br
+
+.IP "\fBFW h bvs\fP - File write"
+.IP "" 4
+This command writes \fBbvs\fP bytes to the file.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 fw 0 23 45 67 89
+.br
+
+.EE
+
+.br
+
+.IP "\fBFS h num from\fP - File seek"
+.IP "" 4
+This command seeks to a position within the file.
+
+.br
+The number of bytes to move is \fBnum\fP.  Positive offsets
+move forward, negative offsets backwards.  The move start
+position is determined by \fBfrom\fP as follows.
+
+.br
+
+.EX
+    From
+0   start
+1   current position
+2   end
+
+.EE
+
+.br
+Upon success the new byte position within the file (>=0) is
+returned.  On error a negative status code will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 fs 0 200 0 # Seek to start of file plus 200
+.br
+200
+.br
+
+.br
+$ rgs c 1 fs 0 0 1 # Return current position
+.br
+200
+.br
+
+.br
+$ rgs c 1 fs 0 0 2 # Seek to end of file, return size
+.br
+296235
+.br
+
+.EE
+
+.br
+
+.IP "\fBFL pat num\fP - File list"
+.IP "" 4
+This command returns a list of the files matching \fBpat\fP. Up
+to \fBnum\fP bytes may be returned.
+
+.br
+Upon success the count of returned bytes followed by the matching
+files is returned.  On error a negative status code will be returned.
+
+.br
+A newline (0x0a) character separates each file name.
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs -a fl "/sys/bus/w1/devices/28*/w1_slave" 5000
+.br
+90 /sys/bus/w1/devices/28-000005d34cd2/w1_slave
+.br
+/sys/bus/w1/devices/28-001414abbeff/w1_slave
+.br
+
+.br
+$ rgs -a fl "/sys/bus/*" 5000
+.br
+ERROR: no permission to access file
+.br
+-67
+.br
+
+.EE
+
+.br
+.SS GPIO
+.br
+
+.IP "\fBGO gc\fP - gpiochip open device"
+.IP "" 4
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+This command opens a gpiochip.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 go 0 # open /dev/gpiochip0
+.br
+1
+.br
+$ rgs c 1 go 23 # try to open /dev/gpiochip23
+.br
+-78
+.br
+ERROR: can not open gpiochip
+.br
+
+.EE
+
+.br
+
+.IP "\fBGC h\fP - gpiochip close device"
+.IP "" 4
+
+.br
+This command closes a gpiochip previously opened by \fBGO\fP.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 gc 1 # first close ok
+.br
+$ rgs c 1 gc 1 # already closed
+.br
+-5
+.br
+ERROR: unknown handle
+.br
+
+.EE
+
+.br
+
+.IP "\fBGIC h\fP - gpiochip information"
+.IP "" 4
+
+.br
+This command gets information for an opened gpiochip.  In particular
+it gets the number of GPIO on the gpiochip, its name, and its usage.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 gic 1
+.br
+54 "gpiochip0" "pinctrl-bcm2835"
+.br
+
+.EE
+
+.br
+
+.IP "\fBGIL h g\fP - gpiochip line information"
+.IP "" 4
+
+.br
+This command gets information for GPIO \fBg\fP of an opened gpiochip.
+In particular it gets the GPIO number, kernel usage flags, its user,
+and its purpose.
+
+.br
+The usage flags are bits.
+
+.br
+
+.EX
+Bit value   Bit meaning
+1           GPIO in use by the kernel
+2           GPIO is an output
+4           GPIO is active low
+8           GPIO is open drain
+16          GPIO is open source
+
+.EE
+
+.br
+The user and purpose fields are filled in by the software which has
+claimed the GPIO and may be blank.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ for ((i=2; i<10; i++)); do rgs c 1 gil 1 $i; done
+.br
+2 0 "" ""
+.br
+3 0 "" ""
+.br
+4 11 "" "onewire.0"
+.br
+5 0 "" ""
+.br
+6 0 "" ""
+.br
+7 7 "" "spi0 CS1"
+.br
+8 7 "" "spi0 CS0"
+.br
+9 0 "" ""
+.br
+
+.EE
+
+.br
+
+.IP "\fBGMODE h g\fP - GPIO get mode"
+.IP "" 4
+
+.br
+This command gets the mode for GPIO \fBg\fP of an opened gpiochip.
+
+.br
+
+.EX
+Mode bit   Value   Meaning
+0           1      Kernel: In use by the kernel
+1           2      Kernel: Output
+2           4      Kernel: Active low
+3           8      Kernel: Open drain
+4          16      Kernel: Open source
+5          32      Kernel: ---
+6          64      Kernel: ---
+7          128     Kernel: ---
+8          256     LG: Input
+9          512     LG: Output
+10         1024    LG: Alert
+11         2048    LG: Group
+12         4096    LG: ---
+13         8192    LG: ---
+14         16384   LG: ---
+15         32768   LG: ---
+
+.EE
+
+.br
+
+.IP "\fBGSI h g\fP - GPIO claim for input (simple)"
+.IP "" 4
+
+.br
+This command claims GPIO \fBg\fP for input.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 gsi 1 23 # claim GPIO 23 for input.
+.br
+
+.EE
+
+.br
+
+.IP "\fBGSIX h lf g\fP - GPIO claim for input"
+.IP "" 4
+
+.br
+This command claims GPIO \fBg\fP for input.
+
+.br
+The line flags \fBlf\fP may be used to set the GPIO
+as active low, open drain, or open source.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 gsi 1 0 23 # claim GPIO 23 for input.
+.br
+
+.EE
+
+.br
+
+.IP "\fBGSO h g\fP - GPIO claim for output (simple)"
+.IP "" 4
+
+.br
+This command claims GPIO \fBg\fP for output.
+
+.br
+
+.br
+The GPIO will be initialised low.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 gso 1 25 # claim GPIO 25 for low output.
+.br
+
+.EE
+
+.br
+
+.IP "\fBGSOX h lf g v\fP - GPIO claim for output"
+.IP "" 4
+
+.br
+This command claims GPIO \fBg\fP for output.
+
+.br
+The line flags \fBlf\fP may be used to set the GPIO
+as active low, open drain, or open source.
+
+.br
+If \fBv\fP is zero the GPIO will be initialised low.  If any other
+value is used the GPIO will be initialised high.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 gso 1 0 25 # claim GPIO 25 for high output.
+.br
+
+.EE
+
+.br
+
+.IP "\fBGSA h g nfyh\fP - GPIO claim for alerts (simple)"
+.IP "" 4
+
+.br
+This command claims GPIO \fBg\fP for alerts.
+
+.br
+Alerts will be generated for both edges.
+
+.br
+The alerts will be sent to a previously opened notification pipe \fBnfyh\fP.
+
+.br
+
+.IP "\fBGSAX h lf ef g nfyh\fP - GPIO claim for alerts"
+.IP "" 4
+
+.br
+This command claims GPIO \fBg\fP for alerts.
+
+.br
+The line flags \fBlf\fP may be used to set the GPIO
+as active low, open drain, or open source.
+
+.br
+The event flags \fBef\fP specify whether alerts should be
+generated on a rising edge, falling edge, or both edges.
+
+.br
+The alerts will be sent to a previously opened notification pipe \fBnfyh\fP.
+
+.br
+
+.IP "\fBGSF h g\fP - GPIO free"
+.IP "" 4
+
+.br
+This command releases GPIO \fBg\fP.  The GPIO
+may now be claimed by another user or for a different purpose.
+
+.br
+
+.IP "\fBGSGI h g*\fP - GPIO group claim for inputs (simple)"
+.IP "" 4
+
+.br
+This command claims a group of GPIO for inputs.
+
+.br
+\fBg*\fP is a list of one or more GPIO.  The first GPIO in the list is
+called the group leader and is used to reference the group as a whole.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 gsgi 1 16 17 18 19 20 21
+.br
+
+.EE
+
+.br
+
+.IP "\fBGSGIX h lf g*\fP - GPIO group claim for inputs"
+.IP "" 4
+
+.br
+This command claims a group of GPIO for inputs.  All the GPIO
+share the same line flag setting.
+
+.br
+The line flags \fBlf\fP may be used to set the GPIO
+as active low, open drain, or open source.
+
+.br
+\fBg*\fP is a list of one or more GPIO.  The first GPIO in the list is
+called the group leader and is used to reference the group as a whole.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 gsgix 1 0 16 17 18 19 20 21
+.br
+
+.EE
+
+.br
+
+.IP "\fBGSGO h g*\fP - GPIO group claim for outputs (simple)"
+.IP "" 4
+
+.br
+This command claims a group of GPIO for outputs.
+
+.br
+\fBg*\fP is a list of one or more GPIO.  The first GPIO in the list is
+called the group leader and is used to reference the group as a whole.
+
+.br
+The GPIO will be initialised low.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 gsgo 1 22 23 24 25
+.br
+
+.EE
+
+.br
+
+.IP "\fBGSGOX h lf g* v*\fP - GPIO group claim for outputs"
+.IP "" 4
+
+.br
+This command claims a group of GPIO for outputs.  All the GPIO
+and share the same line flag setting.
+
+.br
+The line flags \fBlf\fP may be used to set the GPIO
+as active low, open drain, or open source.
+
+.br
+\fBg*\fP is a list of one or more GPIO.  The first GPIO in the list is
+called the group leader and is used to reference the group as a whole.
+
+.br
+\fBv*\fP is a list of initialisation values for the GPIO. If a value is
+zero the corresponding GPIO will be initialised low.  If any other
+value is used the corresponding GPIO will be initialised high.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 gsgox 1 0 22 23 24 25 1 1 1 1
+.br
+
+.EE
+
+.br
+
+.IP "\fBGSGF h g\fP - GPIO group free"
+.IP "" 4
+
+.br
+This command releases the group of GPIO identified by the group
+leader \fBg\fP.  The GPIO
+may now be claimed by another user or for a different purpose.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+rgs c 1 gsgf 1 22
+.br
+
+.EE
+
+.br
+
+.IP "\fBGR h g\fP - GPIO read"
+.IP "" 4
+
+.br
+This command returns the current value (0 or 1) of GPIO \fBg\fP.
+
+.br
+This command will work for any claimed GPIO (even if a member
+of a group).  For an output GPIO the value returned
+will be that last written to the GPIO.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 gr 1 22
+.br
+1
+.br
+
+.EE
+
+.br
+
+.IP "\fBGW h g v\fP - GPIO write"
+.IP "" 4
+
+.br
+This command sets the  value (0 or 1) of GPIO \fBg\fP.
+
+.br
+This command will work for any GPIO claimed as an output
+(even if a member of a group).
+
+.br
+If \fBv\fP is zero the GPIO will be set low.
+If any other value is used the GPIO will be set high.
+
+.br
+
+.IP "\fBGGR h g\fP - GPIO group read"
+.IP "" 4
+
+.br
+This command reads a group of GPIO identified by group leader \fBg\fP.
+
+.br
+This command will work for an output group as well as an input
+group.  For an output group the value returned
+will be that last written to the group GPIO.  Note that this command
+will also work on an individual GPIO claimed as an input or output as
+that is treated as a group with one member.
+
+.br
+Two values are returned.  The first is the group size (the number of
+GPIO in the group).  The second is the group bits as a decimal value.
+
+.br
+Bit 0 is the level of the group leader.
+.br
+Bit 1 is the level of the second GPIO in the group.
+.br
+Bit g is the level of GPIO g+1 in the group.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 gsgi 1 0 16 17 18 19 20 21
+.br
+$ rgs c 1 ggr 1 16
+.br
+6 49 # six GPIO, group leader (16) high, 17-19 low, 20-21 high
+.br
+
+.EE
+
+.br
+
+.IP "\fBGGW h g gbits\fP - GPIO group write (simple)"
+.IP "" 4
+
+.br
+This command writes a group of GPIO identified by group leader \fBg\fP.
+
+.br
+The values of each GPIO of the group are set according to the bits
+.br
+of \fBgbits\fP.
+
+.br
+Bit 0 sets the level of the group leader.
+.br
+Bit 1 sets the level of the second GPIO in the group.
+.br
+Bit g sets the level of GPIO g+1 in the group.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 ggr 1 22
+.br
+4 15
+.br
+$ rgs c 1 ggw 1 22 5
+.br
+$ rgs c 1 ggr 1 22
+.br
+4 5
+.br
+$ rgs c 1 ggw 1 22 10
+.br
+$ rgs c 1 ggr 1 22
+.br
+4 10
+.br
+
+.EE
+
+.br
+
+.IP "\fBGGWX h g gbits gmask\fP - GPIO group write"
+.IP "" 4
+
+.br
+This command writes a group of GPIO identified by group leader \fBg\fP.
+
+.br
+The values of each GPIO of the group are set according to the bits
+.br
+of \fBgbits\fP.
+
+.br
+Bit 0 sets the level of the group leader.
+.br
+Bit 1 sets the level of the second GPIO in the group.
+.br
+Bit g sets the level of GPIO g+1 in the group.
+
+.br
+However this may be modified by the \fBgmask\fP.  A GPIO is only
+updated if the corresponding bit in the mask is 1.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 ggr 1 22
+.br
+4 15
+.br
+$ rgs c 1 ggw 1 22 5 15
+.br
+$ rgs c 1 ggr 1 22
+.br
+4 5
+.br
+$ rgs c 1 ggw 1 22 10 0
+.br
+$ rgs c 1 ggr 1 22
+.br
+4 5
+.br
+$ rgs c 1 ggw 1 22 10 15
+.br
+$ rgs c 1 ggr 1 22
+.br
+4 10
+.br
+
+.EE
+
+.br
+
+.IP "\fBGP h g mon moff\fP - GPIO tx pulse (simple)"
+.IP "" 4
+
+.br
+This command starts software timed pulses on GPIO \fBg\fP .
+
+.br
+Each cycle consists of \fBmon\fP microseconds of GPIO high
+followed by \fBmoff\fP microseconds of GPIO low.
+
+.br
+PWM is characterised by two values, its frequency (number of cycles
+per second) and its duty cycle (percentage of high time per cycle).
+
+.br
+The set frequency will be 1000000 / (mon + moff) Hz.
+
+.br
+The set duty cycle will be mon / (mon + moff) * 100 %.
+
+.br
+E.g. if mon is 50 and moff is 100 the frequency will be 6666.67 Hz
+and the duty cycle will be 33.33 %.
+
+.br
+
+.IP "\fBGPX h g mon moff off cyc\fP - GPIO tx pulse"
+.IP "" 4
+
+.br
+This command starts software timed pulses on GPIO \fBg\fP .
+
+.br
+\fBcyc\fP cycles are transmitted (0 means infinite).  Each cycle
+consists of \fBmon\fP microseconds of GPIO high followed by \fBmoff\fP
+microseconds of GPIO low.
+
+.br
+PWM is characterised by two values, its frequency (number of cycles
+per second) and its duty cycle (percentage of high time per cycle).
+
+.br
+The set frequency will be 1000000 / (mon + moff) Hz.
+
+.br
+The set duty cycle will be mon / (mon + moff) * 100 %.
+
+.br
+E.g. if mon is 50 and moff is 100 the frequency will be 6666.67 Hz
+and the duty cycle will be 33.33 %.
+
+.br
+\fBoff\fP is a microsecond offset from the natural start of the PWM cycle.
+
+.br
+For instance if the PWM frequency is 10 Hz the natural start of each cycle
+is at seconds 0, then 0.1, 0.2, 0.3 etc.  In this case if the offset is
+20000 microseconds the cycle will start at seconds 0.02, 0.12, 0.22, 0.32 etc.
+
+.br
+Another command may be issued to the GPIO before the last has finished.
+
+.br
+If the last command had infinite cycles (\fBcyc\fP of 0) then it will be replaced
+by the new settings at the end of the current cycle.  Otherwise it will be
+replaced by the new settings at the end of \fBcyc\fP cycles.
+
+.br
+Multiple pulse settings may be queued in this way.
+
+.br
+
+.IP "\fBP h g pf pdc\fP - GPIO tx PWM (simple)"
+.IP "" 4
+
+.br
+This command starts software timed PWM on GPIO \fBg\fP .
+
+.br
+PWM is characterised by two values, its frequency (number of cycles
+per second) and its duty cycle (percentage of high time per cycle).
+
+.br
+
+.IP "\fBPX h g pf pdc off cyc\fP - GPIO tx PWM"
+.IP "" 4
+
+.br
+This command starts software timed PWM on GPIO \fBg\fP .
+
+.br
+PWM is characterised by two values, its frequency (number of cycles
+per second) and its duty cycle (percentage of high time per cycle).
+
+.br
+\fBoff\fP is a microsecond offset from the natural start of the PWM cycle.
+
+.br
+For instance if the PWM frequency is 10 Hz the natural start of each cycle
+is at seconds 0, then 0.1, 0.2, 0.3 etc.  In this case if the offset is
+20000 microseconds the cycle will start at seconds 0.02, 0.12, 0.22, 0.32 etc.
+
+.br
+Another PWM command may be issued to the GPIO before the last has finished.
+
+.br
+If the last PWM had infinite cycles (\fBcyc\fP of 0) then it will be replaced
+by the new settings at the end of the current cycle.  Otherwise it will be
+replaced by the new settings at the end of \fBcyc\fP cycles.
+
+.br
+Multiple PWM settings may be queued in this way.
+
+.br
+
+.IP "\fBS h g spw\fP - GPIO tx servo pulses (simple)"
+.IP "" 4
+
+.br
+This command starts software timed servo pulses on GPIO \fBg\fP .
+
+.br
+I would only use software timed servo pulses for testing purposes.  The
+timing jitter will cause the servo to fidget.  This may cause it to
+overheat and wear out prematurely.
+
+.br
+
+.IP "\fBSX h g spw sf off cyc\fP - GPIO tx servo pulses"
+.IP "" 4
+
+.br
+This command starts software timed servo pulses on GPIO \fBg\fP .
+
+.br
+I would only use software timed servo pulses for testing purposes.  The
+timing jitter will cause the servo to fidget.  This may cause it to
+overheat and wear out prematurely.
+
+.br
+Another servo command may be issued to the GPIO before the last has finished.
+
+.br
+If the last command had infinite cycles (\fBcyc\fP of 0) then it will be replaced
+by the new settings at the end of the current cycle.  Otherwise it will be
+replaced by the new settings at the end of \fBcyc\fP cycles.
+
+.br
+Multiple servo settings may be queued in this way.
+
+.br
+
+.IP "\fBGWAVE h g p*\fP - GPIO group tx wave"
+.IP "" 4
+
+.br
+This command starts a wave on GPIO group \fBg\fP .
+
+.br
+\fBp\fP is a series of pulses to be transmitted on the GPIO group.
+
+.br
+Each pulse is defined by the following triplet:
+
+.br
+\fBgbits\fP the levels to set for the selected GPIO
+.br
+\fBgmask\fP the GPIO to select
+.br
+\fBus\fP    the delay in microseconds before the next pulse
+
+.br
+Another wave command may be issued to the GPIO group before the
+last has finished transmission.
+
+.br
+Multiple waves may be queued in this way.
+
+.br
+
+.IP "\fBGBUSY h g k\fP - GPIO or group tx busy
+.br"
+.IP "" 4
+
+.br
+This command checks to see if a specified kind \fBk\fP of transmission
+is ongoing on a GPIO or GPIO group \fBg\fP .
+
+.br
+The command returns 1 if transmission is ongoing, otherwise 0.
+
+.br
+
+.IP "\fBGROOM h g k\fP - GPIO or group tx entries"
+.IP "" 4
+
+.br
+This returns the number of slots there are to queue further
+transmissions of a specified kind \fBk\fP in the tx queue for
+GPIO or GPIO group \fBg\fP.
+
+.br
+The command returns the number of free slots (0 for no free slots).
+
+.br
+
+.IP "\fBGDEB h g us\fP - GPIO debounce time"
+.IP "" 4
+
+.br
+This command sets the debounce time for GPIO \fBg\fP to \fBus\fP microseconds.
+
+.br
+This command is only effective when the GPIO is being used as
+a source of alerts.
+
+.br
+Any level changes shorter than the debounce setting will be
+discarded, i.e. they will not generate an alert.
+
+.br
+Reported level changes will be timestamped \fBus\fP microseconds
+after the level change.
+
+.br
+
+.IP "\fBGWDOG h g us\fP - GPIO watchdog time"
+.IP "" 4
+
+.br
+This command sets the watchdog time for GPIO \fBg\fP
+ to \fBus\fP microseconds.
+
+.br
+This only affects alerts.
+
+.br
+A watchdog alert will be sent if no edge alert has been issued
+for that GPIO in the previous watchdog microseconds.
+
+.br
+Note that only one watchdog alert will be sent per stream of
+edge alerts.  The watchdog is reset by the sending of a new
+edge alert.
+
+.br
+The level is set to 2 for a watchdog alert.
+
+.br
+.SS I2C
+.br
+
+.IP "\fBI2CO ib id if\fP - I2C open device"
+.IP "" 4
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+This command returns a handle to access device \fBid\fP on I2C bus \fBib\fP.
+The device is opened with flags \fBif\fP.
+
+.br
+No flags are currently defined.  The parameter \fBif\fP should be 0.
+
+.br
+Upon success the next free handle (>=0) is returned.  On error a
+negative status code will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2co 1 0x70 0 # Bus 1, device 0x70, flags 0.
+.br
+0
+.br
+
+.br
+$ rgs c 1 i2co 1 0x53 0 # Bus 1, device 0x53, flags 0.
+.br
+1
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CC h\fP - I2C close device"
+.IP "" 4
+This command closes an I2C device previously opened by \fBI2CO\fP.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2cc 0 # First close okay.
+.br
+
+.br
+$ rgs c 1 i2cc 0 # Second fails.
+.br
+-25
+.br
+ERROR: unknown handle
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CWQ h bit\fP - SMB Write Quick: write bit"
+.IP "" 4
+
+.br
+This command writes a single \fBbit\fP to the I2C device.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2cwq 0 1
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CRS h\fP - SMB Read Byte: read byte"
+.IP "" 4
+
+.br
+This command returns a single byte read from the I2C device.
+
+.br
+Upon success a value between 0 and 255 will be returned.  On error
+a negative status code will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2crs 0
+.br
+0
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CWS h bv\fP - SMB Write Byte: write byte"
+.IP "" 4
+
+.br
+This command writes a single byte \fBbv\fP to the I2C device.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2cws 0 0x12
+.br
+
+.br
+$ rgs c 1 i2cws 0 0xff
+.br
+-82
+.br
+ERROR: I2C write failed
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CRB h r\fP - SMB Read Byte Data: read byte from register"
+.IP "" 4
+
+.br
+This command returns a single byte read from register \fBr\fP of
+the I2C device.
+
+.br
+Upon success a value between 0 and 255 will be returned.  On error
+a negative status code will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2crb 0 0
+.br
+6
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CWB h r bv\fP - SMB Write Byte Data: write byte to register"
+.IP "" 4
+
+.br
+This command writes a single byte \fBbv\fP to register \fBr\fP of the
+I2C device.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2cwb 0 10 0x54
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CRW h r\fP - SMB Read Word Data: read word from register"
+.IP "" 4
+
+.br
+This command returns a single 16 bit word read from register \fBr\fP of
+the I2C device.
+
+.br
+Upon success a value between 0 and 65535 will be returned.  On error
+a negative status code will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2crw 0 0
+.br
+6150
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CWW h r wv\fP - SMB Write Word Data: write word to register"
+.IP "" 4
+
+.br
+This command writes a single 16 bit word \fBwv\fP to register \fBr\fP of
+the I2C device.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2cww 0 0 0xffff
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CRK h r\fP - SMB Read Block Data: read data from register"
+.IP "" 4
+
+.br
+This command returns between 1 and 32 bytes read from register \fBr\fP of
+the I2C device.
+
+.br
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+.br
+The number of bytes of returned data is specific to the device and
+register.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2crk 0 0
+.br
+6 0 0 0 0 0 0
+.br
+
+.br
+$ rgs c 1 i2crk 0 1
+.br
+24 0 0 0 0 0 0 0 0 0 0 0 0 120 222 105 215 128 87 195 217 0 0 0 0
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CWK h r bvs\fP - SMB Write Block Data: write data to register"
+.IP "" 4
+
+.br
+This command writes between 1 and 32 bytes \fBbvs\fP to register \fBr\fP of
+the I2C device.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+rgs c 1 i2cwk 0 4 0x01 0x04 0xc0
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CRI h r num\fP - SMB Read I2C Block Data: read bytes from register"
+.IP "" 4
+
+.br
+This command returns \fBnum\fP bytes from register \fBr\fP of
+the I2C device.
+
+.br
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+.br
+The parameter \fBnum\fP may be 1-32.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2cri 0 0 16
+.br
+16 237 155 155 155 155 155 155 155 155 155 155 155 155 155 155 155
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CWI h r bvs\fP - SMB Write I2C Block Data"
+.IP "" 4
+
+.br
+This command writes between 1 and 32 bytes \fBbvs\fP to register \fBr\fP of
+the I2C device.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2cwi 0 4 0x01 0x04 0xc0
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CRD h num\fP - I2C read device"
+.IP "" 4
+
+.br
+This command returns \fBnum\fP bytes read from the I2C device.
+
+.br
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+.br
+This command operates on the raw I2C device.  The maximum value of the
+parameter \fBnum\fP is dependent on the I2C drivers and the device
+itself. rgs imposes a limit of about 8000 bytes.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2crd 0 16
+.br
+16 6 24 0 0 0 0 0 0 0 0 0 0 0 0 32 78
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CWD h bvs\fP - I2C write device"
+.IP "" 4
+
+.br
+This command writes a block of bytes \fBbvs\fP to the I2C device.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+The number of bytes which may be written in one transaction is
+dependent on the I2C drivers and the device itself.  rgs imposes
+a limit of about 500 bytes.
+
+.br
+This command operates on the raw I2C device.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2cwd 0 0x01 0x02 0x03 0x04
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CPC h r wv\fP - SMB Process Call: exchange register with word"
+.IP "" 4
+This command writes \fBwv\fP to register \fBr\fP of the I2C device
+and returns a 16-bit word read from the device.
+
+.br
+Upon success a value between 0 and 65535 will be returned.  On error
+a negative status code will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2cpc 0 37 43210
+.br
+39933
+.br
+
+.br
+$ rgs c 1 i2cpc 0 256 43210
+.br
+ERROR: bad i2c/spi/ser parameter
+.br
+-81
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CPK h r bvs\fP - SMB Block Process Call: exchange data bytes with register"
+.IP "" 4
+
+.br
+This command writes the data bytes \fBbvs\fP to register \fBr\fP of
+the I2C device and returns a device specific number of bytes.
+
+.br
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 i2cpk 0 0 0x11 0x12
+.br
+6 0 0 0 0 0 0
+.br
+
+.EE
+
+.br
+
+.IP "\fBI2CZ h bvs\fP - I2C zip"
+.IP "" 4
+This command executes a sequence of I2C operations.  The
+operations to be performed are specified by the contents of \fBbvs\fP
+which contains the concatenated command codes and associated data.
+
+.br
+The following command codes are supported:
+
+.br
+
+.EX
+Name      Cmd & Data   Meaning
+End       0            No more commands
+Escape    1            Next P is two bytes
+Address   2 P          Set I2C address to P
+Flags     3 lsb msb    Set I2C flags to lsb + (msb << 8)
+Read      4 P          Read P bytes of data
+Write     5 P ...      Write P bytes of data
+
+.EE
+
+.br
+The address, read, and write commands take a parameter P.
+Normally P is one byte (0-255).  If the command is preceded by
+the Escape command then P is two bytes (0-65535, least significant
+byte first).
+
+.br
+The address defaults to that associated with the handle \fBh\fP.
+The flags default to 0.  The address and flags maintain their
+previous value until updated.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+Set address 0x53, write 0x32, read 6 bytes
+.br
+Set address 0x1E, write 0x03, read 6 bytes
+.br
+Set address 0x68, write 0x1B, read 8 bytes
+.br
+End
+.br
+
+.br
+2 0x53  5 1 0x32  4 6
+.br
+2 0x1E  5 1 0x03  4 6
+.br
+2 0x68  5 1 0x1B  4 8
+.br
+0
+.br
+
+.EE
+
+.br
+.SS NOTIFICATIONS
+.br
+
+.IP "\fBNO \fP - Notification open"
+.IP "" 4
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+This command requests a free notification handle.
+
+.br
+A notification is a method for being notified of GPIO state changes via a pipe.
+
+.br
+Upon success the command returns a handle greater than or equal to zero.
+On error a negative status code will be returned.
+
+.br
+The pipes are created in the daemon's working directory (the command
+\fBpwd\fP will show the working directory).
+
+.br
+Notifications for handle g will be available at the pipe named lgd-nfyx
+(where g is the handle number).
+
+.br
+E.g. if the command returns 15 then the notifications must be read
+from lgd-nfy15.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 no
+.br
+0
+.br
+
+.EE
+
+.br
+
+.IP "\fBNC h\fP - Notification close"
+.IP "" 4
+
+.br
+This command closes a notification previously opened by \fBNO\fP.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 nc 0 # First call succeeds.
+.br
+
+.br
+$ rgs c 1 nc 1 # Second call fails.
+.br
+-5
+.br
+ERROR: unknown handle
+.br
+
+.EE
+
+.br
+
+.IP "\fBNP h\fP - Notification pause"
+.IP "" 4
+
+.br
+This command pauses notifications.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+Notifications for the handle are paused until a \fBNR\fP command.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 np 0
+.br
+
+.EE
+
+.br
+
+.IP "\fBNR h\fP - Notification resume"
+.IP "" 4
+
+.br
+This command resumes notifications.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs c 1 nr 0
+.br
+
+.br
+$ rgs c 1 nr 1
+.br
+-5
+.br
+ERROR: unknown handle
+.br
+
+.EE
+
+.br
+.SS SCRIPTS
+.br
+
+.IP "\fBPROC t\fP - Script store"
+.IP "" 4
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+This command stores a script \fBt\fP for later execution.
+
+.br
+If the script is valid a handle (>=0) is returned which is passed
+to the other script commands. On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs proc tag 123 w 4 0 mils 200 w 4 1 mils 300 dcr p0 jp 123
+.br
+0
+.br
+
+.br
+$ rgs proc tag 123 w 4 0 mils 5 w 4 1 mils 5 jmp 12
+.br
+ERROR: script has unresolved tag
+.br
+-63
+.br
+
+.EE
+
+.br
+
+.IP "\fBPROCR h pars\fP - Script run"
+.IP "" 4
+
+.br
+This command runs stored script \fBh\fP passing it up to 10 optional
+parameters.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs proc tag 123 w 4 0 mils 200 w 4 1 mils 300 dcr p0 jp 123
+.br
+0
+.br
+
+.br
+$ rgs procr 0 50 # Run script 0 with parameter 0 of 50.
+.br
+
+.br
+$ rgs procp 0
+.br
+2 44 0 0 0 0 0 0 0 0 0
+.br
+$ rgs procp 0
+.br
+2 37 0 0 0 0 0 0 0 0 0
+.br
+$ rgs procp 0
+.br
+2 10 0 0 0 0 0 0 0 0 0
+.br
+$ rgs procp 0
+.br
+2 5 0 0 0 0 0 0 0 0 0
+.br
+$ rgs procp 0
+.br
+2 2 0 0 0 0 0 0 0 0 0
+.br
+$ rgs procp 0
+.br
+1 -1 0 0 0 0 0 0 0 0 0
+.br
+
+.EE
+
+.br
+
+.IP "\fBPROCU h pars\fP - Script update parameters"
+.IP "" 4
+
+.br
+This command sets the parameters of a stored script \fBh\fP passing
+it up to 10 parameters.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs proc tag 0 hp 18 p0 p1 mils 1000 jmp 0
+.br
+0
+.br
+$ rgs procu 0 50 500000
+.br
+$ rgs procr 0
+.br
+$ rgs procu 0 100
+.br
+$ rgs procu 0 200
+.br
+$ rgs procu 0 200 100000
+.br
+
+.EE
+
+.br
+
+.IP "\fBPROCP h\fP - Script get status and parameters"
+.IP "" 4
+
+.br
+This command returns the status of script \fBh\fP as well as the
+current value of its 10 parameters.
+
+.br
+Upon success the script status and parameters are  returned.
+On error a negative status code will be returned.
+
+.br
+The script status may be one of
+
+.br
+
+.EX
+0   being initialised
+1   ready
+2   running
+3   waiting
+4   ended
+5   halted
+6   failed
+
+.EE
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs procp 0
+.br
+1 0 0 0 0 0 0 0 0 0 0
+.br
+
+.EE
+
+.br
+
+.IP "\fBPROCS h\fP - Script stop"
+.IP "" 4
+
+.br
+This command stops a running script \fBh\fP.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs procs 0
+.br
+
+.br
+$ rgs procs 1
+.br
+-5
+.br
+ERROR: unknown handle
+.br
+
+.EE
+
+.br
+
+.IP "\fBPROCD h\fP - Script delete"
+.IP "" 4
+
+.br
+This command deletes script \fBh\fP.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs procd 1
+.br
+
+.br
+$ rgs procd 1
+.br
+ERROR: unknown handle
+.br
+-5
+.br
+
+.EE
+
+.br
+
+.IP "\fBPARSE t\fP - Script validate"
+.IP "" 4
+
+.br
+Validates the text \fBt\fP of a script without storing the script.
+
+.br
+Upon success nothing is returned.  On error a list of detected
+script errors will be given.
+
+.br
+This command may be used to find script syntax faults.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs parse tag 100 w 22 1 mils 200 w 22 0 mils 800 jmp 100
+.br
+
+.br
+$ rgs parse tag 0 w 22 1 mills 50 w 22 0 dcr p10 jp 99
+.br
+Unknown command: mills
+.br
+Unknown command: 50
+.br
+Bad parameter to dcr
+.br
+Can't resolve tag 99
+.br
+
+.EE
+
+.br
+.SS SERIAL
+.br
+
+.IP "\fBSERO dev b sef\fP - Serial open device"
+.IP "" 4
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+This command opens the serial \fBdev\fP at \fBb\fP bits per second.
+
+.br
+No flags are currently defined.  \fBsef\fP should be set to zero.
+
+.br
+Upon success a handle (>=0) is returned.  On error a negative status code
+will be returned.
+
+.br
+The baud rate must be one of 50, 75, 110, 134, 150,
+200, 300, 600, 1200, 1800, 2400, 4800, 9600, 19200,
+38400, 57600, 115200, or 230400.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs sero ttyAMA0 9600 0
+.br
+0
+.br
+
+.br
+$ rgs sero tty1 38400 0
+.br
+1
+.br
+
+.EE
+
+.br
+
+.IP "\fBSERC h\fP - Serial close device"
+.IP "" 4
+
+.br
+This command closes a serial device previously opened by \fBSERO\fP.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs serc 0 # First close okay.
+.br
+
+.br
+$ rgs serc 0 # Second close gives error.
+.br
+-25
+.br
+ERROR: unknown handle
+.br
+
+.EE
+
+.br
+
+.IP "\fBSERRB \fP - Serial read byte"
+.IP "" 4
+
+.br
+This command returns a byte of data read from the serial
+device.
+
+.br
+Upon success a number between 0 and 255 is returned.
+On error a negative status code will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs serrb 0
+.br
+23
+.br
+$ rgs serrb 0
+.br
+45
+.br
+
+.EE
+
+.br
+
+.IP "\fBSERWB h bv\fP - Serial write byte"
+.IP "" 4
+
+.br
+This command writes a single byte \fBbv\fP to the serial device.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs serwb 0 23
+.br
+$ rgs serwb 0 0xf0
+.br
+
+.EE
+
+.br
+
+.IP "\fBSERR h num\fP - Serial read bytes"
+.IP "" 4
+
+.br
+This command returns up to \fBnum\fP bytes of data read from the
+serial device.
+
+.br
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs serr 0 10
+.br
+5 48 49 128 144 255
+.br
+
+.br
+$ rgs serr 0 10
+.br
+0
+.br
+
+.EE
+
+.br
+
+.IP "\fBSERW h bvs\fP - Serial write bytes"
+.IP "" 4
+
+.br
+This command writes bytes \fBbvs\fP to the serial device.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs serw 0 23 45 67 89
+.br
+
+.EE
+
+.br
+
+.IP "\fBSERDA h\fP - Serial data available"
+.IP "" 4
+
+.br
+This command returns the number of bytes of data available
+to be read from the serial device.
+
+.br
+Upon success the count of bytes available to be read is
+returned (which may be 0).  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs serda 0
+.br
+0
+.br
+
+.EE
+
+.br
+.SS SHELL
+.br
+
+.IP "\fBSHELL name str\fP - Execute a shell command"
+.IP "" 4
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+This command uses the system call to execute a shell script \fBname\fP
+with the given string \fBstr\fP as its parameter.
+
+.br
+Upon success the exit status of the system call is returned.  On error a negative status code will be returned.
+
+.br
+\fBname\fP must exist in a directory named cgi in the daemon's
+configuration directory and must be executable.
+
+.br
+The returned exit status is normally 256 times that set
+by the shell script exit function.  If the script can't
+be found 32512 will be returned.
+
+.br
+The following table gives some example returned statuses.
+
+.br
+
+.EX
+Script exit status   Returned system call status
+1                    256
+5                    1280
+10                   2560
+200                  51200
+script not found     32512
+
+.EE
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+# pass two parameters, hello and world
+.br
+$ rgs shell scr1 hello world
+.br
+256
+.br
+
+.br
+# pass three parameters, hello, string with spaces, and world
+.br
+$ rgs shell scr1 "hello 'string with spaces' world"
+.br
+256
+.br
+
+.br
+# pass one parameter, hello string with spaces world
+.br
+$ rgs shell scr1 "\"hello string with spaces world\""
+.br
+256
+.br
+
+.br
+# non-existent script
+.br
+$ rgs shell scr78 par1
+.br
+32512
+.br
+
+.EE
+
+.br
+.SS SPI
+.br
+
+.IP "\fBSPIO spd spc b spf\fP - SPI open device"
+.IP "" 4
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+Upon success a handle is returned.  On error a negative status code
+will be returned.
+
+.br
+Data will be transferred at \fBb\fP bits per second.  The flags \fBspf\fP
+may be used to modify the default behaviour.
+
+.br
+The flags consists of the least significant 2 bits.
+
+.br
+
+.EX
+1  0
+.br
+m  m
+.br
+
+.EE
+
+.br
+mm defines the SPI mode.
+
+.br
+
+.EX
+Mode POL PHA
+.br
+ 0    0   0
+.br
+ 1    0   1
+.br
+ 2    1   0
+.br
+ 3    1   1
+.br
+
+.EE
+
+.br
+
+.br
+
+.IP "\fBSPIC h\fP - SPI close device"
+.IP "" 4
+
+.br
+This command closes a SPI device previously opened by \fBSPIO\fP.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs spic 1
+.br
+
+.br
+$ rgs spic 1
+.br
+-25
+.br
+ERROR: unknown handle
+.br
+
+.EE
+
+.br
+
+.IP "\fBSPIR h num\fP - SPI read bytes"
+.IP "" 4
+
+.br
+This command returns \fBnum\fP bytes read from the SPI device.
+
+.br
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs spir 0 10 # Read 10 bytes from the SPI device.
+.br
+10 0 0 0 0 0 0 0 0 0 0
+.br
+
+.EE
+
+.br
+
+.IP "\fBSPIW h bvs\fP - SPI write bytes"
+.IP "" 4
+
+.br
+This command writes bytes \fBbvs\fP to the SPI device.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs spiw 0 0x22 0x33 0xcc 0xff
+.br
+
+.EE
+
+.br
+
+.IP "\fBSPIX h bvs\fP - SPI transfer bytes"
+.IP "" 4
+
+.br
+This command writes bytes \fBbvs\fP to the SPI device.
+
+.br
+It returns the same number of bytes read from the device.
+
+.br
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs spix 0 0x22 0x33 0xcc 0xff
+.br
+4 0 0 0 0
+.br
+
+.EE
+
+.br
+.SS UTILITIES
+.br
+
+.IP "\fBLGV \fP - Get lg library version"
+.IP "" 4
+
+.br
+This command returns the lg library version.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs lgv
+.br
+lg_0.1.0.0
+.br
+
+.EE
+
+.br
+
+.IP "\fBSBC \fP - Get SBC's host name"
+.IP "" 4
+
+.br
+This command returns the rgpiod daemon server name.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs sbc
+.br
+venus
+.br
+
+.EE
+
+.br
+
+.IP "\fBCGI cid\fP - Get internal configuration setting"
+.IP "" 4
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+This command returns the value of an internal library
+configuration setting \fBcid\fP.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs cgi 0
+.br
+1
+.br
+
+.EE
+
+.br
+
+.IP "\fBCSI cid v\fP - Set internal configuration setting"
+.IP "" 4
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+This command sets the value of the internal library
+configuration setting \fBcid\fP to \fBv\fP.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs csi 0 3
+.br
+$ rgs cgi 0
+.br
+3
+.br
+
+.EE
+
+.br
+
+.IP "\fBT/TICK \fP - Get nanoseconds since the epoch"
+.IP "" 4
+
+.br
+T and TICK are synonyms.
+
+.br
+This command returns the number of nanoseconds since the epoch
+(start of 1970).
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs t
+.br
+1601838936723095901
+.br
+$ rgs tick
+.br
+1601838940792322758
+.br
+
+.EE
+
+.br
+
+.IP "\fBMICS v\fP - Microseconds delay"
+.IP "" 4
+This command delays execution for \fBv\fP microseconds.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+The main use of this command is expected to be within scripts.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs mics 20      # Delay 20 microseconds.
+.br
+$ rgs mics 1000000 # Delay 1 second.
+.br
+$ rgs mics 5100000 # Delay 5.1 seconds.
+.br
+-24
+.br
+ERROR: bad MICS delay (too large)
+.br
+
+.EE
+
+.br
+
+.IP "\fBMILS v\fP - Milliseconds delay"
+.IP "" 4
+
+.br
+This command delays execution for \fBv\fP milliseconds.
+
+.br
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs mils   2000 # Delay 2 seconds.
+.br
+$ rgs mils 301000 # Delay 301 seconds.
+.br
+-25
+.br
+ERROR: bad MILS delay (too large)
+.br
+
+.EE
+
+.br
+
+.IP "\fBU/USER \fP - Set user"
+.IP "" 4
+
+.br
+U and USER are synonyms.
+
+.br
+This command sets the current user and associated permissions.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs u test1   # set user test1
+.br
+$ rgs user test1 # set user test1
+.br
+$ rgs u testx    # unknown user
+.br
+-95
+.br
+ERROR: bad secret for user
+.br
+
+.EE
+
+.br
+
+.IP "\fBC/SHARE \fP - Set share"
+.IP "" 4
+
+.br
+C and SHARE are synonyms.
+
+.br
+This command sets the share for handles.
+
+.br
+The command has two uses.  Firstly it sets the share id for any
+subsequently created handles on the current command line.  Secondly
+it sets the share id to use to access any previously created handles
+on this or earlier command lines.
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+rgs c 1       # use share id 1
+.br
+rgs share 1   # use share id 1
+.br
+rgs c 0       # switch off sharing
+.br
+rgs share 867 # use share id 867
+.br
+
+.EE
+
+.br
+
+.IP "\fBLCFG \fP - Reload permits configuration file"
+.IP "" 4
+
+.br
+This is a privileged command.  See \fBpermits\fP.
+
+.br
+This command reloads the permits configuration file
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+$ rgs lcfg
+.br
+$ rgs lcfg
+.br
+-93
+.br
+ERROR: no permission to perform action
+.br
+$ rgs lcfg
+.br
+-93
+.br
+ERROR: no permission to perform action
+.br
+
+.EE
+
+.br
+
+.IP "\fBPCD \fP - Print daemon configuration directory"
+.IP "" 4
+
+.br
+This command prints the daemon configuration directory
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+rgs pcd
+.br
+/home/joan/LG/TEST
+.br
+
+.EE
+
+.br
+
+.IP "\fBPWD \fP - Print daemon working directory"
+.IP "" 4
+
+.br
+This command prints the daemon working directory
+
+.br
+
+\fBExample\fP
+.br
+
+.EX
+rgs pwd
+.br
+/home/joan/LG
+.br
+
+.EE
+
+.br
+
+.SH PARAMETERS
+
+.br
+
+.IP "\fBb\fP: baud" 0
+The command expects the baud rate in bits per second for
+the transmission of serial data (I2C/SPI/serial link, waves).
+
+.br
+
+.IP "\fBbit\fP: bit value (0-1)" 0
+The command expects 0 or 1.
+
+.br
+
+.IP "\fBbv\fP: a byte value (0-255)" 0
+The command expects a byte value.
+
+.br
+
+.IP "\fBbvs\fP: byte values (0-255)" 0
+The command expects one or more byte values.
+
+.br
+
+.IP "\fBcid\fP: " 0
+A number identifying an internal configuration item.
+
+.br
+
+.EX
+cid   meaning
+0     debug level
+1     minimum transmission period for PWM and waves
+
+.EE
+
+.br
+
+.IP "\fBcyc\fP: >= 0" 0
+The number of PWM pulses to generate.  A value of 0 means infinite.
+
+.br
+
+.IP "\fBdev\fP: a tty serial device" 0
+The command expects the name of a serial device without the
+leading /dev, e.g.
+
+.br
+
+.EX
+ttyAMA0
+.br
+ttyUSB0
+.br
+tty0
+.br
+serial0
+.br
+
+.EE
+
+.br
+
+.IP "\fBef\fP: GPIO event flags" 0
+
+.br
+The following values may be or'd to form the event flags.
+
+.br
+
+.EX
+Value   Meaning
+1       Rising edge
+2       Falling edge
+3       Both edges
+
+.EE
+
+.br
+
+.IP "\fBfile\fP: a file name" 0
+The file name must match an entry in the [files] section of the
+permits file.
+
+.br
+
+.IP "\fBfrom\fP: 0-2" 0
+Position to seek from \fBFS\fP.
+
+.br
+
+.EX
+    From
+0   start
+1   current position
+2   end
+
+.EE
+
+.br
+
+.IP "\fBg\fP: GPIO" 0
+The command expects a GPIO.
+
+.br
+
+.IP "\fBg*\fP: " 0
+A list of one or more GPIO
+
+.br
+
+.IP "\fBgbits\fP: " 0
+This value is used to set the levels of a GPIO group.
+
+.br
+Bit 0 represents the level of the group leader.
+.br
+Bit 1 represents the level of the second GPIO in the group.
+.br
+Bit g represents the level of GPIO g+1 in the group.
+
+.br
+
+.IP "\fBgc\fP: gpiochip (>=0)" 0
+The command expects a gpiochip number.
+
+.br
+
+.IP "\fBgmask\fP: " 0
+This value is used to select GPIO from a GPIO group.
+
+.br
+Bit 0 of the mask indicates item 1
+.br
+Bit 1 of the mask indicates item 2
+.br
+Bit g of the mask indicates item g+1
+
+.br
+For example suppose the items are GPIO 5, 10, 23, 25, 11.
+
+.br
+Bit 0 of the mask indicates GPIO 5
+.br
+Bit 1 of the mask indicates GPIO 10
+.br
+Bit 2 of the mask indicates GPIO 23
+.br
+Bit 3 of the mask indicates GPIO 25
+.br
+Bit 4 of the mask indicates GPIO 11
+
+.br
+If a bit of the mask is high the corresponding GPIO will be selected.
+
+.br
+E.g. in the above example if the mask has the value 17 GPIO 5 and GPIO
+11 will be selected.
+
+.br
+
+.IP "\fBh\fP: handle (>=0)" 0
+The command expects a handle.
+
+.br
+A handle is a number referencing an object opened by one of \fBFO\fP,
+\fBI2CO\fP, \fBNO\fP, \fBPROC\fP, \fBSERO\fP, \fBSPIO\fP, \fBGO\fP.
+
+.br
+
+.IP "\fBib\fP: I2C bus (>=0)" 0
+The command expects an I2C bus number.
+
+.br
+
+.IP "\fBid\fP: I2C device (0-0x7F)" 0
+The command expects the address of an I2C device.
+
+.br
+
+.IP "\fBif\fP: I2C flags (0)" 0
+The command expects an I2C flags value.  No flags are currently defined.
+
+.br
+
+.IP "\fBk\fP: " 0
+A kind of transmission.
+
+.br
+0 = PWM
+.br
+1 = WAVE
+
+.br
+
+.IP "\fBlf\fP: GPIO line flags" 0
+
+.br
+The following values may be or'd to form the line flags.
+
+.br
+
+.EX
+Value   Meaning
+4       Active low
+8       Open drain
+16      Open source
+
+.EE
+
+.br
+
+.IP "\fBmode\fP: lgFile open mode" 0
+One of the following values.
+
+.br
+
+.EX
+        Value   Meaning
+READ      1     open file for reading
+WRITE     2     open file for writing
+RW        3     open file for reading and writing
+
+.EE
+
+.br
+The following values can be or'd into the mode.
+
+.br
+
+.EX
+         Value   Meaning
+APPEND   4       All writes append data to the end of the file
+CREATE   8       The file is created if it doesn't exist
+TRUNC    16      The file is truncated
+
+.EE
+
+.br
+
+.IP "\fBmoff\fP: >= 0" 0
+The off period for a PWM pulse in microseconds.
+
+.br
+
+.IP "\fBmon\fP: >= 0" 0
+The on period for a PWM pulse in microseconds.
+
+.br
+
+.IP "\fBname\fP: the name of a script" 0
+
+.br
+Only alphanumeric characters, '-' and '_' are allowed in the name.
+
+.br
+
+.IP "\fBnfyh\fP: >= 0" 0
+
+.br
+This associates a notification with a GPIO event.
+
+.br
+
+.IP "\fBnum\fP: maximum number of bytes to return (1-)" 0
+The command expects the maximum number of bytes to return.
+
+.br
+For the I2C and SPI commands the requested number of bytes will always
+be returned.
+
+.br
+For the serial and file commands the smaller of the number of
+bytes available to be read (which may be zero) and \fBnum\fP bytes
+will be returned.
+
+.br
+
+.IP "\fBoff\fP: >= 0" 0
+
+.br
+The offset in microseconds from the nominal PWM pulse start.
+
+.br
+
+.IP "\fBp*\fP: " 0
+One or more triplets of \fBgbits\fP, \fBgmask\fP, and \fBus\fP
+microsecond delay.
+
+.br
+
+.IP "\fBpars\fP: script parameters" 0
+The command expects 0 to 10 numbers as parameters to be passed to the script.
+
+.br
+
+.IP "\fBpat\fP: a file name pattern" 0
+A file path which may contain wildcards.  To be accessible the path
+must match an entry in the [files] section of the permits file.
+
+.br
+
+.IP "\fBpdc\fP: thousandths of %" 0
+PWM duty cycle between 0 % (0) and 100 % (100000).
+
+.br
+
+.IP "\fBpf\fP: thousandths of Hz" 0
+PWM frequency between 0.1 Hz (100) and 10000 Hz (10000000).
+Use  0 for off.
+
+.br
+
+.IP "\fBr\fP: register (0-255)" 0
+The command expects an I2C register number.
+
+.br
+
+.IP "\fBsef\fP: serial flags (32 bits)" 0
+The command expects a flag value.  No serial flags are currently defined.
+
+.br
+
+.IP "\fBsf\fP: Hz (40-500)" 0
+Servo frequency
+
+.br
+
+.IP "\fBspc\fP: SPI channel (>= 0)" 0
+The command expects a SPI channel.
+
+.br
+
+.IP "\fBspd\fP: SPI device (>= 0)" 0
+The command expects a SPO device.
+
+.br
+
+.IP "\fBspf\fP: SPI flags" 0
+See \fBSPIO\fP.
+
+.br
+
+.IP "\fBspw\fP: 0=off, 500-2500 microseconds" 0
+Servo pulse width
+
+.br
+
+.IP "\fBstr\fP: a string" 0
+The command expects a string.
+
+.br
+
+.IP "\fBt\fP: a string" 0
+The command expects a string.
+
+.br
+
+.IP "\fBus\fP: " 0
+The command expects a time interval measured in microseconds.
+
+.br
+
+.IP "\fBv\fP: value" 0
+The command expects a number.
+
+.br
+
+.IP "\fBv*\fP: " 0
+A list of one or more values.
+
+.br
+
+.IP "\fBwv\fP: word value (0-65535)" 0
+The command expects a word value.
+
+.br
+
+.SH SEE ALSO
+
+rgpiod(1), lgpio(3), rgpio(3)

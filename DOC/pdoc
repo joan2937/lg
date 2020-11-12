@@ -1,0 +1,13 @@
+#!/bin/bash
+
+mkdir -p tmp/pydoc
+mkdir -p tmp/body
+
+echo ">lgpio.py"
+pydoc3  lgpio  >tmp/pydoc/lgpio.pydoc
+bin/pymakdoc.py  tmp/pydoc/lgpio.pydoc  local  >tmp/body/py_lgpio.body
+
+echo ">rgpio.py"
+pydoc3  rgpio  >tmp/pydoc/rgpio.pydoc
+bin/pymakdoc.py  tmp/pydoc/rgpio.pydoc  >tmp/body/py_rgpio.body
+

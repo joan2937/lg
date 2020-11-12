@@ -1,0 +1,1982 @@
+INTRO
+
+rgs is a program which allows remote control of the GPIO and
+other functions of Linux SBCs running the rgpiod daemon.
+
+The rgpiod daemon must be running on the SBCs you wish to control.
+
+*Features*
+
+o reading and writing GPIO singly and in groups
+o software timed PWM and waves
+o GPIO callbacks
+o pipe notification of GPIO events
+o I2C wrapper
+o SPI wrapper
+o serial link wrapper
+o simple file handling
+o creating and running scripts on the rgpiod daemon
+
+*Usage*
+
+rgs {command}+
+
+rgs will show the result of the command on screen.
+
+The rgs process returns an exit status (which can be displayed with
+the command echo $?).
+
+...
+RGS_OK            0
+RGS_CONNECT_ERR 255
+RGS_OPTION_ERR  254
+RGS_SCRIPT_ERR  253 
+...
+
+If an error was detected a message will have been written to stderr.
+This is likely to be more informative than the message returned by rgs.
+
+Several commands may be entered on a line.  If present PROC and PARSE must
+be the last command on a line.
+
+*Notes*
+
+rgs does not show the status of successful commands unless the
+command itself returns data.  The status (0) will be returned to
+rgs but will be discarded.
+
+When a command takes a number as a parameter it may be entered as hex
+(precede by 0x), octal (precede by 0), or decimal.
+
+E.g. 23 is 23 decimal, 0x100 is 256 decimal, 070 is 56 decimal.
+
+Some commands can return a variable number of data bytes.  By
+default this data is displayed as decimal.  The rgs -a option
+can be used to force the display as ASCII and the rgs -x
+option can be used to force the display as hex.
+
+E.g. assuming the transmitted serial data is the letters ABCDEONM
+
+...
+$ rgs serr 4 100 # assumes serial data available from handle 4
+8 65 66 67 68 69 79 78 77
+
+$ rgs -a serr 4 100
+8 ABCDEONM
+
+$ rgs -x serr 4 100
+8 41 42 43 44 45 4f 4e 4d
+...
+
+*Permissions*
+
+Generally objects created on the rgpiod daemon exist for the duration of the
+socket connection.
+
+For a Python script this will be for the duration of the script.  For a
+program linked with rgpio this will be for the duration of the program.
+
+For rgs it is the command line.
+
+This means that the following command will achieve little
+
+...
+rgs go 0 # get handle to gpiochip 0
+...
+
+The daemon will delete the handle as soon as the rgs command has finished.
+
+To preserve the handle it must be shared.
+
+A lot of the examples will show the command c 1 (use share id 1).
+This means the handle is preserved and may be used in subsequent commands.
+
+. .
+rgs c 1 go 0 # get and preserve handle to gpiochip 0
+. .
+
+If a command is privileged it is indicated in the notes for the
+command.  The examples given here assume the daemon access control
+system is not active (so any user can use privileged commands).
+
+OVERVIEW
+
+FILES
+
+FO file mode   :: File open
+FC h           :: File close
+
+FR h num       :: File read
+FW h bvs       :: File write
+
+FS h num from  :: File seek
+
+FL pat num     :: File list
+
+GPIO 
+
+GO gc                        :: gpiochip open device
+GC h                         :: gpiochip close device
+
+GIC h                        :: gpiochip information
+GIL h g                      :: gpiochip line information
+
+GMODE h g                    :: GPIO get mode
+
+GSI h g                      :: GPIO claim for input (simple)
+GSIX h lf g                  :: GPIO claim for input
+
+GSO h g                      :: GPIO claim for output (simple)
+GSOX h lf g v                :: GPIO claim for output
+
+GSA h g nfyh                 :: GPIO claim for alerts (simple)
+GSAX h lf ef g nfyh          :: GPIO claim for alerts
+
+GSF h g                      :: GPIO free
+
+GSGI h g*                    :: GPIO group claim for inputs (simple)
+GSGIX h lf g*                :: GPIO group claim for inputs
+
+GSGO h g*                    :: GPIO group claim for outputs (simple)
+GSGOX h lf g* v*             :: GPIO group claim for outputs
+
+GSGF h g                     :: GPIO group free
+
+GR h g                       :: GPIO read
+GW h g v                     :: GPIO write
+
+GGR h g                      :: GPIO group read
+
+GGW h g gbits                :: GPIO group write (simple)
+GGWX h g gbits gmask         :: GPIO group write
+
+GP h g mon moff              :: GPIO tx pulse (simple)
+GPX h g mon moff off cyc     :: GPIO tx pulse
+
+P h g pf pdc                 :: GPIO tx PWM (simple)
+PX h g pf pdc off cyc        :: GPIO tx PWM
+
+S h g spw                    :: GPIO tx servo pulses (simple)
+SX h g spw sf off cyc        :: GPIO tx servo pulses
+
+GWAVE h g p*                 :: GPIO group tx wave
+GBUSY h g k                  :: GPIO or group tx busy 
+GROOM h g k                  :: GPIO or group tx entries
+
+GDEB h g us                  :: GPIO debounce time
+GWDOG h g us                 :: GPIO watchdog time
+
+I2C
+
+I2CO ib id if :: I2C open device
+I2CC h        :: I2C close device
+
+I2CWQ h bit   :: SMB Write Quick: write bit
+
+I2CRS h       :: SMB Read Byte: read byte
+I2CWS h bv    :: SMB Write Byte: write byte
+
+I2CRB h r     :: SMB Read Byte Data: read byte from register
+I2CWB h r bv  :: SMB Write Byte Data: write byte to register
+
+I2CRW h r     :: SMB Read Word Data: read word from register
+I2CWW h r wv  :: SMB Write Word Data: write word to register
+
+I2CRK h r     :: SMB Read Block Data: read data from register
+I2CWK h r bvs :: SMB Write Block Data: write data to register
+
+I2CWI h r bvs :: SMB Write I2C Block Data
+I2CRI h r num :: SMB Read I2C Block Data: read bytes from register
+
+I2CRD h num   :: I2C read device
+I2CWD h bvs   :: I2C write device
+
+I2CPC h r wv  :: SMB Process Call: exchange register with word
+I2CPK h r bvs :: SMB Block Process Call: exchange data bytes with register
+
+I2CZ h bvs    :: I2C zip
+
+NOTIFICATIONS
+
+NO     ::  Notification open
+NC h   ::  Notification close
+NP h   ::  Notification pause
+NR h   ::  Notification resume
+
+SCRIPTS
+
+PROC t       :: Script store
+PROCR h pars :: Script run
+PROCU h pars :: Script update parameters
+PROCP h      :: Script get status and parameters
+PROCS h      :: Script stop
+PROCD h      :: Script delete
+
+PARSE t      :: Script validate
+
+SERIAL
+
+SERO dev b sef :: Serial open device
+SERC h         :: Serial close device
+
+SERRB          :: Serial read byte
+SERWB h bv     :: Serial write byte
+
+SERR h num     :: Serial read bytes
+SERW h bvs     :: Serial write bytes
+
+SERDA h        :: Serial data available
+
+SHELL
+
+SHELL name str :: Execute a shell command
+
+SPI
+
+SPIO spd spc b spf :: SPI open device
+SPIC h             :: SPI close device
+
+SPIR h num         :: SPI read bytes
+SPIW h bvs         :: SPI write bytes
+
+SPIX h bvs         :: SPI transfer bytes
+
+UTILITIES
+
+LGV       :: Get lg library version
+SBC       :: Get SBC's host name
+
+CGI cid   :: Get internal configuration setting
+CSI cid v :: Set internal configuration setting
+
+T/TICK    :: Get nanoseconds since the epoch
+
+MICS v    :: Microseconds delay
+MILS v    :: Milliseconds delay
+
+U/USER    :: Set user
+
+C/SHARE   :: Set share
+
+LCFG      :: Reload permits configuration file
+PCD       :: Print daemon configuration directory
+PWD       :: Print daemon working directory
+
+COMMANDS
+
+*FILES*
+
+FO ::
+This is a privileged command.  See [+permits+].
+
+This function returns a handle to a file opened in a specified mode.
+
+Upon success a handle (>=0) is returned.  On error a negative status code
+will be returned.
+
+The mode may have the following values.
+
+      @ Value @ Meaning
+READ  @   1   @ open file for reading
+WRITE @   2   @ open file for writing
+RW    @   3   @ open file for reading and writing
+
+The following values may be or'd into the mode.
+
+       @ Value @ Meaning
+APPEND @   4   @ All writes append data to the end of the file
+CREATE @   8   @ The file is created if it doesn't exist
+TRUNC  @  16   @ The file is truncated
+
+Newly created files are owned by the user that launched the daemon
+with permissions owner read and write.
+
+...
+ls /ram/*.c
+/ram/q.c     /ram/qdhtxx.c  /ram/q-errcod.c  /ram/q_t1.c
+/ram/q-c1.c  /ram/Q-err.c   /ram/q-group.c   /ram/q_t2.c
+
+$ rgs c 1 fo /ram/q.c 1  # read access
+1
+
+$ rgs c 1 fo /ram/new.c 1 # file does not exist
+-58
+ERROR: file open failed
+
+$rgs c 1 fo /ram/new.c 9 # can not create file
+-67
+ERROR: no permission to access file
+...
+
+FC::
+This command closes a file previously opened by [*FO*].
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs c 1 fc 1 # First close okay.
+
+$ rgs c 1 fc 1 # Second fails.
+-5
+ERROR: unknown handle
+...
+
+
+FR::
+This command returns up to [#num#] bytes of data read from the file.
+
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+...
+$ rgs c 1 fr 0 10
+5 48 49 128 144 255
+
+$ rgs c 1 fr 0 10
+0
+...
+
+FW::
+This command writes [#bvs#] bytes to the file.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs c 1 fw 0 23 45 67 89
+...
+
+FS ::
+This command seeks to a position within the file.
+
+The number of bytes to move is [#num#].  Positive offsets
+move forward, negative offsets backwards.  The move start
+position is determined by [#from#] as follows.
+
+  @ From
+0 @ start
+1 @ current position
+2 @ end
+
+Upon success the new byte position within the file (>=0) is
+returned.  On error a negative status code will be returned.
+
+...
+$ rgs c 1 fs 0 200 0 # Seek to start of file plus 200
+200
+
+$ rgs c 1 fs 0 0 1 # Return current position
+200
+
+$ rgs c 1 fs 0 0 2 # Seek to end of file, return size
+296235
+...
+
+FL ::
+This command returns a list of the files matching [#pat#]. Up
+to [#num#] bytes may be returned.
+
+Upon success the count of returned bytes followed by the matching
+files is returned.  On error a negative status code will be returned.
+
+A newline (0x0a) character separates each file name.
+
+This is a privileged command.  See [+permits+].
+
+...
+$ rgs -a fl "/sys/bus/w1/devices/28*/w1_slave" 5000
+90 /sys/bus/w1/devices/28-000005d34cd2/w1_slave
+/sys/bus/w1/devices/28-001414abbeff/w1_slave
+
+$ rgs -a fl "/sys/bus/*" 5000
+ERROR: no permission to access file
+-67
+...
+
+*GPIO*
+
+GO ::
+
+This is a privileged command.  See [+permits+].
+
+This command opens a gpiochip.
+
+...
+$ rgs c 1 go 0 # open /dev/gpiochip0
+1
+$ rgs c 1 go 23 # try to open /dev/gpiochip23
+-78
+ERROR: can not open gpiochip
+...
+
+GC ::
+
+This command closes a gpiochip previously opened by [*GO*].
+
+...
+$ rgs c 1 gc 1 # first close ok
+$ rgs c 1 gc 1 # already closed
+-5
+ERROR: unknown handle
+...
+
+GIC ::
+
+This command gets information for an opened gpiochip.  In particular
+it gets the number of GPIO on the gpiochip, its name, and its usage.
+
+...
+$ rgs c 1 gic 1
+54 "gpiochip0" "pinctrl-bcm2835"
+...
+
+GIL ::
+
+This command gets information for GPIO [#g#] of an opened gpiochip.
+In particular it gets the GPIO number, kernel usage flags, its user,
+and its purpose.
+
+The usage flags are bits.
+
+Bit value @ Bit meaning
+1         @ GPIO in use by the kernel
+2         @ GPIO is an output
+4         @ GPIO is active low
+8         @ GPIO is open drain
+16        @ GPIO is open source
+
+The user and purpose fields are filled in by the software which has
+claimed the GPIO and may be blank.
+
+...
+$ for ((i=2; i<10; i++)); do rgs c 1 gil 1 $i; done
+2 0 "" ""
+3 0 "" ""
+4 11 "" "onewire.0"
+5 0 "" ""
+6 0 "" ""
+7 7 "" "spi0 CS1"
+8 7 "" "spi0 CS0"
+9 0 "" ""
+...
+
+GMODE ::
+
+This command gets the mode for GPIO [#g#] of an opened gpiochip.
+
+Mode bit @ Value @ Meaning
+0        @  1    @ Kernel: In use by the kernel
+1        @  2    @ Kernel: Output
+2        @  4    @ Kernel: Active low
+3        @  8    @ Kernel: Open drain
+4        @ 16    @ Kernel: Open source
+5        @ 32    @ Kernel: ---
+6        @ 64    @ Kernel: ---
+7        @ 128   @ Kernel: ---
+8        @ 256   @ LG: Input
+9        @ 512   @ LG: Output
+10       @ 1024  @ LG: Alert
+11       @ 2048  @ LG: Group
+12       @ 4096  @ LG: ---
+13       @ 8192  @ LG: ---
+14       @ 16384 @ LG: ---
+15       @ 32768 @ LG: ---
+
+GSI ::
+
+This command claims GPIO [#g#] for input.
+
+...
+$ rgs c 1 gsi 1 23 # claim GPIO 23 for input.
+...
+
+GSIX ::
+
+This command claims GPIO [#g#] for input.
+
+The line flags [#lf#] may be used to set the GPIO
+as active low, open drain, or open source.
+
+...
+$ rgs c 1 gsi 1 0 23 # claim GPIO 23 for input.
+...
+
+GSO ::
+
+This command claims GPIO [#g#] for output.
+
+
+The GPIO will be initialised low.
+
+...
+$ rgs c 1 gso 1 25 # claim GPIO 25 for low output.
+...
+
+GSOX ::
+
+This command claims GPIO [#g#] for output.
+
+The line flags [#lf#] may be used to set the GPIO
+as active low, open drain, or open source.
+
+If [#v#] is zero the GPIO will be initialised low.  If any other
+value is used the GPIO will be initialised high.
+
+...
+$ rgs c 1 gso 1 0 25 # claim GPIO 25 for high output.
+...
+
+GSA ::
+
+This command claims GPIO [#g#] for alerts.
+
+Alerts will be generated for both edges.
+
+The alerts will be sent to a previously opened notification pipe [#nfyh#].
+
+GSAX ::
+
+This command claims GPIO [#g#] for alerts.
+
+The line flags [#lf#] may be used to set the GPIO
+as active low, open drain, or open source.
+
+The event flags [#ef#] specify whether alerts should be
+generated on a rising edge, falling edge, or both edges.
+
+The alerts will be sent to a previously opened notification pipe [#nfyh#].
+
+GSF ::
+
+This command releases GPIO [#g#].  The GPIO
+may now be claimed by another user or for a different purpose.
+
+GSGI ::
+
+This command claims a group of GPIO for inputs.
+
+[#g*#] is a list of one or more GPIO.  The first GPIO in the list is
+called the group leader and is used to reference the group as a whole.
+
+...
+$ rgs c 1 gsgi 1 16 17 18 19 20 21
+...
+
+GSGIX ::
+
+This command claims a group of GPIO for inputs.  All the GPIO
+share the same line flag setting.
+
+The line flags [#lf#] may be used to set the GPIO
+as active low, open drain, or open source.
+
+[#g*#] is a list of one or more GPIO.  The first GPIO in the list is
+called the group leader and is used to reference the group as a whole.
+
+...
+$ rgs c 1 gsgix 1 0 16 17 18 19 20 21
+...
+
+GSGO ::
+
+This command claims a group of GPIO for outputs.
+
+[#g*#] is a list of one or more GPIO.  The first GPIO in the list is
+called the group leader and is used to reference the group as a whole.
+
+The GPIO will be initialised low.
+
+...
+$ rgs c 1 gsgo 1 22 23 24 25
+...
+
+GSGOX ::
+
+This command claims a group of GPIO for outputs.  All the GPIO
+and share the same line flag setting.
+
+The line flags [#lf#] may be used to set the GPIO
+as active low, open drain, or open source.
+
+[#g*#] is a list of one or more GPIO.  The first GPIO in the list is
+called the group leader and is used to reference the group as a whole.
+
+[#v*#] is a list of initialisation values for the GPIO. If a value is
+zero the corresponding GPIO will be initialised low.  If any other
+value is used the corresponding GPIO will be initialised high.
+
+...
+$ rgs c 1 gsgox 1 0 22 23 24 25 1 1 1 1
+...
+
+GSGF ::
+
+This command releases the group of GPIO identified by the group
+leader [#g#].  The GPIO
+may now be claimed by another user or for a different purpose.
+
+...
+rgs c 1 gsgf 1 22
+...
+
+GR ::
+
+This command returns the current value (0 or 1) of GPIO [#g#].
+
+This command will work for any claimed GPIO (even if a member
+of a group).  For an output GPIO the value returned
+will be that last written to the GPIO.
+
+...
+$ rgs c 1 gr 1 22
+1
+...
+
+GW ::
+
+This command sets the  value (0 or 1) of GPIO [#g#].
+
+This command will work for any GPIO claimed as an output
+(even if a member of a group).
+
+If [#v#] is zero the GPIO will be set low.
+If any other value is used the GPIO will be set high.
+
+GGR ::
+
+This command reads a group of GPIO identified by group leader [#g#].
+
+This command will work for an output group as well as an input
+group.  For an output group the value returned
+will be that last written to the group GPIO.  Note that this command
+will also work on an individual GPIO claimed as an input or output as
+that is treated as a group with one member.
+
+Two values are returned.  The first is the group size (the number of
+GPIO in the group).  The second is the group bits as a decimal value.
+
+Bit 0 is the level of the group leader. 
+Bit 1 is the level of the second GPIO in the group. 
+Bit g is the level of GPIO g+1 in the group.
+
+...
+$ rgs c 1 gsgi 1 0 16 17 18 19 20 21
+$ rgs c 1 ggr 1 16
+6 49 # six GPIO, group leader (16) high, 17-19 low, 20-21 high
+...
+
+GGW ::
+
+This command writes a group of GPIO identified by group leader [#g#].
+
+The values of each GPIO of the group are set according to the bits 
+of [#gbits#].
+
+Bit 0 sets the level of the group leader. 
+Bit 1 sets the level of the second GPIO in the group. 
+Bit g sets the level of GPIO g+1 in the group.
+
+...
+$ rgs c 1 ggr 1 22
+4 15
+$ rgs c 1 ggw 1 22 5
+$ rgs c 1 ggr 1 22
+4 5
+$ rgs c 1 ggw 1 22 10
+$ rgs c 1 ggr 1 22
+4 10
+...
+
+GGWX ::
+
+This command writes a group of GPIO identified by group leader [#g#].
+
+The values of each GPIO of the group are set according to the bits 
+of [#gbits#].
+
+Bit 0 sets the level of the group leader. 
+Bit 1 sets the level of the second GPIO in the group. 
+Bit g sets the level of GPIO g+1 in the group.
+
+However this may be modified by the [#gmask#].  A GPIO is only
+updated if the corresponding bit in the mask is 1.
+
+...
+$ rgs c 1 ggr 1 22
+4 15
+$ rgs c 1 ggw 1 22 5 15
+$ rgs c 1 ggr 1 22
+4 5
+$ rgs c 1 ggw 1 22 10 0
+$ rgs c 1 ggr 1 22
+4 5
+$ rgs c 1 ggw 1 22 10 15
+$ rgs c 1 ggr 1 22
+4 10
+...
+
+GP ::
+
+This command starts software timed pulses on GPIO [#g#] .
+
+Each cycle consists of [#mon#] microseconds of GPIO high
+followed by [#moff#] microseconds of GPIO low.
+
+PWM is characterised by two values, its frequency (number of cycles
+per second) and its duty cycle (percentage of high time per cycle).
+
+The set frequency will be 1000000 / (mon + moff) Hz.
+
+The set duty cycle will be mon / (mon + moff) * 100 %.
+
+E.g. if mon is 50 and moff is 100 the frequency will be 6666.67 Hz
+and the duty cycle will be 33.33 %.
+
+GPX ::
+
+This command starts software timed pulses on GPIO [#g#] .
+
+[#cyc#] cycles are transmitted (0 means infinite).  Each cycle
+consists of [#mon#] microseconds of GPIO high followed by [#moff#]
+microseconds of GPIO low.
+
+PWM is characterised by two values, its frequency (number of cycles
+per second) and its duty cycle (percentage of high time per cycle).
+
+The set frequency will be 1000000 / (mon + moff) Hz.
+
+The set duty cycle will be mon / (mon + moff) * 100 %.
+
+E.g. if mon is 50 and moff is 100 the frequency will be 6666.67 Hz
+and the duty cycle will be 33.33 %.
+
+[#off#] is a microsecond offset from the natural start of the PWM cycle.
+
+For instance if the PWM frequency is 10 Hz the natural start of each cycle
+is at seconds 0, then 0.1, 0.2, 0.3 etc.  In this case if the offset is
+20000 microseconds the cycle will start at seconds 0.02, 0.12, 0.22, 0.32 etc.
+
+Another command may be issued to the GPIO before the last has finished.
+
+If the last command had infinite cycles ([#cyc#] of 0) then it will be replaced
+by the new settings at the end of the current cycle.  Otherwise it will be
+replaced by the new settings at the end of [#cyc#] cycles.
+
+Multiple pulse settings may be queued in this way.
+
+P::
+
+This command starts software timed PWM on GPIO [#g#] .
+
+PWM is characterised by two values, its frequency (number of cycles
+per second) and its duty cycle (percentage of high time per cycle).
+
+PX::
+
+This command starts software timed PWM on GPIO [#g#] .
+
+PWM is characterised by two values, its frequency (number of cycles
+per second) and its duty cycle (percentage of high time per cycle).
+
+[#off#] is a microsecond offset from the natural start of the PWM cycle.
+
+For instance if the PWM frequency is 10 Hz the natural start of each cycle
+is at seconds 0, then 0.1, 0.2, 0.3 etc.  In this case if the offset is
+20000 microseconds the cycle will start at seconds 0.02, 0.12, 0.22, 0.32 etc.
+
+Another PWM command may be issued to the GPIO before the last has finished.
+
+If the last PWM had infinite cycles ([#cyc#] of 0) then it will be replaced
+by the new settings at the end of the current cycle.  Otherwise it will be
+replaced by the new settings at the end of [#cyc#] cycles.
+
+Multiple PWM settings may be queued in this way.
+
+S ::
+
+This command starts software timed servo pulses on GPIO [#g#] .
+
+I would only use software timed servo pulses for testing purposes.  The
+timing jitter will cause the servo to fidget.  This may cause it to
+overheat and wear out prematurely.
+
+SX ::
+
+This command starts software timed servo pulses on GPIO [#g#] .
+
+I would only use software timed servo pulses for testing purposes.  The
+timing jitter will cause the servo to fidget.  This may cause it to
+overheat and wear out prematurely.
+
+Another servo command may be issued to the GPIO before the last has finished.
+
+If the last command had infinite cycles ([#cyc#] of 0) then it will be replaced
+by the new settings at the end of the current cycle.  Otherwise it will be
+replaced by the new settings at the end of [#cyc#] cycles.
+
+Multiple servo settings may be queued in this way.
+
+GWAVE ::
+
+This command starts a wave on GPIO group [#g#] .
+
+[#p#] is a series of pulses to be transmitted on the GPIO group.
+
+Each pulse is defined by the following triplet:
+
+[#gbits#] the levels to set for the selected GPIO 
+[#gmask#] the GPIO to select 
+[#us#]    the delay in microseconds before the next pulse
+
+Another wave command may be issued to the GPIO group before the
+last has finished transmission.
+
+Multiple waves may be queued in this way.
+
+GBUSY ::
+
+This command checks to see if a specified kind [#k#] of transmission
+is ongoing on a GPIO or GPIO group [#g#] .
+
+The command returns 1 if transmission is ongoing, otherwise 0.
+
+GROOM ::
+
+This returns the number of slots there are to queue further
+transmissions of a specified kind [#k#] in the tx queue for
+GPIO or GPIO group [#g#].
+
+The command returns the number of free slots (0 for no free slots).
+
+GDEB ::
+
+This command sets the debounce time for GPIO [#g#] to [#us#] microseconds.
+
+This command is only effective when the GPIO is being used as
+a source of alerts.
+
+Any level changes shorter than the debounce setting will be
+discarded, i.e. they will not generate an alert.
+
+Reported level changes will be timestamped [#us#] microseconds
+after the level change.
+
+GWDOG ::
+
+This command sets the watchdog time for GPIO [#g#]
+ to [#us#] microseconds.
+
+This only affects alerts.
+
+A watchdog alert will be sent if no edge alert has been issued
+for that GPIO in the previous watchdog microseconds.
+
+Note that only one watchdog alert will be sent per stream of
+edge alerts.  The watchdog is reset by the sending of a new
+edge alert.
+
+The level is set to 2 for a watchdog alert.
+
+*I2C*
+
+I2CO ::
+
+This is a privileged command.  See [+permits+].
+
+This command returns a handle to access device [#id#] on I2C bus [#ib#].
+The device is opened with flags [#if#].
+
+No flags are currently defined.  The parameter [#if#] should be 0.
+
+Upon success the next free handle (>=0) is returned.  On error a
+negative status code will be returned.
+
+...
+$ rgs c 1 i2co 1 0x70 0 # Bus 1, device 0x70, flags 0.
+0
+
+$ rgs c 1 i2co 1 0x53 0 # Bus 1, device 0x53, flags 0.
+1
+...
+
+I2CC ::
+This command closes an I2C device previously opened by [*I2CO*].
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs c 1 i2cc 0 # First close okay.
+
+$ rgs c 1 i2cc 0 # Second fails.
+-25
+ERROR: unknown handle
+...
+
+I2CWQ ::
+
+This command writes a single [#bit#] to the I2C device.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs c 1 i2cwq 0 1
+...
+
+I2CRS ::
+
+This command returns a single byte read from the I2C device.
+
+Upon success a value between 0 and 255 will be returned.  On error
+a negative status code will be returned.
+
+...
+$ rgs c 1 i2crs 0
+0
+...
+
+I2CWS ::
+
+This command writes a single byte [#bv#] to the I2C device.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs c 1 i2cws 0 0x12
+
+$ rgs c 1 i2cws 0 0xff
+-82
+ERROR: I2C write failed
+...
+
+I2CRB ::
+
+This command returns a single byte read from register [#r#] of
+the I2C device.
+
+Upon success a value between 0 and 255 will be returned.  On error
+a negative status code will be returned.
+
+...
+$ rgs c 1 i2crb 0 0
+6
+...
+
+I2CWB ::
+
+This command writes a single byte [#bv#] to register [#r#] of the
+I2C device.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs c 1 i2cwb 0 10 0x54
+...
+
+I2CRW ::
+
+This command returns a single 16 bit word read from register [#r#] of
+the I2C device.
+
+Upon success a value between 0 and 65535 will be returned.  On error
+a negative status code will be returned.
+
+...
+$ rgs c 1 i2crw 0 0
+6150
+...
+
+I2CWW ::
+
+This command writes a single 16 bit word [#wv#] to register [#r#] of
+the I2C device.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs c 1 i2cww 0 0 0xffff
+...
+
+I2CRK ::
+
+This command returns between 1 and 32 bytes read from register [#r#] of
+the I2C device.
+
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+The number of bytes of returned data is specific to the device and
+register.
+
+...
+$ rgs c 1 i2crk 0 0
+6 0 0 0 0 0 0
+
+$ rgs c 1 i2crk 0 1
+24 0 0 0 0 0 0 0 0 0 0 0 0 120 222 105 215 128 87 195 217 0 0 0 0
+...
+
+I2CWK ::
+
+This command writes between 1 and 32 bytes [#bvs#] to register [#r#] of
+the I2C device.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+rgs c 1 i2cwk 0 4 0x01 0x04 0xc0
+...
+
+I2CRI ::
+
+This command returns [#num#] bytes from register [#r#] of
+the I2C device.
+
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+The parameter [#num#] may be 1-32.
+
+...
+$ rgs c 1 i2cri 0 0 16
+16 237 155 155 155 155 155 155 155 155 155 155 155 155 155 155 155
+...
+
+I2CWI ::
+
+This command writes between 1 and 32 bytes [#bvs#] to register [#r#] of
+the I2C device.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs c 1 i2cwi 0 4 0x01 0x04 0xc0
+...
+
+I2CRD ::
+
+This command returns [#num#] bytes read from the I2C device.
+
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+This command operates on the raw I2C device.  The maximum value of the
+parameter [#num#] is dependent on the I2C drivers and the device
+itself. rgs imposes a limit of about 8000 bytes.
+
+...
+$ rgs c 1 i2crd 0 16
+16 6 24 0 0 0 0 0 0 0 0 0 0 0 0 32 78
+...
+
+I2CWD ::
+
+This command writes a block of bytes [#bvs#] to the I2C device.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+The number of bytes which may be written in one transaction is
+dependent on the I2C drivers and the device itself.  rgs imposes
+a limit of about 500 bytes.
+
+This command operates on the raw I2C device.
+
+...
+$ rgs c 1 i2cwd 0 0x01 0x02 0x03 0x04
+...
+
+I2CPC ::
+This command writes [#wv#] to register [#r#] of the I2C device
+and returns a 16-bit word read from the device.
+
+Upon success a value between 0 and 65535 will be returned.  On error
+a negative status code will be returned.
+
+...
+$ rgs c 1 i2cpc 0 37 43210
+39933
+
+$ rgs c 1 i2cpc 0 256 43210
+ERROR: bad i2c/spi/ser parameter
+-81
+...
+
+I2CPK ::
+
+This command writes the data bytes [#bvs#] to register [#r#] of
+the I2C device and returns a device specific number of bytes.
+
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+...
+$ rgs c 1 i2cpk 0 0 0x11 0x12
+6 0 0 0 0 0 0
+...
+
+I2CZ ::
+This command executes a sequence of I2C operations.  The
+operations to be performed are specified by the contents of [#bvs#]
+which contains the concatenated command codes and associated data.
+
+The following command codes are supported:
+
+Name    @ Cmd & Data @ Meaning
+End     @ 0          @ No more commands
+Escape  @ 1          @ Next P is two bytes
+Address @ 2 P        @ Set I2C address to P
+Flags   @ 3 lsb msb  @ Set I2C flags to lsb + (msb << 8)
+Read    @ 4 P        @ Read P bytes of data
+Write   @ 5 P ...    @ Write P bytes of data
+
+The address, read, and write commands take a parameter P.
+Normally P is one byte (0-255).  If the command is preceded by
+the Escape command then P is two bytes (0-65535, least significant
+byte first).
+
+The address defaults to that associated with the handle [#h#].
+The flags default to 0.  The address and flags maintain their
+previous value until updated.
+
+...
+Set address 0x53, write 0x32, read 6 bytes
+Set address 0x1E, write 0x03, read 6 bytes
+Set address 0x68, write 0x1B, read 8 bytes
+End
+
+2 0x53  5 1 0x32  4 6
+2 0x1E  5 1 0x03  4 6
+2 0x68  5 1 0x1B  4 8
+0
+...
+
+*NOTIFICATIONS*
+
+NO ::
+
+This is a privileged command.  See [+permits+].
+
+This command requests a free notification handle.
+
+A notification is a method for being notified of GPIO state changes via a pipe.
+
+Upon success the command returns a handle greater than or equal to zero.
+On error a negative status code will be returned.
+
+The pipes are created in the daemon's working directory (the command
+[#pwd#] will show the working directory).
+
+Notifications for handle g will be available at the pipe named lgd-nfyx
+(where g is the handle number).
+
+E.g. if the command returns 15 then the notifications must be read
+from lgd-nfy15.
+
+...
+$ rgs c 1 no
+0
+...
+
+NC ::
+
+This command closes a notification previously opened by [*NO*].
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs c 1 nc 0 # First call succeeds.
+
+$ rgs c 1 nc 1 # Second call fails.
+-5
+ERROR: unknown handle
+...
+
+NP ::
+
+This command pauses notifications.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+Notifications for the handle are paused until a [#NR#] command.
+
+...
+$ rgs c 1 np 0
+...
+
+NR ::
+
+This command resumes notifications.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs c 1 nr 0
+
+$ rgs c 1 nr 1
+-5
+ERROR: unknown handle
+...
+
+*SCRIPTS*
+
+PROC ::
+
+This is a privileged command.  See [+permits+].
+
+This command stores a script [#t#] for later execution.
+
+If the script is valid a handle (>=0) is returned which is passed
+to the other script commands. On error a negative status code
+will be returned.
+
+...
+$ rgs proc tag 123 w 4 0 mils 200 w 4 1 mils 300 dcr p0 jp 123
+0
+
+$ rgs proc tag 123 w 4 0 mils 5 w 4 1 mils 5 jmp 12
+ERROR: script has unresolved tag
+-63
+...
+
+PROCR ::
+
+This command runs stored script [#h#] passing it up to 10 optional
+parameters.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs proc tag 123 w 4 0 mils 200 w 4 1 mils 300 dcr p0 jp 123
+0
+
+$ rgs procr 0 50 # Run script 0 with parameter 0 of 50.
+
+$ rgs procp 0
+2 44 0 0 0 0 0 0 0 0 0
+$ rgs procp 0
+2 37 0 0 0 0 0 0 0 0 0
+$ rgs procp 0
+2 10 0 0 0 0 0 0 0 0 0
+$ rgs procp 0
+2 5 0 0 0 0 0 0 0 0 0
+$ rgs procp 0
+2 2 0 0 0 0 0 0 0 0 0
+$ rgs procp 0
+1 -1 0 0 0 0 0 0 0 0 0
+...
+
+PROCU ::
+
+This command sets the parameters of a stored script [#h#] passing
+it up to 10 parameters.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs proc tag 0 hp 18 p0 p1 mils 1000 jmp 0
+0
+$ rgs procu 0 50 500000
+$ rgs procr 0
+$ rgs procu 0 100
+$ rgs procu 0 200
+$ rgs procu 0 200 100000
+...
+
+PROCP ::
+
+This command returns the status of script [#h#] as well as the
+current value of its 10 parameters.
+
+Upon success the script status and parameters are  returned.
+On error a negative status code will be returned.
+
+The script status may be one of
+
+0 @ being initialised
+1 @ ready
+2 @ running
+3 @ waiting
+4 @ ended
+5 @ halted
+6 @ failed
+
+...
+$ rgs procp 0
+1 0 0 0 0 0 0 0 0 0 0
+...
+
+PROCS ::
+
+This command stops a running script [#h#].
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs procs 0
+
+$ rgs procs 1
+-5
+ERROR: unknown handle
+...
+
+PROCD ::
+
+This command deletes script [#h#].
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs procd 1
+
+$ rgs procd 1
+ERROR: unknown handle
+-5
+...
+
+PARSE ::
+
+Validates the text [#t#] of a script without storing the script.
+
+Upon success nothing is returned.  On error a list of detected
+script errors will be given.
+
+This command may be used to find script syntax faults.
+
+...
+$ rgs parse tag 100 w 22 1 mils 200 w 22 0 mils 800 jmp 100
+
+$ rgs parse tag 0 w 22 1 mills 50 w 22 0 dcr p10 jp 99
+Unknown command: mills
+Unknown command: 50
+Bad parameter to dcr
+Can't resolve tag 99
+...
+
+*SERIAL*
+
+SERO::
+
+This is a privileged command.  See [+permits+].
+
+This command opens the serial [#dev#] at [#b#] bits per second.
+
+No flags are currently defined.  [#sef#] should be set to zero.
+
+Upon success a handle (>=0) is returned.  On error a negative status code
+will be returned.
+
+The baud rate must be one of 50, 75, 110, 134, 150,
+200, 300, 600, 1200, 1800, 2400, 4800, 9600, 19200,
+38400, 57600, 115200, or 230400.
+
+...
+$ rgs sero ttyAMA0 9600 0
+0
+
+$ rgs sero tty1 38400 0
+1
+...
+
+SERC ::
+
+This command closes a serial device previously opened by [*SERO*].
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs serc 0 # First close okay.
+
+$ rgs serc 0 # Second close gives error.
+-25
+ERROR: unknown handle
+...
+
+SERRB::
+
+This command returns a byte of data read from the serial
+device.
+
+Upon success a number between 0 and 255 is returned.
+On error a negative status code will be returned.
+
+...
+$ rgs serrb 0
+23
+$ rgs serrb 0
+45
+...
+
+SERWB::
+
+This command writes a single byte [#bv#] to the serial device.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs serwb 0 23
+$ rgs serwb 0 0xf0
+...
+
+SERR::
+
+This command returns up to [#num#] bytes of data read from the
+serial device.
+
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+...
+$ rgs serr 0 10
+5 48 49 128 144 255
+
+$ rgs serr 0 10
+0
+...
+
+SERW::
+
+This command writes bytes [#bvs#] to the serial device.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs serw 0 23 45 67 89
+...
+
+SERDA ::
+
+This command returns the number of bytes of data available
+to be read from the serial device.
+
+Upon success the count of bytes available to be read is
+returned (which may be 0).  On error a negative status code
+will be returned.
+
+...
+$ rgs serda 0
+0
+...
+
+*SHELL*
+
+SHELL ::
+
+This is a privileged command.  See [+permits+].
+
+This command uses the system call to execute a shell script [#name#]
+with the given string [#str#] as its parameter.
+
+Upon success the exit status of the system call is returned.  On error a negative status code will be returned.
+
+[#name#] must exist in a directory named cgi in the daemon's
+configuration directory and must be executable.
+
+The returned exit status is normally 256 times that set
+by the shell script exit function.  If the script can't
+be found 32512 will be returned.
+
+The following table gives some example returned statuses.
+
+Script exit status @ Returned system call status
+1                  @ 256
+5                  @ 1280
+10                 @ 2560
+200                @ 51200
+script not found   @ 32512
+
+...
+# pass two parameters, hello and world
+$ rgs shell scr1 hello world
+256
+
+# pass three parameters, hello, string with spaces, and world
+$ rgs shell scr1 "hello 'string with spaces' world"
+256
+
+# pass one parameter, hello string with spaces world
+$ rgs shell scr1 "\"hello string with spaces world\""
+256
+
+# non-existent script
+$ rgs shell scr78 par1
+32512
+...
+
+*SPI*
+
+SPIO ::
+
+This is a privileged command.  See [+permits+].
+
+Upon success a handle is returned.  On error a negative status code
+will be returned.
+
+Data will be transferred at [#b#] bits per second.  The flags [#spf#]
+may be used to modify the default behaviour.
+
+The flags consists of the least significant 2 bits.
+
+. .
+1  0
+m  m
+. .
+
+mm defines the SPI mode.
+
+. .
+Mode POL PHA
+ 0    0   0
+ 1    0   1
+ 2    1   0
+ 3    1   1
+. .
+
+
+SPIC ::
+
+This command closes a SPI device previously opened by [*SPIO*].
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs spic 1
+
+$ rgs spic 1
+-25
+ERROR: unknown handle
+...
+
+SPIR ::
+
+This command returns [#num#] bytes read from the SPI device.
+
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+...
+$ rgs spir 0 10 # Read 10 bytes from the SPI device.
+10 0 0 0 0 0 0 0 0 0 0
+...
+
+SPIW ::
+
+This command writes bytes [#bvs#] to the SPI device.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs spiw 0 0x22 0x33 0xcc 0xff
+...
+
+SPIX::
+
+This command writes bytes [#bvs#] to the SPI device.
+
+It returns the same number of bytes read from the device.
+
+Upon success the count of returned bytes followed by the bytes themselves
+is returned.  On error a negative status code will be returned.
+
+...
+$ rgs spix 0 0x22 0x33 0xcc 0xff
+4 0 0 0 0
+...
+
+*UTILITIES*
+
+LGV ::
+
+This command returns the lg library version.
+
+...
+$ rgs lgv
+lg_0.1.0.0
+...
+
+SBC ::
+
+This command returns the rgpiod daemon server name.
+
+...
+$ rgs sbc
+venus
+...
+
+CGI::
+
+This is a privileged command.  See [+permits+].
+
+This command returns the value of an internal library
+configuration setting [#cid#].
+
+...
+$ rgs cgi 0
+1
+...
+
+CSI::
+
+This is a privileged command.  See [+permits+].
+
+This command sets the value of the internal library
+configuration setting [#cid#] to [#v#].
+
+...
+$ rgs csi 0 3
+$ rgs cgi 0
+3
+...
+
+T/TICK ::
+
+T and TICK are synonyms.
+
+This command returns the number of nanoseconds since the epoch
+(start of 1970).
+
+...
+$ rgs t
+1601838936723095901
+$ rgs tick
+1601838940792322758
+...
+
+MICS ::
+This command delays execution for [#v#] microseconds.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+The main use of this command is expected to be within scripts.
+
+...
+$ rgs mics 20      # Delay 20 microseconds.
+$ rgs mics 1000000 # Delay 1 second.
+$ rgs mics 5100000 # Delay 5.1 seconds.
+-24
+ERROR: bad MICS delay (too large)
+...
+
+MILS ::
+
+This command delays execution for [#v#] milliseconds.
+
+Upon success nothing is returned.  On error a negative status code
+will be returned.
+
+...
+$ rgs mils   2000 # Delay 2 seconds.
+$ rgs mils 301000 # Delay 301 seconds.
+-25
+ERROR: bad MILS delay (too large)
+...
+
+U/USER ::
+
+U and USER are synonyms.
+
+This command sets the current user and associated permissions.
+
+...
+$ rgs u test1   # set user test1
+$ rgs user test1 # set user test1
+$ rgs u testx    # unknown user
+-95
+ERROR: bad secret for user
+...
+
+C/SHARE :: Set share
+
+C and SHARE are synonyms.
+
+This command sets the share for handles.
+
+The command has two uses.  Firstly it sets the share id for any
+subsequently created handles on the current command line.  Secondly
+it sets the share id to use to access any previously created handles
+on this or earlier command lines.
+
+...
+rgs c 1       # use share id 1
+rgs share 1   # use share id 1
+rgs c 0       # switch off sharing
+rgs share 867 # use share id 867
+...
+
+LCFG ::
+
+This is a privileged command.  See [+permits+].
+
+This command reloads the permits configuration file
+
+...
+$ rgs lcfg
+$ rgs lcfg
+-93
+ERROR: no permission to perform action
+$ rgs lcfg
+-93
+ERROR: no permission to perform action
+...
+
+PCD ::
+
+This command prints the daemon configuration directory
+
+...
+rgs pcd
+/home/joan/LG/TEST
+...
+
+PWD ::
+
+This command prints the daemon working directory
+
+...
+rgs pwd
+/home/joan/LG
+...
+
+PARAMETERS
+
+b :: baud
+The command expects the baud rate in bits per second for
+the transmission of serial data (I2C/SPI/serial link, waves).
+
+bit :: bit value (0-1)
+The command expects 0 or 1.
+
+bv :: a byte value (0-255)
+The command expects a byte value.
+
+bvs :: byte values (0-255)
+The command expects one or more byte values.
+
+cid ::
+A number identifying an internal configuration item.
+
+cid @ meaning
+0   @ debug level
+1   @ minimum transmission period for PWM and waves
+
+cyc :: >= 0
+The number of PWM pulses to generate.  A value of 0 means infinite.
+
+dev :: a tty serial device
+The command expects the name of a serial device without the
+leading /dev, e.g.
+
+...
+ttyAMA0
+ttyUSB0
+tty0
+serial0
+...
+
+ef :: GPIO event flags
+
+The following values may be or'd to form the event flags.
+
+Value @ Meaning
+1     @ Rising edge
+2     @ Falling edge
+3     @ Both edges
+
+file :: a file name
+The file name must match an entry in the [files] section of the
+permits file.
+
+from :: 0-2
+Position to seek from [#FS#].
+
+  @ From
+0 @ start
+1 @ current position
+2 @ end
+
+g :: GPIO
+The command expects a GPIO.
+
+g* ::
+A list of one or more GPIO
+
+gbits ::
+This value is used to set the levels of a GPIO group.
+
+Bit 0 represents the level of the group leader. 
+Bit 1 represents the level of the second GPIO in the group. 
+Bit g represents the level of GPIO g+1 in the group.
+
+gc :: gpiochip (>=0)
+The command expects a gpiochip number.
+
+gmask ::
+This value is used to select GPIO from a GPIO group.
+
+Bit 0 of the mask indicates item 1 
+Bit 1 of the mask indicates item 2 
+Bit g of the mask indicates item g+1
+
+For example suppose the items are GPIO 5, 10, 23, 25, 11.
+
+Bit 0 of the mask indicates GPIO 5 
+Bit 1 of the mask indicates GPIO 10 
+Bit 2 of the mask indicates GPIO 23 
+Bit 3 of the mask indicates GPIO 25 
+Bit 4 of the mask indicates GPIO 11
+
+If a bit of the mask is high the corresponding GPIO will be selected.
+
+E.g. in the above example if the mask has the value 17 GPIO 5 and GPIO
+11 will be selected.
+
+h :: handle (>=0)
+The command expects a handle.
+
+A handle is a number referencing an object opened by one of [*FO*],
+[*I2CO*], [*NO*], [*PROC*], [*SERO*], [*SPIO*], [*GO*].
+
+ib :: I2C bus (>=0)
+The command expects an I2C bus number.
+
+id :: I2C device (0-0x7F)
+The command expects the address of an I2C device.
+
+if :: I2C flags (0)
+The command expects an I2C flags value.  No flags are currently defined.
+
+k ::
+A kind of transmission.
+
+0 = PWM 
+1 = WAVE
+
+lf :: GPIO line flags
+
+The following values may be or'd to form the line flags.
+
+Value @ Meaning
+4     @ Active low
+8     @ Open drain
+16    @ Open source
+
+mode :: lgFile open mode
+One of the following values.
+
+      @ Value @ Meaning
+READ  @   1   @ open file for reading
+WRITE @   2   @ open file for writing
+RW    @   3   @ open file for reading and writing
+
+The following values can be or'd into the mode.
+
+       @ Value @ Meaning
+APPEND @ 4     @ All writes append data to the end of the file
+CREATE @ 8     @ The file is created if it doesn't exist
+TRUNC  @ 16    @ The file is truncated
+
+moff :: >= 0
+The off period for a PWM pulse in microseconds.
+
+mon :: >= 0
+The on period for a PWM pulse in microseconds.
+
+name :: the name of a script
+
+Only alphanumeric characters, '-' and '_' are allowed in the name.
+
+nfyh :: >= 0
+
+This associates a notification with a GPIO event.
+ 
+num :: maximum number of bytes to return (1-)
+The command expects the maximum number of bytes to return.
+
+For the I2C and SPI commands the requested number of bytes will always
+be returned.
+
+For the serial and file commands the smaller of the number of
+bytes available to be read (which may be zero) and [#num#] bytes
+will be returned.
+
+off :: >= 0
+
+The offset in microseconds from the nominal PWM pulse start.
+
+p* ::
+One or more triplets of [#gbits#], [#gmask#], and [#us#]
+microsecond delay.
+
+pars :: script parameters
+The command expects 0 to 10 numbers as parameters to be passed to the script.
+
+pat :: a file name pattern
+A file path which may contain wildcards.  To be accessible the path
+must match an entry in the [files] section of the permits file.
+
+pdc :: thousandths of %
+PWM duty cycle between 0 % (0) and 100 % (100000).
+
+pf :: thousandths of Hz
+PWM frequency between 0.1 Hz (100) and 10000 Hz (10000000).
+Use  0 for off.
+
+r :: register (0-255)
+The command expects an I2C register number.
+
+sef :: serial flags (32 bits)
+The command expects a flag value.  No serial flags are currently defined.
+
+sf :: Hz (40-500)
+Servo frequency
+
+spc :: SPI channel (>= 0)
+The command expects a SPI channel.
+
+spd :: SPI device (>= 0)
+The command expects a SPO device.
+
+spf :: SPI flags
+See [*SPIO*].
+
+spw :: 0=off, 500-2500 microseconds
+Servo pulse width
+
+str :: a string
+The command expects a string.
+
+t :: a string
+The command expects a string.
+
+us ::
+The command expects a time interval measured in microseconds.
+
+v :: value
+The command expects a number.
+
+v* ::
+A list of one or more values.
+
+wv :: word value (0-65535)
+The command expects a word value.
+

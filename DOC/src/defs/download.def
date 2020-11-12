@@ -1,0 +1,76 @@
+/*TEXT Preliminary
+
+A few packages are needed during installation of the Python modules.
+
+[ul]
+the SWIG code generator (to build lgpio.py from the C library)
+the Python set up tools (to install lgpio.py and rgpio.py)
+[ul]
+
+These packages may be installed with the following command.
+
+. .
+sudo apt install python-setuptools python3-setuptools swig
+. .
+
+TEXT*/
+
+/*TEXT Download&Install
+
+The lg archive may be downloaded and installed with the following
+commands.
+
+. .
+wget http://abyz.me.uk/lg/lg.zip
+unzip lg.zip
+cd lg
+make
+sudo make c
+sudo make python
+. .
+
+TEXT*/
+
+/*TEXT To check the library
+
+There are example programs in the EXAMPLES directory.
+
+[ul]
+lgpio - C - local access
+rgpio - C - local and remote access via the daemon
+py_lgpio - Python - local access
+py_rgpio - Python - local and remote access via the daemon
+rgs - Shell - local and remote access via the daemon
+[ul]
+
+TEXT*/
+
+/*TEXT To compile, link, and run a C program
+
+C (local library API)
+. .
+gcc -Wall -o foobar foobar.c -llgpio # local access
+./foobar
+. .
+
+C (remote library API)
+. .
+gcc -Wall -o foobar foobar.c -lrgpio # local and remote access
+./foobar
+. .
+
+TEXT*/
+
+
+/*TEXT To start the rgpiod daemon
+
+rgpiod &
+
+TEXT*/
+
+/*TEXT To stop the rgpiod daemon
+
+killall rgpiod
+
+TEXT*/
+

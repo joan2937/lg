@@ -1,0 +1,1056 @@
+
+." Process this file with
+." groff -man -Tascii lgd.1
+."
+.TH rgpiod 1 2020-2020 Linux "lg archive"
+.SH NAME
+rgpiod - a daemon to allow remote access to a SBC's GPIO.
+
+.SH SYNOPSIS
+
+rgpiod [OPTION]...&
+.SH DESCRIPTION
+
+
+.ad l
+
+.nh
+
+.br
+
+.br
+rgpiod is a daemon to allow remote access to a SBC's GPIO.
+
+.br
+
+.br
+Once launched the daemon runs in the background accepting commands from the socket interface.
+.br
+
+.br
+The daemon requires no special privileges and commands may be issued by normal users.
+
+.br
+
+.SH Features
+
+.br
+
+.br
+The following features are available by issuing socket commands to the
+daemon.
+
+.br
+
+.br
+.br
+o reading and writing GPIO singly and in groups
+.br
+o software timed PWM
+.br
+o GPIO callbacks
+.br
+o pipe notification of GPIO events
+.br
+o I2C wrapper
+.br
+o SPI wrapper
+.br
+o serial link wrapper
+.br
+o file handling
+.br
+o creating and running scripts
+
+.br
+
+.br
+
+.SH Launch options
+rgpiod [options] &
+
+.br
+
+.br
+.SH OPTIONS
+
+.IP "\fB-c dir     \fP"
+set the configuration directory (default current directory)
+.br
+.
+.IP "\fB-l         \fP"
+disable remote socket interface (default enabled)
+.br
+.
+.IP "\fB-n address \fP"
+allow IP address to use the socket interface, name (e.g. paul) or dotted quad (e.g. 192.168.1.66). If the -n option is not used all addresses are allowed (unless overridden by the -l option). Multiple -n options are allowed.  If -l has been used only -n localhost has any effect
+.br
+.
+.IP "\fB-p value   \fP"
+set the socket port (1024-32000, default 8889)
+.br
+.
+.IP "\fB-v         \fP"
+display rgpiod version and exit
+.br
+.
+.IP "\fB-w dir     \fP"
+set working directory (default launch directory)
+.br
+.
+.IP "\fB-x         \fP"
+enable access control (default off)
+.
+.SH Permissions
+
+.br
+
+.br
+The rgpiod daemon has an optional access control system to control access to its functions.
+
+.br
+
+.br
+See \fBPermits\fP.
+
+.br
+
+.br
+
+.br
+
+.br
+
+.SH Scripts
+
+.br
+
+.br
+Scripts are programs to be stored and executed by the rgpiod daemon.
+They are intended to mitigate any performance problems associated with
+the rgpiod daemon server/client model.
+
+.br
+
+.br
+See \fBScripts\fP.
+
+.br
+
+.br
+
+.SH Socket commands
+
+.br
+
+.br
+Each socket command consists of a header and for commands with
+parameters an extension.
+
+.br
+
+.br
+The header is a lgCmd_t with the following structure.
+
+.br
+
+.br
+
+.EX
+typedef struct
+.br
+{
+.br
+   union
+.br
+   {
+.br
+      uint32_t magic;
+.br
+      int32_t status;
+.br
+   };
+.br
+   uint32_t size;
+.br
+   uint16_t cmd;
+.br
+   uint16_t doubles;
+.br
+   uint16_t longs;
+.br
+   uint16_t shorts;
+.br
+} lgCmd_t, *lgCmd_p;
+.br
+
+.EE
+
+.br
+
+.br
+The magic value is 0x6c67646d (ASCII lgdm).
+
+.br
+
+.br
+The size is the overall size in bytes of the optional extension.
+
+.br
+
+.br
+The cmd is the command code.  See the file lgSocketCommandCodes.h
+for the command codes.
+
+.br
+
+.br
+The doubles, longs, shorts is the number of 8-byte, 4-byte, and 2-byte
+quantities in the extension.  This information is used to
+network order the bytes of the message.  The extension should consist of
+doubles 8-byte quantites, followed by longs 4-byte quantities, followed by
+shorts 2-byte quantities, followed by as many 1-byte quantities needed to
+make a total of size bytes.
+
+.br
+
+.br
+If you wish to construct a client to talk to the rgpiod daemon the following
+are a good source of information.
+.br
+o rpgio.py - a Python client
+.br
+o rgpio.c - a C client
+.br
+o rgs.c - a C command line client
+.br
+o lgCmd.c - a useful summary of the socket commands
+
+.SH Daemon Access Control
+
+.br
+
+.br
+The rpgpio daemon operates in two modes - with or without access control.
+
+.br
+
+.br
+The default setting is without access control and the permissions
+system does not apply (so the rest of this section may be ignored).
+
+.br
+
+.br
+If the rgpiod daemon is started with the -x option it implements
+an access control permissions system to its functions.
+
+.br
+
+.br
+There are three parts to the permissions system.
+
+.br
+
+.br
+.br
+o An .lg_secret file in the users home directory.
+.br
+o An .lg_secret file in the daemon's configuration directory.
+.br
+o A permits file in the daemon's configuration directory.
+
+.br
+
+.br
+The daemon client "logs in" to the daemon by choosing a user name.  If the client and daemon copies of the password for the user match the user is "logged in".
+
+.br
+
+.br
+The client program is then authorised to carry out any functions permitted to the user as specified in the permits file.
+
+.br
+
+.br
+
+.SH User secret file
+
+.br
+
+.br
+The user .lg_secret file contains a list of user names with an associated password.
+
+.br
+
+.br
+These passwords have no relationship to the passwords used by Linux and should not be the same.  The format is user=password.
+
+.br
+
+.br
+An example .lg_secret file.
+
+.br
+
+.br
+
+.EX
+# user secrets file
+.br
+# user=password
+.br
+pete=t4pf4kvPOXjLfDnKBrMu
+.br
+
+.EE
+
+.br
+
+.br
+The file should be readable/writable by the owner only.
+
+.br
+
+.br
+chmod 600 .lg_secret
+
+.SH Daemon secret file
+
+.br
+
+.br
+The daemon .lg_secret file contains a list of user names with an associated password.
+
+.br
+
+.br
+These passwords have no relationship to the passwords used by Linux and should not be the same.  The format is user=password.
+
+.br
+
+.br
+An example daemon .lg_secret file.
+
+.br
+
+.br
+
+.EX
+# rgpiod secrets file
+.br
+# user=password
+.br
+joan=kr6g89XmFQvLDWh6UcJH
+.br
+sally=fARrxSKqdHaPHBu6Vtet
+.br
+pete=t4pf4kvPOXjLfDnKBrMu
+.br
+fred=tugXUuRdPqGux6t7jhhv
+.br
+
+.EE
+
+.br
+
+.br
+The file should be readable/writable by the owner only.
+
+.br
+
+.br
+chmod 600 .lg_secret
+
+.SH Daemon permits file
+
+.br
+
+.br
+The permits file can contain the following sections.  If a section is
+absent it means that access to those features is forbidden.
+
+.br
+
+.br
+
+.EX
+[debug]
+.br
+[files]
+.br
+[gpio]
+.br
+[i2c]
+.br
+[notify]
+.br
+[scripts]
+.br
+[serial]
+.br
+[shell]
+.br
+[spi]
+.br
+
+.EE
+
+.SH [debug]
+Each entry in this section takes one of the following forms: \fBuser=y\fP or \fBuser=n\fP.
+
+.br
+
+.br
+If the form \fBuser=y\fP is used that user is allowed to use the debug commands.
+
+.br
+
+.br
+If the form \fBuser=n\fP is used, or there is no entry for the user, that user is
+not allowed to use the debug command.
+
+.br
+
+.br
+If the [debug] section is not present no user is allowed to use the
+debug commands.
+
+.br
+
+.br
+The debug commands are set and get sbc internals and reload configuration.
+
+.SH [files]
+Each entry in this section takes the form \fBuser=path x\fP where
+\fBpath\fP indicates a file path and \fBx\fP refers to a permission. E.g.
+\fB/home/peter/data.txt r\fP refers to Linux file\fB/home/peter/data.txt\fP
+and read permission.
+
+.br
+
+.br
+There may be more than one \fBpath\fP entry per user, each must be separated by a \fB:\fP character.
+
+.br
+
+.br
+\fBpath\fP may contain the wild card characters \fB*\fP (matches any
+characters) or \fB?\fP (matches a single character).
+
+.br
+
+.br
+If the path entry starts with / it is relative to root (/) otherwise
+it is relative to the daemons's working directory.
+
+.br
+
+.br
+The permission may be R for read, W for write, U for read/write,
+and N for no access.  If a directory allows read/write access then
+files may be created in that directory.
+
+.br
+
+.br
+Where more than one entry matches a file the most specific rule
+applies.  If no entry matches a file then access is denied.
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+joan=/tmp/* u:* n:TEST/* r:TEST/TEST/* u
+.br
+
+.EE
+
+.br
+
+.br
+User joan may create, read, and write files in the /tmp directory (\fB/tmp/* u\fP).
+
+.br
+
+.br
+User joan has no access to files in the working directory (\fB* n\fP).
+
+.br
+
+.br
+Overridden by user joan has read permission for files in the TEST directory
+of the working directory (\fBTEST/* r\fP).
+
+.br
+
+.br
+Overridden by user joan may create, read, and write files in the
+TEST/TEST directory of the working directory (\fBTEST/TEST* u\fP).
+
+.SH [gpio]
+Each entry in this section takes the form \fBuser=x.y\fP where \fBx\fP indicates
+a gpiochip device and \fBy\fP indicates a GPIO. E.g. \fB1.2\fP refers to Linux device \fB/dev/gpiochip1\fP GPIO 2.
+
+.br
+
+.br
+There may be more than one \fBx.y\fP entry per user, each must be separated by a \fB:\fP character.
+
+.br
+
+.br
+Both x and y may have the following forms.
+
+.br
+
+.br
+\fB*\fP all gpiochips or all GPIO.
+.br
+\fBn\fP a single gpiochip or GPIO.
+.br
+\fBn,n\fP a list of gpiochips or GPIO.
+.br
+\fBn-n\fP a range of gpiochips or GPIO.
+.br
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+fred=0.2-27      # user fred can access gpiochip 0 GPIO 2-27.
+.br
+peter=*.1,2      # user peter can access all gpiochips GPIO 1 and 2.
+.br
+jill=1,2.*       # user jill can access all GPIO of gpiochips 1 and 2.
+.br
+boss=*.*         # user boss can access all gpiochips and GPIO.
+.br
+sally=0.2-27:3.* # user sally can access gpiochip 0 GPIO 2-27 and
+.br
+                 # all GPIO of gpiochip 3.
+.br
+
+.EE
+
+.br
+
+.br
+
+.SH [i2c]
+Each entry in this section takes the form \fBuser=x.y\fP where \fBx\fP indicates
+an I2C bus and \fBy\fP indicates a device on the bus. E.g. \fB1.27\fP refers to Linux device \fB/dev/i2c-1\fP device 27.
+.br
+
+.br
+
+.br
+There may be more than one \fBx.y\fP entry per user, each must be separated by a \fB:\fP character.
+
+.br
+
+.br
+Both x and y may have the following forms.
+
+.br
+
+.br
+\fB*\fP all I2C buses or all devices.
+.br
+\fBn\fP a single I2C bus or device.
+.br
+\fBn,n\fP a list of I2C buses or devices.
+.br
+\fBn-n\fP a range of I2C buses or devices.
+.br
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+fred=0.3-127      # user fred can access I2C bus 0 devices 3-127.
+.br
+peter=*.83,89     # user peter can access all I2C buses devices 83 and 89.
+.br
+jill=1,2.*        # user jill can access all devices on I2C buses 1 and 2.
+.br
+boss=*.*          # user boss can access all I2C buses and devices.
+.br
+sally=0.80-99:3.* # user sally can access I2C bus 0 devices 80-99 and
+.br
+                  # all devices of I2C bus 3.
+.br
+
+.EE
+
+.br
+
+.br
+
+.SH [notify]
+Each entry in this section takes one of the following forms: \fBuser=y\fP or \fBuser=n\fP.
+
+.br
+
+.br
+If the form \fBuser=y\fP is used that user is allowed to use the
+notify commands.
+
+.br
+
+.br
+If the form \fBuser=n\fP is used, or there is no entry for the user,
+that user is not allowed to use the notifiy commands.
+
+.br
+
+.br
+If the [notify] section is not present no user is allowed to use the
+notify commands.
+
+.SH [scripts]
+Each entry in this section takes one of the following forms: \fBuser=y\fP or \fBuser=n\fP.
+
+.br
+
+.br
+If the form \fBuser=y\fP is used that user is allowed to use the script commands.
+
+.br
+
+.br
+If the form \fBuser=n\fP is used, or there is no entry for the user, that user is
+not allowed to use the script command.
+
+.br
+
+.br
+If the [debug] section is not present no user is allowed to use the
+script commands.
+
+.SH [serial]
+Each entry in this section takes the form \fBuser=device\fP where
+\fBdevice\fP indicates a serial device. E.g. \fBserial0\fP refers to
+Linux device \fB/dev/serial0\fP
+
+.br
+
+.br
+There may be more than one \fBdevice\fP entry per user, each must be separated by a \fB:\fP character.
+
+.br
+
+.br
+\fBdevice\fP may contain the wild card characters \fB*\fP (matches any
+characters) or \fB?\fP (matches a single character).
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+fred=serial0         # user fred can access /dev/serial0.
+.br
+peter=tty*           # user peter can access /dev/tty*.
+.br
+boss=*               # user boss can access /dev/*.
+.br
+sally=serial?:ttyS*  # user sally can access /dev/serial? and /dev/ttyS*.
+.br
+
+.EE
+
+.br
+
+.br
+
+.SH [shell]
+Each entry in this section takes one of the following forms: \fBuser=y\fP or \fBuser=n\fP.
+
+.br
+
+.br
+If the form \fBuser=y\fP is used that user is allowed to use the shell commands.
+
+.br
+
+.br
+If the form \fBuser=n\fP is used, or there is no entry for the user, that user is
+not allowed to use the shell commands.
+
+.br
+
+.br
+If the [shell] section is not present no user is allowed to use the
+shell commands.
+
+.SH [spi]
+Each entry in this section takes the form \fBuser=x.y\fP where \fBx\fP
+indicates a SPI bus and \fBy\fP indicates a slave select. E.g. \fB1.2\fP
+refers to Linux device \fB/dev/spidev1.2\fP
+
+.br
+
+.br
+There may be more than one \fBx.y\fP entry per user, each must be separated by a \fB:\fP character.
+
+.br
+
+.br
+Both \fBx\fP and \fBy\fP may have the following forms.
+
+.br
+
+.br
+\fB*\fP all SPI buses or all slaves.
+.br
+\fBn\fP a single SPI bus or slave.
+.br
+\fBn,n\fP a list of SPI buses or slaves.
+.br
+\fBn-n\fP a range of SPI buses or slaves.
+.br
+
+.br
+
+.br
+\fBExample\fP
+.br
+
+.EX
+fred=0.0-2       # user fred can access SPI bus 0 slaves 0-2.
+.br
+peter=*.0        # user peter can access all SPI buses slave 0.
+.br
+jill=1,2.*       # user jill can access all slaves on SPI buses 1 and 2.
+.br
+boss=*.*         # user boss can access all SPI buses and slaves.
+.br
+sally=0.0-2:1.*  # user sally can access SPI bus 0 slaves 0-2 and
+.br
+                 # all slaves of SPI bus 1.
+.br
+
+.EE
+
+.br
+
+.br
+
+.SH Example permits file
+
+.br
+
+.br
+
+.EX
+# rgpiod test file for user access
+.br
+# user=permission
+.br
+
+.br
+[files]
+.br
+default=:
+.br
+test1=/tmp/* u:* n:TEST/* r:TEST/TEST/* u:
+.br
+
+.br
+[gpio]
+.br
+test1=*.2-27
+.br
+test2=0.2-27
+.br
+test3=0.5-10
+.br
+
+.br
+[i2c]
+.br
+test1=1-999.*
+.br
+test2=1-2.*
+.br
+test3=2.5-20
+.br
+
+.br
+[notify]
+.br
+test1=n
+.br
+test2=y
+.br
+test3=y
+.br
+
+.br
+[scripts]
+.br
+test1=y
+.br
+test2=n
+.br
+test3=y
+.br
+
+.br
+[serial]
+.br
+test1=serial*:ttyUSB*:ttyS*
+.br
+test2=ttyUSB1:tty0:ttyS0
+.br
+test3=null
+.br
+
+.br
+[spi]
+.br
+test1=0.0:0.1:1.0:1.1:1.2:2.0:2.1
+.br
+test2=0.*
+.br
+test3=*.0
+.br
+
+.br
+[debug]
+.br
+admin=y
+.br
+
+.br
+[shell]
+.br
+test1=n
+.br
+test2=n
+.br
+test3=y
+.br
+
+.EE
+
+.SH Scripts
+
+.br
+
+.br
+Scripts are programs to be stored and executed by the rgpiod daemon.
+They are intended to mitigate any performance problems associated with
+the daemon server/client model.
+
+.br
+
+.br
+Scripts are work in progress.
+
+.br
+
+.br
+.SS Virtual machine
+.br
+
+.br
+A script runs within a virtual machine with
+
+.br
+
+.br
+a 32 bit accumulator A.
+.br
+a flags register F.
+.br
+a program counter PC.
+
+.br
+
+.br
+Each script has
+
+.br
+
+.br
+10 parameters named 0 through 9.
+.br
+150 variables named 0 through 149.
+.br
+50 labels which are named by any unique number.
+
+.br
+
+.br
+.SS Commands
+.br
+
+.br
+Many lg commands may be used within a script. However
+some commands do not work within the script model as designed and
+are not permitted.
+
+.br
+
+.br
+The following commands are not permitted within a script:
+.br
+
+.br
+
+.br
+File - FL FO FR FW
+
+.br
+
+.br
+I2C - I2CPK I2CRD I2CRI I2CRK I2CWD I2CWI I2CWK I2CZ
+
+.br
+
+.br
+Script control - PARSE PROC PROCD PROCP PROCR PROCS PROCU
+
+.br
+
+.br
+Serial - SERO SERR SERW SLR
+
+.br
+
+.br
+SPI - SPIR SPIW SPIX
+
+.br
+
+.br
+The following commands are only permitted within a script:
+.br
+
+.br
+
+.br
+Command   Description                         Definition
+.br
+ADD x     Add x to accumulator                A+=x; F=A
+.br
+AND x     And x with accumulator              A&=x; F=A
+.br
+CALL L    Call subroutine at tag L            push(PC+1); PC=L
+.br
+CMP x     Compare x with accumulator          F=A-x
+.br
+DCR y     Decrement register                  --*y; F=*y
+.br
+DCRA      Decrement accumulator               --A; F=A
+.br
+DIV x     Divide x into accumulator           A/=x; F=A
+.br
+HALT      Halt                                Halt
+.br
+INR y     Increment register                  ++*y; F=*y
+.br
+INRA      Increment accumulator               ++A; F=A
+.br
+JGE L     Jump if >= 0 to tag L               if (F>=0) PC=L
+.br
+JGT L     Jump if > 0 to tag L                if (F>0) PC=L
+.br
+JLE L     Jump if <= 0 to tag L               if (F<=0) PC=L
+.br
+JLT L     Jump if < 0 to tag L                if (F<0) PC=L
+.br
+JMP L     Jump to tag L                       PC=L
+.br
+JNZ L     Jump if non-zero to tag L           if (F) PC=L
+.br
+JZ L      Jump if zero to tag L               if (!F) PC=L
+.br
+LD y x    Load register with x                *y=x
+.br
+LDA x     Load accumulator with x             A=x
+.br
+MLT x     Multiply x with accumulator         A*=x; F=A
+.br
+MOD x     Modulus x with accumulator          A%=x; F=A
+.br
+OR x      Or x with accumulator               A|=x; F=A
+.br
+POP y     Pop register                        y=pop()
+.br
+POPA      Pop accumulator                     A=pop()
+.br
+PUSH y    Push register                       push(y)
+.br
+PUSHA     Push accumulator                    push(A)
+.br
+RET       Return from subroutine              PC=pop()
+.br
+RL y x    Rotate left register x bits         *y<<=x; F=*y
+.br
+RLA x     Rotate left accumulator x bits      A<<=x; F=A
+.br
+RR y x    Rotate right register x bits        *y>>=x; F=*y
+.br
+RRA x     Rotate right accumulator x bits     A>>=x; F=A
+.br
+SHL y x   Shift left register x bits          *y<<=x; F=*y
+.br
+SHLA x    Shift left accumulator x bits       A<<=x; F=A
+.br
+SHR y x   Shift right register x bits         *y>>=x; F=*y
+.br
+SHRA x    Shift right accumulator x bits      A>>=x; F=A
+.br
+STA y     Store accumulator in register       y=A
+.br
+SUB x     Subtract x from accumulator         A-=x; F=A
+.br
+SYS str   Run external script                 system(str); F=A
+.br
+TAG L     Label the current position          N/A
+.br
+X y1 y2   Exchange registers y1 and y2        t=*y1;*y1=*y2;*y2=t
+.br
+XA y      Exchange accumulator and register   t=A;A=*y;*y=t
+.br
+XOR x     Xor x with accumulator              A^=x; F=A
+.br
+
+.br
+
+.br
+x may be a constant, a parameter (p0-p9), or a variable (v0-v149).
+
+.br
+
+.br
+y may be a parameter (p0-p9), or a variable (v0-v149). If p or v isn't
+specified y is assumed to be a variable.
+
+.br
+
+.br
+The SYS script receives two unsigned parameters: the accumulator A and
+the current GPIO levels.
+
+.br
+
+.br
+
+.SH SEE ALSO
+
+rgs(1), lgpio(3), rgpio(3)

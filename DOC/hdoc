@@ -1,0 +1,42 @@
+#!/bin/bash
+
+mkdir -p tmp/body
+
+echo ">download"
+bin/dmakdoc.py download  src/defs/download.def  >tmp/body/download.body 
+
+echo ">faq"
+bin/dmakdoc.py faq       src/defs/faq.def       >tmp/body/faq.body 
+
+echo ">index"
+bin/dmakdoc.py index     src/defs/index.def     >tmp/body/index.body 
+
+echo ">rgpiod"
+bin/dmakdoc.py rgpiod    src/defs/rgpiod.def    >tmp/body/rgpiod.body 
+
+echo ">permits"
+bin/dmakdoc.py permits   src/defs/permits.def   >tmp/body/permits.body 
+
+echo ">scripts"
+bin/dmakdoc.py scripts   src/defs/scripts.def   >tmp/body/scripts.body 
+
+echo ">rgs"
+bin/smakdoc.py           src/defs/rgs.def       >tmp/body/rgs.body 
+
+echo ">lgpio"
+bin/cmakdoc.py lgpio     ../lgpio.h             >tmp/body/lgpio.body 
+
+echo ">rgpio"
+bin/cmakdoc.py rgpio     ../rgpio.h             >tmp/body/rgpio.body 
+
+echo ">examples"
+bin/examples.py          src/defs/examples.def  >tmp/body/examples.body
+
+#bin/body.py     # get bodies of manually generated pages
+bin/tidy.py      # tidy the bodies
+bin/backup.sh    # backup database
+bin/updatesql.py # update the database with the new bodies
+bin/purge.sh     # remove redundant datatbase copies
+
+bin/build_site.py # construct the web site
+
