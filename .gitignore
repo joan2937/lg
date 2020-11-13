@@ -2,6 +2,7 @@
 *.so
 *.so.*
 *.zip
+*.pyc
 rgpiod
 rgs
 DOC/.docs
@@ -10,7 +11,11 @@ DOC/HTML/*.html
 DOC/MAN/
 DOC/tmp/
 PY_LGPIO/build
+PY_LGPIO/dist
+PY_LGPIO/lgpio.egg-info/
 PY_LGPIO/lgpio.py
 PY_LGPIO/lgpio_wrap.c
 PY_RGPIO/build
+PY_RGPIO/dist
+PY_RGPIO/rgpio.egg-info/
 
