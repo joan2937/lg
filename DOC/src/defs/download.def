@@ -25,8 +25,7 @@ wget http://abyz.me.uk/lg/lg.zip
 unzip lg.zip
 cd lg
 make
-sudo make c
-sudo make python
+sudo make install
 . .
 
 TEXT*/

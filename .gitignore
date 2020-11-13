@@ -1,0 +1,16 @@
+*.o
+*.so
+*.so.*
+*.zip
+rgpiod
+rgs
+DOC/.docs
+DOC/dbase/lg.sqlite.*
+DOC/HTML/*.html
+DOC/MAN/
+DOC/tmp/
+PY_LGPIO/build
+PY_LGPIO/lgpio.py
+PY_LGPIO/lgpio_wrap.c
+PY_RGPIO/build
+

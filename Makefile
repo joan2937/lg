@@ -110,7 +110,7 @@ endif
 html: $(ALL)
 	@[ -d "DOC" ] && cd DOC && ./makedoc || echo "*** No DOC directory ***"
 
-c: $(ALL)
+install: $(ALL)
 	@install -m 0755 -d                      $(DESTDIR)$(includedir)
 	install -m 0644 lgpio.h                  $(DESTDIR)$(includedir)
 	install -m 0644 rgpio.h                  $(DESTDIR)$(includedir)
@@ -131,8 +131,6 @@ c: $(ALL)
 ifeq ($(DESTDIR),)
 	ldconfig
 endif
-
-python: $(ALL)
 	@if which python2; then cd PY_RGPIO && python2 setup.py -q install $(PYINSTALLARGS) || echo "*** install of Python2 rgpio.py failed ***"; fi
 	@if which python3; then cd PY_RGPIO && python3 setup.py -q install $(PYINSTALLARGS) || echo "*** install of Python3 rgpio.py failed ***"; fi
 	@if which swig; then cd PY_LGPIO && swig -python lgpio.i || echo "*** need swig package to install lgpio.py ***"; fi

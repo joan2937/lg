@@ -11,8 +11,7 @@ IN THAT DIRECTORY
 Enter the following commands (in this order)
 
 make
-sudo make c
-sudo make python
+sudo make install
 
 This will install
 
