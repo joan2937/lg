@@ -240,7 +240,7 @@ import os
 import atexit
 import hashlib
 
-RGPIO_PY_VERSION = 0x00000000
+RGPIO_PY_VERSION = 0x00000300
 
 exceptions = True
 
@@ -1363,7 +1363,8 @@ class sbc():
             bytes = OKAY
          else:
             lines, name, label = 0, "", ""
-      return _u2i_list([bytes, lines, name.rstrip('\0'), label.rstrip('\0')])
+      return _u2i_list([bytes, lines,
+         name.decode().rstrip('\0'), label.decode().rstrip('\0')])
 
 
    def gpio_get_line_info(self, handle, gpio):
@@ -1392,7 +1393,8 @@ class sbc():
          else:
             offset, flags, name, user = 0, 0, "", ""
       return _u2i_list(
-         [bytes, offset, flags, name.rstrip('\0'), user.rstrip('\0')])
+         [bytes, offset, flags,
+            name.decode().rstrip('\0'), user.decode().rstrip('\0')])
 
    def gpio_get_mode(self, handle, gpio):
       """
