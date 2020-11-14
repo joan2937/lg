@@ -4,47 +4,149 @@ Although many are complete programs they are intended to be a starting point in 
 
 ?0|Index
 
-?0|lgpio C
+?0|C lgpio
 
-?0|lgpio Python
+?0|Python lgpio
 
-?0|rgpio C
+?0|C rgpio
 
-?0|rgpio Python
+?0|Python rgpio
 
 ?0|rgs shell
 
 
-?1|C|lgpio C
+?1|lgpio|C lgpio
 
 Examples of C lgpio programs.
 
+C rgpio programs may be run on any Linux computer.  The programs allow control of the local GPIO.
+
 If your program is called foobar.c then build with
 
-gcc -Wall-o foobar foobar.c -llgpio
+gcc -Wall -o foobar foobar.c -llgpio
 
 
-?1|Python|lgpio Python
+?4|bench.c|2020-11-14|GPIO toggle
+A crude benchmark of how many toggles a second can be completed.
 
-The lgpio Python code may be run on any Linux SBC with Python installed.  It allows control of the local GPIO.
+?4|chipline.c|2020-11-14|gpiochip info
+Prints gpiochip information and line information for each GPIO.
+
+?4|dhtxx.c|2020-11-14|DHT11/22/XX
+Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
+
+?4|tx_pulse.c|2020-11-14|Tx pulse
+Demonstrates usage of the tx pulse function.
+
+?4|tx_wave.c|2020-11-14|Tx wave
+Demonstrates usage of the tx wave function.
 
 
-?1|C|rgpio C
+?1|py_lgpio|Python lgpio
+
+Examples of Python lgpio module scripts.
+
+lgpio Python scripts may be run on any Linux computer with Python installed.  The scripts allow control of the local GPIO.
+
+
+?4|bench.py|2020-11-14|GPIO toggle
+A crude benchmark of how many toggles a second can be completed.
+
+?4|chipline.py|2020-11-14|gpiochip info
+Prints gpiochip information and line information for each GPIO.
+
+?4|DHT.py|2020-11-14|DHT11/22/XX
+Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
+
+?4|errors.py|2020-11-14|Errors
+Checks that the correct errors are reported when erroneous parameters are used.  The checks are limited in scope to those that can be detected without having any hardware connected.
+
+?4|testbed.py|2020-11-14|Testbed
+Exercises SPI, I2C, and serial links with miscellaneous hardware.
+
+?4|tx_pulse.py|2020-11-14|Tx pulse
+Demonstrates usage of the tx pulse function.
+
+?4|tx_wave.py|2020-11-14|Tx wave
+Demonstrates usage of the tx wave function.
+
+
+?1|rgpio|C rgpio
 
 Examples of C rgpio programs.
 
-If your program is called foobar.c then build with
-
-gcc -Wall-o foobar foobar.c -lrgpio
-
-
-?1|Python|rgpio Python
-
-The rgpio Python code may be run on any SBC with Python installed.  It allows control of the GPIO on one or more networked SBCs.
-
-The Python machine need not be Linux, it may run Windows, Mac, etc, anything as long as it supports Python.
+C rgpio programs may be run on any Linux computer.  The programs allow control of the GPIO on one or more networked Linux SBCs.
 
 Each SBC needs the rgpiod daemon to be running.  The rgpiod daemon may be started with the command rgpiod &.
+
+If your program is called foobar.c then build with
+
+gcc -Wall -o foobar foobar.c -lrgpio
+
+
+?4|bench.c|2020-11-14|GPIO toggle
+A crude benchmark of how many toggles a second can be completed.
+
+?4|chipline.c|2020-11-14|gpiochip info
+Prints gpiochip information and line information for each GPIO.
+
+?4|dhtxxd.c|2020-11-14|DHT11/22/XX
+Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
+
+?4|DS18B20.c|2020-11-14|DS18B20
+Reads any DS18B20 temperature sensors connected to the 1-wire bus.  It demonstrates the remote file read abilities of the daemon.
+
+?4|errors.c|2020-11-14|Errors
+Checks that the correct errors are reported when erroneous parameters are used.  The checks are limited in scope to those that can be detected without having any hardware connected.
+
+?4|files.c|2020-11-14|Files
+Demonstrates usage of the remote file handling features of the daemon.
+
+?4|tx_pulse.c|2020-11-14|Tx pulse
+Demonstrates usage of the tx pulse function.
+
+?4|tx_wave.c|2020-11-14|Tx wave
+Demonstrates usage of the tx wave function.
+
+
+?1|py_rgpio|Python rgpio
+
+Examples of Python rgpio module scripts.
+
+The rgpio Python module may be run on any computer with Python installed. The scripts allow control of the GPIO on one or more networked Linux SBCs.
+
+The computer need not be Linux, it may run Windows, Mac, etc, anything as long as it supports Python.
+
+Each SBC needs the rgpiod daemon to be running.  The rgpiod daemon may be started with the command rgpiod &.
+
+
+?4|bench.py|2020-11-14|GPIO toggle
+A crude benchmark of how many toggles a second can be completed.
+
+?4|chipline.py|2020-11-14|gpiochip info
+Prints gpiochip information and line information for each GPIO.
+
+?4|DHT.py|2020-11-14|DHT11/22/XX
+Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
+
+?4|DS18B20.py|2020-11-14|DS18B20
+Reads any DS18B20 temperature sensors connected to the 1-wire bus.  It demonstrates the remote file read abilities of the daemon.
+
+?4|errors.py|2020-11-14|Errors
+Checks that the correct errors are reported when erroneous parameters are used.  The checks are limited in scope to those that can be detected without having any hardware connected.
+
+?4|files.py|2020-11-14|Files
+Demonstrates usage of the remote file handling features of the daemon.
+
+?4|testbed.py|2020-11-14|Testbed
+Exercises SPI, I2C, and serial links with miscellaneous hardware.
+
+?4|tx_pulse.py|2020-11-14|Tx pulse
+Demonstrates usage of the tx pulse function.
+
+?4|tx_wave.py|2020-11-14|Tx wave
+Demonstrates usage of the tx wave function.
+
 
 
 ?1|rgs|rgs shell

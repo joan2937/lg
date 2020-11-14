@@ -3,6 +3,9 @@
 import sys
 from collections import OrderedDict
 
+def debug(s):
+   sys.stderr.write(s)
+
 def emit(s):
    sys.stdout.write(s)
 
@@ -66,7 +69,7 @@ while True:
       last = None
       ordered = OrderedDict(sorted(index.items(), key=lambda t: t[1].lower()))
       for k,v in ordered.items():
-         tag=k.split('_')[0]
+         tag=k.split('~')[0]
          if last != v.lower():
             if last is not None:
                emit('</td></tr>')
@@ -86,7 +89,7 @@ while True:
    if line.startswith("?1|"):
       cancel_table()
       s = line.split("|")
-      tag = s[1].strip()+"_"
+      tag = s[1].strip()
       anchor=s[2].strip()
       emit('<h3><span id="'+anchor+'">'+anchor+'</span></h3>')
       continue
@@ -96,14 +99,14 @@ while True:
 
       s = line.split("|")
 
-      anchor=tag+s[1].strip()
+      anchor=tag+"~"+s[1].strip()
 
       if line.startswith("?2|"):
          link=s[1].strip()+".html"
       elif line.startswith("?3|"):
          link="code/"+s[1].strip()+".zip"
       elif line.startswith("?4|"):
-         link=s[1].strip()
+         link="EXAMPLES/" + tag + "/" + s[1].strip()
       else:
          link="code/"+s[1].strip()
 

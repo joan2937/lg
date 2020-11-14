@@ -40,7 +40,7 @@ header = '<a href="index.html"><img src="images/lg-logo.gif" border="0" /></a> l
 
 footer1 = "<small>&copy; 2020-2020</small>";
 footer2 = "";
-footer3 = "<small> : " + time.strftime("%d/%m/%Y") + "</small>";
+footer3 = "<small> (" + time.strftime("%F %R") + ")</small>";
 
 db=sqlite3.connect("dbase/lg.sqlite")
 
