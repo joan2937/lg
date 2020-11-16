@@ -426,10 +426,10 @@ static int intCallback(
 
       while (p)
       {
-         if ((p->sbc   == sbc)        &&
-             (p->chip == chip)      &&
-             (p->gpio == gpio)      &&
-             (p->edge == edge)      &&
+         if ((p->sbc  == sbc)  &&
+             (p->chip == chip) &&
+             (p->gpio == gpio) &&
+             (p->edge == edge) &&
              (p->f    == f))
          {
             return lgif_duplicate_callback;

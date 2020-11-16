@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "lgpio.h"
 
-#define RGPIO_VERSION 0x00000000
+#define RGPIO_VERSION 0x00000100
 
 /*TEXT
 
@@ -2449,7 +2449,7 @@ On failure returns a negative error code.
 D*/
 
 /*F*/
-const char *lgu_error(int errnum);
+const char *lgu_error_text(int errnum);
 /*D
 Return a text description for an error code.
 

@@ -35,6 +35,18 @@ Prints gpiochip information and line information for each GPIO.
 ?4|dhtxx.c|2020-11-14|DHT11/22/XX
 Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
 
+?4|monitor.c|2020-11-15|Monitor GPIO
+Monitors one or more GPIO as specified on the command line.
+
+./monitor [chip:]gpio ...
+
+chip specifies a gpiochip number.  gpio is a GPIO in the previous gpiochip (gpiochip0 if there is no previous gpiochip).
+
+e.g.
+
+./monitor 23 24 25 # chip0: 23,24,25
+./monitor 0:23 1:0 5 # chip0: 23, chip1: 0,5
+
 ?4|tx_pulse.c|2020-11-14|Tx pulse
 Demonstrates usage of the tx pulse function.
 
@@ -60,6 +72,18 @@ Reads the DHT series of temperature and humidity sensors.  The sensor type is au
 
 ?4|errors.py|2020-11-14|Errors
 Checks that the correct errors are reported when erroneous parameters are used.  The checks are limited in scope to those that can be detected without having any hardware connected.
+
+?4|monitor.py|2020-11-15|Monitor GPIO
+Monitors one or more GPIO as specified on the command line.
+
+./monitor.py [chip:]gpio ...
+
+chip specifies a gpiochip number.  gpio is a GPIO in the previous gpiochip (gpiochip0 if there is no previous gpiochip).
+
+e.g.
+
+./monitor.py 23 24 25 # chip0: 23,24,25
+./monitor.py 0:23 1:0 5 # chip0: 23, chip1: 0,5
 
 ?4|testbed.py|2020-11-14|Testbed
 Exercises SPI, I2C, and serial links with miscellaneous hardware.
@@ -102,6 +126,18 @@ Checks that the correct errors are reported when erroneous parameters are used. 
 ?4|files.c|2020-11-14|Files
 Demonstrates usage of the remote file handling features of the daemon.
 
+?4|monitor.c|2020-11-15|Monitor GPIO
+Monitors one or more GPIO as specified on the command line.
+
+./monitor [chip:]gpio ...
+
+chip specifies a gpiochip number.  gpio is a GPIO in the previous gpiochip (gpiochip0 if there is no previous gpiochip).
+
+e.g.
+
+./monitor 23 24 25 # chip0: 23,24,25
+./monitor 0:23 1:0 5 # chip0: 23, chip1: 0,5
+
 ?4|tx_pulse.c|2020-11-14|Tx pulse
 Demonstrates usage of the tx pulse function.
 
@@ -137,6 +173,18 @@ Checks that the correct errors are reported when erroneous parameters are used. 
 
 ?4|files.py|2020-11-14|Files
 Demonstrates usage of the remote file handling features of the daemon.
+
+?4|monitor.py|2020-11-15|Monitor GPIO
+Monitors one or more GPIO as specified on the command line.
+
+./monitor.py [chip:]gpio ...
+
+chip specifies a gpiochip number.  gpio is a GPIO in the previous gpiochip (gpiochip0 if there is no previous gpiochip).
+
+e.g.
+
+./monitor.py 23 24 25 # chip0: 23,24,25
+./monitor.py 0:23 1:0 5 # chip0: 23, chip1: 0,5
 
 ?4|testbed.py|2020-11-14|Testbed
 Exercises SPI, I2C, and serial links with miscellaneous hardware.
