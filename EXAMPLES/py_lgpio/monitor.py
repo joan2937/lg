@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 """
 monitor.py
-2020-11-15
+2020-11-18
 Public Domain
+
+http://abyz.me.uk/lg/py_lgpio.html
 
 ./monitor.py [chip:]gpio ...
 

@@ -1,3 +1,15 @@
+/*
+bench.c
+2020-11-18
+Public Domain
+
+http://abyz.me.uk/lg/rgpio.html
+
+gcc Wall -o bench bench.c -lrgpio
+
+./bench
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 

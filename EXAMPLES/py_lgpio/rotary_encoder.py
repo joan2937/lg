@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+"""
+rotary_encoder.py
+2020-11-18
+Public Domain
+
+http://abyz.me.uk/lg/py_lgpio.html
+
+./rotary_encoder.py [chip] gpioA gpioB
+
+E.g.
+
+./rotary_encoder.py 20 21 # gpiochip 0, gpioA 20, gpioB 21
+
+./rotary_encoder.py 2 7 5 # gpiochip 2, gpioA 7, gpioB 5
+"""
 
 class decoder:
 
@@ -82,7 +97,7 @@ class decoder:
       if gpio == self.gpioA:
          self.levA = level
       else:
-         self.levB = level;
+         self.levB = level
 
       if gpio != self.lastGpio: # debounce
          self.lastGpio = gpio
@@ -106,9 +121,24 @@ class decoder:
 if __name__ == "__main__":
 
    import time
+   import sys
    import lgpio as sbc
 
    import rotary_encoder
+
+   if len(sys.argv) == 4: # chip gpioA gpioB
+      chip = int(sys.argv[1])
+      gpioA = int(sys.argv[2])
+      gpioB = int(sys.argv[3])
+
+   elif len(sys.argv) == 3: # gpioA gpioB (chip 0)
+      chip = 0
+      gpioA = int(sys.argv[1])
+      gpioB = int(sys.argv[2])
+
+   else:
+      print("Usage: ./rotary_encoder.py [chip] gpioA gpioB")
+      exit()
 
    pos = 0
 
@@ -120,7 +150,7 @@ if __name__ == "__main__":
 
       print("pos={}".format(pos))
 
-   decoder = rotary_encoder.decoder(sbc, 0, 20, 21, callback)
+   decoder = rotary_encoder.decoder(sbc, chip, gpioA, gpioB, callback)
 
    time.sleep(300)
 

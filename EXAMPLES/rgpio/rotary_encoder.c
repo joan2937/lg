@@ -3,9 +3,9 @@ rotary_encoder.c
 2020-11-18
 Public Domain
 
-http://abyz.me.uk/lg/lgpio.html
+http://abyz.me.uk/lg/rgpio.html
 
-gcc -Wall -o renc rotary_encoder.c -llgpio
+gcc -Wall -o renc rotary_encoder.c -lrgpio
 
 ./renc [chip] gpioA gpioB
 
@@ -20,6 +20,7 @@ E.g.
 #include <stdlib.h>
 
 #include <lgpio.h>
+#include <rgpio.h>
 
 /*
 
@@ -48,28 +49,26 @@ typedef struct Renc_s
    int lastGpio;
 } Renc_t, *Renc_p;
 
-void cbf(int e, lgGpioAlert_p evt, void *data)
+void cbf(
+   int sbc, int chip, int gpio, int level,
+   uint64_t timestamp, void *userdata)
 {
    Renc_p renc;
    int i;
-   int secs, nanos;
 
-   renc = data;
+   renc = userdata;
 
-   for (i=0; i<e; i++)
+   if (chip == renc->chip)
    {
-      if (evt[i].report.chip == renc->chip)
+      if (gpio == renc->gpioA)
       {
-         if (evt[i].report.gpio == renc->gpioA)
-         {
-            renc->levA = evt[i].report.level;
-            if ((renc->levA) && (renc->levB)) (renc->callback)(1);
-         }
-         else if (evt[i].report.gpio == renc->gpioB)
-         {
-            renc->levB = evt[i].report.level;
-            if ((renc->levB) && (renc->levA)) (renc->callback)(-1);
-         }
+         renc->levA = level;
+         if ((renc->levA) && (renc->levB)) (renc->callback)(1);
+      }
+      else if (gpio == renc->gpioB)
+      {
+         renc->levB = level;
+         if ((renc->levB) && (renc->levA)) (renc->callback)(-1);
       }
    }
 }
@@ -83,8 +82,10 @@ void way(int dir)
 
 int main(int argc, char *argv[])
 {
+   int sbc;
    int h;
    int err;
+   int cb_id_a, cb_id_b;
    Renc_t renc;
 
    renc.levA = 0;
@@ -111,37 +112,59 @@ int main(int argc, char *argv[])
       return -1;
    }
 
-   h = lgGpiochipOpen(renc.chip);
+   sbc = rgpiod_start(NULL, NULL);
+
+   if (sbc < 0)
+   {
+      printf("connection failed\n");
+      exit(-1);
+   }
+
+   h = gpiochip_open(sbc, renc.chip);
 
    if (h < 0)
    {
       fprintf(stderr, "can't open /dev/gpiochip%d (%s)\n",
-         renc.chip, lgErrStr(h));
+         renc.chip, lgu_error_text(h));
       return -1;
    }
 
-   lgGpioSetUser(h, "lg_rotary_encoder");
-
-   err = lgGpioClaimAlert(h, 0, LG_BOTH_EDGES, renc.gpioA, -1);
+   err = gpio_claim_alert(sbc, h, 0, LG_BOTH_EDGES, renc.gpioA, -1);
 
    if (err < 0)
    {
       fprintf(stderr, "can't claim GPIO %d (%s)\n",
-         renc.gpioA, lgErrStr(err));
+         renc.gpioA, lgu_error_text(err));
       return -1;
    }
 
-   err = lgGpioClaimAlert(h, 0, LG_BOTH_EDGES, renc.gpioB, -1);
+   err = gpio_claim_alert(sbc, h, 0, LG_BOTH_EDGES, renc.gpioB, -1);
 
    if (err < 0)
    {
       fprintf(stderr, "can't claim GPIO %d (%s)\n",
-         renc.gpioB, lgErrStr(err));
+         renc.gpioB, lgu_error_text(err));
       return -1;
    }
 
-   lgGpioSetSamplesFunc(cbf, &renc);
+   cb_id_a = callback(sbc, h, renc.gpioA, LG_BOTH_EDGES, cbf, &renc);
 
-   while (1) lguSleep(1);
+   if (cb_id_a < 0)
+   {
+      fprintf(stderr, "can't create callback for GPIO %d (%s)\n",
+         renc.gpioA, lgu_error_text(cb_id_a));
+      return -1;
+   }
+
+   cb_id_b = callback(sbc, h, renc.gpioB, LG_BOTH_EDGES, cbf, &renc);
+
+   if (cb_id_b < 0)
+   {
+      fprintf(stderr, "can't create callback for GPIO %d (%s)\n",
+         renc.gpioB, lgu_error_text(cb_id_b));
+      return -1;
+   }
+
+   while (1) lgu_sleep(1);
 }
 

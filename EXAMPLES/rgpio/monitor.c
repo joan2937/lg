@@ -1,9 +1,11 @@
 /*
 monitor.c
-2020-11-15
+2020-11-18
 Public Domain
 
-gcc -o monitor monitor.c -lrgpio
+http://abyz.me.uk/lg/rgpio.html
+
+gcc -Wall -o monitor monitor.c -lrgpio
 
 ./monitor [chip:]gpio ...
 

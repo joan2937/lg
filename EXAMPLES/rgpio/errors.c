@@ -1,14 +1,19 @@
-#
+/*
+errors.c
+2020-11-18
+Public Domain
+
+http://abyz.me.uk/lg/rgpio.html
+
+gcc -Wall -o errors errors.c -lrgpio
+
+./errors
+*/
+
 #include <stdio.h>
 
 #include "lgpio.h"
 #include "rgpio.h"
-
-
-/*
-gcc -Wall -o error error.c -lrgpio
-./errors
-*/
 
 static int gFailOnly = 0;
 

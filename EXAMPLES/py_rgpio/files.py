@@ -1,4 +1,13 @@
 #!/usr/bin/env python
+"""
+files.py
+2020-11-18
+Public Domain
+
+http://abyz.me.uk/lg/py_rgpio.html
+
+./files.py
+"""
 
 import rgpio
 

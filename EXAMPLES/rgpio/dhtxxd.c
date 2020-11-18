@@ -1,10 +1,9 @@
 /*
 dhtxxd.c
-2020-08-14
+2020-11-18
 Public Domain
-*/
 
-/*
+http://abyz.me.uk/lg/rgpio.html
 
 REQUIRES
 
@@ -19,7 +18,6 @@ TO RUN
 ./dhtxxd -g17 # one reading from DHT connected to GPIO 17
 
 ./dhtxxd -g14 -i3 # read DHT connected to GPIO 14 every 3 seconds
-
 */
 
 #include <stdio.h>

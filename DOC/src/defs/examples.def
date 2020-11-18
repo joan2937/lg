@@ -26,16 +26,16 @@ If your program is called foobar.c then build with
 gcc -Wall -o foobar foobar.c -llgpio
 
 
-?4|bench.c|2020-11-14|GPIO toggle
+?4|bench.c|2020-11-18|GPIO Toggle
 A crude benchmark of how many toggles a second can be completed.
 
-?4|chipline.c|2020-11-14|gpiochip info
+?4|chipline.c|2020-11-18|gpiochip Info
 Prints gpiochip information and line information for each GPIO.
 
-?4|dhtxx.c|2020-11-14|DHT11/22/XX
+?4|dhtxx.c|2020-11-18|DHT11/22/XX
 Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
 
-?4|monitor.c|2020-11-15|Monitor GPIO
+?4|monitor.c|2020-11-18|Monitor GPIO
 Monitors one or more GPIO as specified on the command line.
 
 ./monitor [chip:]gpio ...
@@ -47,10 +47,21 @@ e.g.
 ./monitor 23 24 25 # chip0: 23,24,25
 ./monitor 0:23 1:0 5 # chip0: 23, chip1: 0,5
 
-?4|tx_pulse.c|2020-11-14|Tx pulse
+?4|rotary_encoder.c|2020-11-18|Rotary Encoder
+Code to monitor a rotary encoder and show the detent changes.
+
+./rotary_encoder [chip] gpioA gpioB
+
+E.g.
+
+./rotary_encoder 20 21 # gpiochip 0, gpioA 20, gpioB 21
+
+./rotary_encoder 2 7 5 # gpiochip 2, gpioA 7, gpioB 5
+
+?4|tx_pulse.c|2020-11-18|Tx Pulse
 Demonstrates usage of the tx pulse function.
 
-?4|tx_wave.c|2020-11-14|Tx wave
+?4|tx_wave.c|2020-11-18|Tx Wave
 Demonstrates usage of the tx wave function.
 
 
@@ -61,19 +72,19 @@ Examples of Python lgpio module scripts.
 lgpio Python scripts may be run on any Linux computer with Python installed.  The scripts allow control of the local GPIO.
 
 
-?4|bench.py|2020-11-14|GPIO toggle
+?4|bench.py|2020-11-18|GPIO Toggle
 A crude benchmark of how many toggles a second can be completed.
 
-?4|chipline.py|2020-11-14|gpiochip info
+?4|chipline.py|2020-11-18|gpiochip Info
 Prints gpiochip information and line information for each GPIO.
 
-?4|DHT.py|2020-11-14|DHT11/22/XX
+?4|DHT.py|2020-11-18|DHT11/22/XX
 Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
 
-?4|errors.py|2020-11-14|Errors
+?4|errors.py|2020-11-18|Errors
 Checks that the correct errors are reported when erroneous parameters are used.  The checks are limited in scope to those that can be detected without having any hardware connected.
 
-?4|monitor.py|2020-11-15|Monitor GPIO
+?4|monitor.py|2020-11-18|Monitor GPIO
 Monitors one or more GPIO as specified on the command line.
 
 ./monitor.py [chip:]gpio ...
@@ -85,13 +96,24 @@ e.g.
 ./monitor.py 23 24 25 # chip0: 23,24,25
 ./monitor.py 0:23 1:0 5 # chip0: 23, chip1: 0,5
 
-?4|testbed.py|2020-11-14|Testbed
+?4|rotary_encoder.py|2020-11-18|Rotary Encoder
+Code to monitor a rotary encoder and show the detent changes.
+
+./rotary_encoder.py [chip] gpioA gpioB
+
+E.g.
+
+./rotary_encoder.py 20 21 # gpiochip 0, gpioA 20, gpioB 21
+
+./rotary_encoder.py 2 7 5 # gpiochip 2, gpioA 7, gpioB 5
+
+?4|testbed.py|2020-11-18|Testbed
 Exercises SPI, I2C, and serial links with miscellaneous hardware.
 
-?4|tx_pulse.py|2020-11-14|Tx pulse
+?4|tx_pulse.py|2020-11-18|Tx Pulse
 Demonstrates usage of the tx pulse function.
 
-?4|tx_wave.py|2020-11-14|Tx wave
+?4|tx_wave.py|2020-11-18|Tx Wave
 Demonstrates usage of the tx wave function.
 
 
@@ -108,25 +130,25 @@ If your program is called foobar.c then build with
 gcc -Wall -o foobar foobar.c -lrgpio
 
 
-?4|bench.c|2020-11-14|GPIO toggle
+?4|bench.c|2020-11-18|GPIO Toggle
 A crude benchmark of how many toggles a second can be completed.
 
-?4|chipline.c|2020-11-14|gpiochip info
+?4|chipline.c|2020-11-18|gpiochip Info
 Prints gpiochip information and line information for each GPIO.
 
-?4|dhtxxd.c|2020-11-14|DHT11/22/XX
+?4|dhtxxd.c|2020-11-18|DHT11/22/XX
 Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
 
-?4|DS18B20.c|2020-11-14|DS18B20
+?4|DS18B20.c|2020-11-18|DS18B20
 Reads any DS18B20 temperature sensors connected to the 1-wire bus.  It demonstrates the remote file read abilities of the daemon.
 
-?4|errors.c|2020-11-14|Errors
+?4|errors.c|2020-11-18|Errors
 Checks that the correct errors are reported when erroneous parameters are used.  The checks are limited in scope to those that can be detected without having any hardware connected.
 
-?4|files.c|2020-11-14|Files
+?4|files.c|2020-11-18|Files
 Demonstrates usage of the remote file handling features of the daemon.
 
-?4|monitor.c|2020-11-15|Monitor GPIO
+?4|monitor.c|2020-11-18|Monitor GPIO
 Monitors one or more GPIO as specified on the command line.
 
 ./monitor [chip:]gpio ...
@@ -138,10 +160,22 @@ e.g.
 ./monitor 23 24 25 # chip0: 23,24,25
 ./monitor 0:23 1:0 5 # chip0: 23, chip1: 0,5
 
-?4|tx_pulse.c|2020-11-14|Tx pulse
+?4|rotary_encoder.c|2020-11-18|Rotary Encoder
+Code to monitor a rotary encoder and show the detent changes.
+
+./rotary_encoder [chip] gpioA gpioB
+
+E.g.
+
+./rotary_encoder 20 21 # gpiochip 0, gpioA 20, gpioB 21
+
+./rotary_encoder 2 7 5 # gpiochip 2, gpioA 7, gpioB 5
+
+
+?4|tx_pulse.c|2020-11-18|Tx Pulse
 Demonstrates usage of the tx pulse function.
 
-?4|tx_wave.c|2020-11-14|Tx wave
+?4|tx_wave.c|2020-11-18|Tx Wave
 Demonstrates usage of the tx wave function.
 
 
@@ -156,25 +190,25 @@ The computer need not be Linux, it may run Windows, Mac, etc, anything as long a
 Each SBC needs the rgpiod daemon to be running.  The rgpiod daemon may be started with the command rgpiod &.
 
 
-?4|bench.py|2020-11-14|GPIO toggle
+?4|bench.py|2020-11-18|GPIO Toggle
 A crude benchmark of how many toggles a second can be completed.
 
-?4|chipline.py|2020-11-14|gpiochip info
+?4|chipline.py|2020-11-18|gpiochip Info
 Prints gpiochip information and line information for each GPIO.
 
-?4|DHT.py|2020-11-14|DHT11/22/XX
+?4|DHT.py|2020-11-18|DHT11/22/XX
 Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
 
-?4|DS18B20.py|2020-11-14|DS18B20
+?4|DS18B20.py|2020-11-18|DS18B20
 Reads any DS18B20 temperature sensors connected to the 1-wire bus.  It demonstrates the remote file read abilities of the daemon.
 
-?4|errors.py|2020-11-14|Errors
+?4|errors.py|2020-11-18|Errors
 Checks that the correct errors are reported when erroneous parameters are used.  The checks are limited in scope to those that can be detected without having any hardware connected.
 
-?4|files.py|2020-11-14|Files
+?4|files.py|2020-11-18|Files
 Demonstrates usage of the remote file handling features of the daemon.
 
-?4|monitor.py|2020-11-15|Monitor GPIO
+?4|monitor.py|2020-11-18|Monitor GPIO
 Monitors one or more GPIO as specified on the command line.
 
 ./monitor.py [chip:]gpio ...
@@ -186,13 +220,24 @@ e.g.
 ./monitor.py 23 24 25 # chip0: 23,24,25
 ./monitor.py 0:23 1:0 5 # chip0: 23, chip1: 0,5
 
-?4|testbed.py|2020-11-14|Testbed
+?4|rotary_encoder.py|2020-11-18|Rotary Encoder
+Code to monitor a rotary encoder and show the detent changes.
+
+./rotary_encoder.py [chip] gpioA gpioB
+
+E.g.
+
+./rotary_encoder.py 20 21 # gpiochip 0, gpioA 20, gpioB 21
+
+./rotary_encoder.py 2 7 5 # gpiochip 2, gpioA 7, gpioB 5
+
+?4|testbed.py|2020-11-18|Testbed
 Exercises SPI, I2C, and serial links with miscellaneous hardware.
 
-?4|tx_pulse.py|2020-11-14|Tx pulse
+?4|tx_pulse.py|2020-11-18|Tx Pulse
 Demonstrates usage of the tx pulse function.
 
-?4|tx_wave.py|2020-11-14|Tx wave
+?4|tx_wave.py|2020-11-18|Tx Wave
 Demonstrates usage of the tx wave function.
 
 

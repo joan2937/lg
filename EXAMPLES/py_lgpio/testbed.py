@@ -1,11 +1,16 @@
 #!/usr/bin/env python
+"""
+testbed.py
+2020-11-18
+Public Domain
 
-# testbed.py
-# 2020-09-20
-# Public Domain
+http://abyz.me.uk/lg/py_lgpio.html
+
+./testbed.py
+"""
 
 import time
-import lgpio as sbc # http://abyz.me.uk/lg/python.html
+import lgpio as sbc
 
 MCP23017_1=0x20
 MCP23017_2=0x21

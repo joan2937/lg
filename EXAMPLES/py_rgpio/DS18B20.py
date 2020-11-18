@@ -1,27 +1,28 @@
 #!/usr/bin/env python
-
-import time
-import rgpio
-
-# DS18B20.py
-# 2020-10-16
-# Public Domain
-
 """
+DS18B20.py
+2020-11-18
+Public Domain
+
+http://abyz.me.uk/lg/py_rgpio.html
+
+./DS18B20.py
+
 This uses the file interface to access the remote file system.
 
 In this case it is used to access the sysfs 1-wire bus interface
 to read any connected DS18B20 temperature sensors.
 
-The remote permits file is used to grant access to
-the remote file system.
-
-For this example the file must contain the following line which
+If access control is enabled in the rgpiod daemon the permits
+file must contain the following line in the [files] section to
 grants read access to DS18B20 device files for the test1 user.
 
-[files]
-test1=/sys/bus/w1/devices/28*/w1_slave r
+test1=/sys/bus/w1/devices/28*\/w1_slave r
 """
+
+import time
+import rgpio
+
 sbc = rgpio.sbc()
 
 if not sbc.connected:

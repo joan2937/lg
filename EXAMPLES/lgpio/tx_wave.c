@@ -1,3 +1,15 @@
+/*
+tx_wave.c
+2020-11-18
+Public Domain
+
+http://abyz.me.uk/lg/lgpio.html
+
+gcc -Wall -o tx_wave tx_wave.c -llgpio
+
+./tx_wave
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 

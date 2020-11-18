@@ -1,3 +1,15 @@
+/*
+chipline.c
+2020-11-18
+Public Domain
+
+http://abyz.me.uk/lg/rgpio.html
+
+gcc -Wall -o chipline chipline.c -lrgpio
+
+./chipline
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 

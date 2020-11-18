@@ -1,7 +1,13 @@
 /*
 dhtxx.c
-2020-10-17
+2020-11-18
 Public Domain
+
+http://abyz.me.uk/lg/lgpio.html
+
+gcc -Wall -o dhtxx dhtxx.c -llgpio
+
+./dhtxx gpio ...
 */
 
 #include <stdio.h>

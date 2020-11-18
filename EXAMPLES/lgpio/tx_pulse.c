@@ -1,3 +1,15 @@
+/*
+tx_pulse.c
+2020-11-18
+Public Domain
+
+http://abyz.me.uk/lg/lgpio.html
+
+gcc -Wall -o tx_pulse tx_pulse.c -llgpio
+
+./tx_pulse
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 

@@ -23,12 +23,12 @@ print("""
    <meta name="keywords" content="C, Python, GPIO, library, shell, command, utilities, module, SPI, I2C, serial" />
    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
    <title>lg library</title>
-   <link rel="stylesheet" type="text/css" href="scripts/index.css?v={}">
+   <link rel="stylesheet" type="text/css" href="scripts/index.css">
    <link rel="icon" href="favicon.ico" type="image/x-icon">
    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
-""".format(time.time()))
+""")
 
 page   = sys.argv[1]
 

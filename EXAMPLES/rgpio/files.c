@@ -1,14 +1,20 @@
+/*
+files.c
+2020-11-18
+Public Domain
+
+http://abyz.me.uk/lg/rgpio.html
+
+gcc -Wall -o files files.c -lrgpio
+
+./files
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <lgpio.h>
 #include <rgpio.h>
-
-/*
-gcc -Wall -o files files.c -lrgpio
-
-./files
-*/
 
 int sbc;
 int h;

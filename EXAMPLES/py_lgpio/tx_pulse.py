@@ -1,4 +1,13 @@
 #!/usr/bin/env python
+"""
+tx_pulse.py
+2020-11-18
+Public Domain
+
+http://abyz.me.uk/lg/py_lgpio.html
+
+./tx_pulse.py
+"""
 
 import time
 import lgpio as sbc

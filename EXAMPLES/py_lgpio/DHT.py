@@ -1,8 +1,13 @@
 #!/usr/bin/env python
+"""
+DHT.py
+2020-11-18
+Public Domain
 
-# DHT.py
-# 2020-10-16
-# Public Domain
+http://abyz.me.uk/lg/py_lgpio.html
+
+./DHT.py gpio ...
+"""
 
 import time
 import lgpio as sbc

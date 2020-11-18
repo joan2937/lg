@@ -1,16 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <lgpio.h>
-#include <rgpio.h>
-
 /*
-# DS18B20.py
-# 2020-09-09
-# Public Domain
+DS18B20.c
+2020-11-18
+Public Domain
 
-gcc -Wall -o DS18B20 DS18B20.c -lrgpio
+http://abyz.me.uk/lg/rgpio.html
+
+gcc -Wall -o DS18B20 DS18B20.c -llgpio
 
 ./DS18B20
 
@@ -19,16 +14,19 @@ This uses the file interface to access the remote file system.
 In this case it is used to access the sysfs 1-wire bus interface
 to read any connected DS18B20 temperature sensors.
 
-The remote permits file is used to grant access to
-the remote file system.
-
-For this example the file must contain the following line which
+If access control is enabled in the rgpiod daemon the permits
+file must contain the following line in the [files] section to
 grants read access to DS18B20 device files for the test1 user.
 
-[files]
 test1=/sys/bus/w1/devices/28*\/w1_slave r
-
 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <lgpio.h>
+#include <rgpio.h>
 
 int main(int argc, char *argv[])
 {
