@@ -1,13 +1,13 @@
 /*
-bench.c
+chipline.c
 2020-11-18
 Public Domain
 
 http://abyz.me.uk/lg/lgpio.html
 
-gcc -Wall -o bench bench.c -llgpio
+gcc -Wall -o chipline chipline.c -llgpio
 
-./bench
+./chipline
 */
 #include <stdio.h>
 

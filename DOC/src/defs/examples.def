@@ -58,6 +58,17 @@ E.g.
 
 ./rotary_encoder 2 7 5 # gpiochip 2, gpioA 7, gpioB 5
 
+?4|sonar_ranger.c|2020-11-20|Sonar Ranger
+Code to find the distance between a sonar ranger and the nearest object.  The code assumes the sonar ranger is the type with separate trigger and echo lines.
+
+./sonar_ranger [chip] trigger echo
+
+E.g.
+
+./sonar_ranger 20 21 # gpiochip 0, trigger 20, echo 21
+
+./sonar_ranger 2 7 5 # gpiochip 2, trigger 7, echo 5
+
 ?4|tx_pulse.c|2020-11-18|Tx Pulse
 Demonstrates usage of the tx pulse function.
 
@@ -106,6 +117,17 @@ E.g.
 ./rotary_encoder.py 20 21 # gpiochip 0, gpioA 20, gpioB 21
 
 ./rotary_encoder.py 2 7 5 # gpiochip 2, gpioA 7, gpioB 5
+
+?4|sonar_ranger.py|2020-11-20|Sonar Ranger
+Code to find the distance between a sonar ranger and the nearest object.  The code assumes the sonar ranger is the type with separate trigger and echo lines.
+
+./sonar_ranger.py [chip] trigger echo
+
+E.g.
+
+./sonar_ranger.py 20 21 # gpiochip 0, trigger 20, echo 21
+
+./sonar_ranger.py 2 7 5 # gpiochip 2, trigger 7, echo 5
 
 ?4|testbed.py|2020-11-18|Testbed
 Exercises SPI, I2C, and serial links with miscellaneous hardware.
@@ -171,6 +193,16 @@ E.g.
 
 ./rotary_encoder 2 7 5 # gpiochip 2, gpioA 7, gpioB 5
 
+?4|sonar_ranger.c|2020-11-20|Sonar Ranger
+Code to find the distance between a sonar ranger and the nearest object.  The code assumes the sonar ranger is the type with separate trigger and echo lines.
+
+./sonar_ranger [chip] trigger echo
+
+E.g.
+
+./sonar_ranger 20 21 # gpiochip 0, trigger 20, echo 21
+
+./sonar_ranger 2 7 5 # gpiochip 2, trigger 7, echo 5
 
 ?4|tx_pulse.c|2020-11-18|Tx Pulse
 Demonstrates usage of the tx pulse function.
@@ -230,6 +262,17 @@ E.g.
 ./rotary_encoder.py 20 21 # gpiochip 0, gpioA 20, gpioB 21
 
 ./rotary_encoder.py 2 7 5 # gpiochip 2, gpioA 7, gpioB 5
+
+?4|sonar_ranger.py|2020-11-20|Sonar Ranger
+Code to find the distance between a sonar ranger and the nearest object.  The code assumes the sonar ranger is the type with separate trigger and echo lines.
+
+./sonar_ranger.py [chip] trigger echo
+
+E.g.
+
+./sonar_ranger.py 20 21 # gpiochip 0, trigger 20, echo 21
+
+./sonar_ranger.py 2 7 5 # gpiochip 2, trigger 7, echo 5
 
 ?4|testbed.py|2020-11-18|Testbed
 Exercises SPI, I2C, and serial links with miscellaneous hardware.
