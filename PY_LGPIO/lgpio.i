@@ -744,6 +744,6 @@ extern int lguGetInternal(int cfgId, uint64_t *OUTPUT);
 %rename(_set_internal) lguSetInternal;
 extern int lguSetInternal(int cfgId, uint64_t cfgVal);
 
-%rename(_error_text) lgErrStr;
-extern const char *lgErrStr(int error);
+%rename(_error_text) lguErrorText;
+extern const char *lguErrorText(int error);
 

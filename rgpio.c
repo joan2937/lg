@@ -1711,7 +1711,7 @@ uint32_t lgu_rgpio_version(void)
 
 const char *lgu_error_text(int errnum)
 {
-   if (errnum > -1000) return lgErrStr(errnum);
+   if (errnum > -1000) return lguErrorText(errnum);
    else
    {
       switch(errnum)

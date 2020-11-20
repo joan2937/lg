@@ -184,16 +184,16 @@ cmdInfo_t cmdInfo[]=
    {LG_CMD_USER,  "U",     105, 6, 0}, // xSetUser
    {LG_CMD_USER,  "USER",  105, 6, 0}, // xSetUser
 
-   {LG_CMD_SHARE, "C",     101, 0, 0}, // xShareSetUse
-   {LG_CMD_SHARE, "SHARE", 101, 0, 0}, // xShareSetUse
+   {LG_CMD_SHARE, "C",     101, 0, 1}, // xShareSetUse
+   {LG_CMD_SHARE, "SHARE", 101, 0, 1}, // xShareSetUse
 
-   {LG_CMD_LCFG,  "LCFG",  100, 0, 1}, // xLoadConfig
+   {LG_CMD_LCFG,  "LCFG",  100, 0, 0}, // xLoadConfig
 
-   {LG_CMD_PCD,   "PCD",   100, 6, 1}, // lguGetConfigDir
-   {LG_CMD_PWD,   "PWD",   100, 6, 1}, // lguGetWorkDir
+   {LG_CMD_PCD,   "PCD",   100, 6, 0}, // lguGetConfigDir
+   {LG_CMD_PWD,   "PWD",   100, 6, 0}, // lguGetWorkDir
 
-   {LG_CMD_SHRS,  "SHRS",  101, 0, 0}, // lgHdlSetShare
-   {LG_CMD_SHRU,  "SHRU",  101, 0, 0}, // xShareUse
+   {LG_CMD_SHRS,  "SHRS",  101, 0, 1}, // lgHdlSetShare
+   {LG_CMD_SHRU,  "SHRU",  101, 0, 1}, // xShareUse
 
 
    {LG_CMD_PASSW, "PASSW", 105, 0, 0}, // xPassword

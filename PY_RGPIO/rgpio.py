@@ -240,7 +240,7 @@ import os
 import atexit
 import hashlib
 
-RGPIO_PY_VERSION = 0x00000300
+RGPIO_PY_VERSION = 0x00010000
 
 exceptions = True
 
@@ -638,7 +638,7 @@ rgpio.sbc() function? E.g. rgpio.sbc('soft', 8889)"""
 
 _except_2 = """
 Do you have permission to access the rgpiod daemon?
-Perhaps it was started with lgd -nlocalhost"""
+Perhaps it was started with rgpiod -nlocalhost"""
 
 _except_3 = """
 Can't create callback thread.
@@ -2668,10 +2668,10 @@ class sbc():
       The pipes are created in the library's working directory.
 
       Notifications for handle x will be available at the pipe
-      named lgd-nfyx (where x is the handle number).
+      named .lgd-nfyx (where x is the handle number).
 
       E.g. if the function returns 15 then the notifications must be
-      read from lgd-nfy15.
+      read from .lgd-nfy15.
 
       Notifications have the following structure:
 

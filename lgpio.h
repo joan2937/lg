@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <pthread.h>
 #include <linux/gpio.h>
 
-#define LGPIO_VERSION 0x00000000
+#define LGPIO_VERSION 0x00010000
 
 #define LG_CD "LG_CD"  /* configuration directory */
 #define LG_WD "LG_WD"  /* working directory */
@@ -194,7 +194,7 @@ lguSleep                     Sleeps for a given time
 lguTimestamp                 Gets the current timestamp
 lguTime                      Gets the current time
 
-lgErrStr                     Gets a text description of an error code
+lguErrorText                 Gets a text description of an error code
 
 lguSetWorkDir                Set the working directory
 lguGetWorkDir                Get the working directory
@@ -1157,11 +1157,11 @@ int main(int argc, char *argv[])
 
    h = lgGpiochipOpen(0); // open /dev/gpiochip0
 
-   if (h < 0) { printf("ERROR: %s (%d)\n", lgErrStr(h), h); return 1; }
+   if (h < 0) { printf("ERROR: %s (%d)\n", lguErrorText(h), h); return 1; }
 
    e =  lgGroupClaimOutput(h, 0, 6, GPIO, levels);
 
-   if (e < 0) { printf("ERROR: %s (%d)\n", lgErrStr(e), e); return 1; }
+   if (e < 0) { printf("ERROR: %s (%d)\n", lguErrorText(e), e); return 1; }
 
    mask = 0;
    p = 0;
@@ -1343,13 +1343,13 @@ int main(int argc, char *argv[])
 
    h = lgGpiochipOpen(0);
 
-   if (h < 0) { printf("ERROR: %s (%d)\n", lgErrStr(h), h); return 1; }
+   if (h < 0) { printf("ERROR: %s (%d)\n", lguErrorText(h), h); return 1; }
 
    lgGpioSetAlertsFunc(h, GPIO, afunc, &userdata);
 
    e = lgGpioClaimAlert(h, 0, LG_BOTH_EDGES, 23, -1);
 
-   if (e < 0) { printf("ERROR: %s (%d)\n", lgErrStr(e), e); return 1; }
+   if (e < 0) { printf("ERROR: %s (%d)\n", lguErrorText(e), e); return 1; }
 
    lguSleep(10);
 
@@ -1416,7 +1416,7 @@ int main(int argc, char *argv[])
 
    h = lgGpiochipOpen(0);
 
-   if (h < 0) { printf("ERROR: %s (%d)\n", lgErrStr(h), h); return 1; }
+   if (h < 0) { printf("ERROR: %s (%d)\n", lguErrorText(h), h); return 1; }
 
    lgGpioSetSamplesFunc(afunc, &userdata);
 
@@ -1472,9 +1472,9 @@ The notification pipes are created in the library working directory
 (see [*lguGetWorkDir*]).
 
 Pipe notifications for handle x will be available at the pipe
-named lgd-nfy* (where * is the handle number).  E.g. if the
+named .lgd-nfy* (where * is the handle number).  E.g. if the
 function returns 15 then the notifications must be read
-from lgd-nfy15.
+from .lgd-nfy15.
 
 Socket notifications are returned to the socket which requested the
 handle.
@@ -1484,7 +1484,7 @@ h = lgNotifyOpen();
 
 if (h >= 0)
 {
-   sprintf(str, "lgd-nfy%d", h);
+   sprintf(str, ".lgd-nfy%d", h);
 
    fd = open(str, O_RDONLY);
 
@@ -2434,7 +2434,7 @@ On failure returns a negative error code.
 D*/
 
 /*F*/
-const char *lgErrStr(int error);
+const char *lguErrorText(int error);
 /*D
 Returns the error text for an error code.
 

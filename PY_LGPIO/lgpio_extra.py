@@ -5,7 +5,7 @@ import sys
 import threading
 import time
 
-LGPIO_PY_VERSION = 0x00000000
+LGPIO_PY_VERSION = 0x00010000
 
 exceptions = True
 
@@ -267,7 +267,7 @@ class _callback_thread(threading.Thread):
       """
       threading.Thread.__init__(self)
       self._notify = _lgpio._notify_open()
-      self._file = open('lgd-nfy{}'.format(self._notify), 'rb')
+      self._file = open('.lgd-nfy{}'.format(self._notify), 'rb')
       self.go = False
       self.daemon = True
       self.callbacks = []
@@ -1639,10 +1639,10 @@ def notify_open():
    The pipes are created in the library's working directory.
 
    Notifications for handle x will be available at the pipe
-   named lgd-nfyx (where x is the handle number).
+   named .lgd-nfyx (where x is the handle number).
 
    E.g. if the function returns 15 then the notifications must be
-   read from lgd-nfy15.
+   read from .lgd-nfy15.
 
    Notifications have the following structure:
 

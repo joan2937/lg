@@ -35,7 +35,7 @@ Prints gpiochip information and line information for each GPIO.
 ?4|dhtxx.c|2020-11-18|DHT11/22/XX
 Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
 
-?4|monitor.c|2020-11-18|Monitor GPIO
+?4|monitor.c|2020-11-20|Monitor GPIO
 Monitors one or more GPIO as specified on the command line.
 
 ./monitor [chip:]gpio ...
@@ -47,7 +47,7 @@ e.g.
 ./monitor 23 24 25 # chip0: 23,24,25
 ./monitor 0:23 1:0 5 # chip0: 23, chip1: 0,5
 
-?4|rotary_encoder.c|2020-11-18|Rotary Encoder
+?4|rotary_encoder.c|2020-11-20|Rotary Encoder
 Code to monitor a rotary encoder and show the detent changes.
 
 ./rotary_encoder [chip] gpioA gpioB

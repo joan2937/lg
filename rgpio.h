@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "lgpio.h"
 
-#define RGPIO_VERSION 0x00000100
+#define RGPIO_VERSION 0x00010000
 
 /*TEXT
 
@@ -1760,9 +1760,9 @@ should be used instead.
 The notification pipes are created in the library working directory.
 
 Notifications for handle x will be available at the pipe
-named lgd-nfyx (where x is the handle number). E.g. if the
+named .lgd-nfyx (where x is the handle number). E.g. if the
 function returns 15 then the notifications must be
-read from lgd-nfy15.
+read from .lgd-nfy15.
 
 Each notification occupies 16 bytes in the fifo and has the
 following structure.

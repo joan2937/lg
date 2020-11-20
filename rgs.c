@@ -49,7 +49,7 @@ This program provides a socket interface to some of
 the commands available from lg.
 */
 
-#define RGS_VERSION 0x00000000
+#define RGS_VERSION 0x00010000
 
 #define RGS_CONNECT_ERR 255
 #define RGS_OPTION_ERR  254
@@ -305,20 +305,20 @@ static void xShowResult(int rv, lgCmd_p cmdP, char *cmdExt)
          if (r < 0)
          {
             printf("%d\n", r);
-            xReport(RGS_SCRIPT_ERR, "ERROR: %s", lgErrStr(r));
+            xReport(RGS_SCRIPT_ERR, "ERROR: %s", lguErrorText(r));
          }
          break;
 
       case 2:
          printf("%d\n", r);
-         if (r < 0) xReport(RGS_SCRIPT_ERR, "ERROR: %s", lgErrStr(r));
+         if (r < 0) xReport(RGS_SCRIPT_ERR, "ERROR: %s", lguErrorText(r));
          break;
 
       case 3:
          if (r < 0)
          {
             printf("%d\n", r);
-            xReport(RGS_SCRIPT_ERR, "ERROR: %s", lgErrStr(r));
+            xReport(RGS_SCRIPT_ERR, "ERROR: %s", lguErrorText(r));
          }
          else printf("%"PRIu64"\n", argQ[0]);
          break;
@@ -343,7 +343,7 @@ static void xShowResult(int rv, lgCmd_p cmdP, char *cmdExt)
          }
 
          printf("%d", r);
-         if (r < 0) xReport(RGS_SCRIPT_ERR, "ERROR: %s", lgErrStr(r));
+         if (r < 0) xReport(RGS_SCRIPT_ERR, "ERROR: %s", lguErrorText(r));
          if (r > 0)
          {
             if (printFlags == PRINT_ASCII) printf(" ");
@@ -370,7 +370,7 @@ static void xShowResult(int rv, lgCmd_p cmdP, char *cmdExt)
          if (r != (4 + (4*LG_MAX_SCRIPT_PARAMS)))
          {
             printf("%d", r);
-            xReport(RGS_SCRIPT_ERR, "ERROR: %s", lgErrStr(r));
+            xReport(RGS_SCRIPT_ERR, "ERROR: %s", lguErrorText(r));
          }
          else
          {
@@ -387,7 +387,7 @@ static void xShowResult(int rv, lgCmd_p cmdP, char *cmdExt)
          if (r < 0)
          {
             printf("%d\n", r);
-            xReport(RGS_SCRIPT_ERR, "ERROR: %s", lgErrStr(r));
+            xReport(RGS_SCRIPT_ERR, "ERROR: %s", lguErrorText(r));
          }
          else
          {
@@ -399,7 +399,7 @@ static void xShowResult(int rv, lgCmd_p cmdP, char *cmdExt)
          if (r < 0)
          {
             printf("%d\n", r);
-            xReport(RGS_SCRIPT_ERR, "ERROR: %s", lgErrStr(r));
+            xReport(RGS_SCRIPT_ERR, "ERROR: %s", lguErrorText(r));
          }
          else
          {
@@ -411,7 +411,7 @@ static void xShowResult(int rv, lgCmd_p cmdP, char *cmdExt)
          if (r < 0)
          {
             printf("%d\n", r);
-            xReport(RGS_SCRIPT_ERR, "ERROR: %s", lgErrStr(r));
+            xReport(RGS_SCRIPT_ERR, "ERROR: %s", lguErrorText(r));
          }
          else
          {
@@ -422,7 +422,7 @@ static void xShowResult(int rv, lgCmd_p cmdP, char *cmdExt)
 
       default:
          printf("*** command=%d, status=%d\n", cmdP->cmd, r);
-         if (r < 0) xReport(RGS_SCRIPT_ERR, "ERROR: %s", lgErrStr(r));
+         if (r < 0) xReport(RGS_SCRIPT_ERR, "ERROR: %s", lguErrorText(r));
          break;
 
    }

@@ -1,6 +1,6 @@
 /*
 rotary_encoder.c
-2020-11-18
+2020-11-20
 Public Domain
 
 http://abyz.me.uk/lg/lgpio.html
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
    if (h < 0)
    {
       fprintf(stderr, "can't open /dev/gpiochip%d (%s)\n",
-         renc.chip, lgErrStr(h));
+         renc.chip, lguErrorText(h));
       return -1;
    }
 
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
    if (err < 0)
    {
       fprintf(stderr, "can't claim GPIO %d (%s)\n",
-         renc.gpioA, lgErrStr(err));
+         renc.gpioA, lguErrorText(err));
       return -1;
    }
 
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
    if (err < 0)
    {
       fprintf(stderr, "can't claim GPIO %d (%s)\n",
-         renc.gpioB, lgErrStr(err));
+         renc.gpioB, lguErrorText(err));
       return -1;
    }
 

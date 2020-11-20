@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
    if (h < 0)
    {
       fprintf(stderr, "can't open /dev/gpiochip%d (%s)\n",
-         chip, lgErrStr(h));
+         chip, lguErrorText(h));
       return -1;
    }
 
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
    if (err < 0)
    {
       fprintf(stderr, "can't claim GPIO %d (%s)\n",
-         trigger, lgErrStr(err));
+         trigger, lguErrorText(err));
       return -1;
    }
 
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
    if (err < 0)
    {
       fprintf(stderr, "can't claim GPIO %d (%s)\n",
-         echo, lgErrStr(err));
+         echo, lguErrorText(err));
       return -1;
    }
 
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
    if (err < 0)
    {
       fprintf(stderr, "can't create callback for GPIO %d (%s)\n",
-         echo, lgErrStr(cb_echo));
+         echo, lguErrorText(cb_echo));
       return -1;
    }
 

@@ -143,7 +143,7 @@ static xErrInfo_t xErrInfo[]=
    {LG_INVALID_GROUP_ALERT,  "can not set a group to alert"},
 };
 
-const char *lgErrStr(int error)
+const char *lguErrorText(int error)
 {
    int i;
 

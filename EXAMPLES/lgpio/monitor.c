@@ -1,6 +1,6 @@
 /*
 monitor.c
-2020-11-18
+2020-11-20
 Public Domain
 
 http://abyz.me.uk/lg/lgpio.html
@@ -96,14 +96,14 @@ int main(int argc, char *argv[])
             if (err < 0)
             {
                fprintf(stderr, "GPIO in use %d:%d (%s)\n",
-                  chip, gpio, lgErrStr(err));
+                  chip, gpio, lguErrorText(err));
                return -1;
             }
          }
          else
          {
             fprintf(stderr, "can't open gpiochip %d (%s)\n",
-               chip, lgErrStr(h));
+               chip, lguErrorText(h));
             return -1;
          }
       }

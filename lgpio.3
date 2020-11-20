@@ -331,7 +331,7 @@ lguTime                      Gets the current time
 .br
 
 .br
-lgErrStr                     Gets a text description of an error code
+lguErrorText                 Gets a text description of an error code
 .br
 
 .br
@@ -1768,7 +1768,7 @@ int main(int argc, char *argv[])
 .br
 
 .br
-   if (h < 0) { printf("ERROR: %s (%d)\n", lgErrStr(h), h); return 1; }
+   if (h < 0) { printf("ERROR: %s (%d)\n", lguErrorText(h), h); return 1; }
 .br
 
 .br
@@ -1776,7 +1776,7 @@ int main(int argc, char *argv[])
 .br
 
 .br
-   if (e < 0) { printf("ERROR: %s (%d)\n", lgErrStr(e), e); return 1; }
+   if (e < 0) { printf("ERROR: %s (%d)\n", lguErrorText(e), e); return 1; }
 .br
 
 .br
@@ -2135,7 +2135,7 @@ int main(int argc, char *argv[])
 .br
 
 .br
-   if (h < 0) { printf("ERROR: %s (%d)\n", lgErrStr(h), h); return 1; }
+   if (h < 0) { printf("ERROR: %s (%d)\n", lguErrorText(h), h); return 1; }
 .br
 
 .br
@@ -2147,7 +2147,7 @@ int main(int argc, char *argv[])
 .br
 
 .br
-   if (e < 0) { printf("ERROR: %s (%d)\n", lgErrStr(e), e); return 1; }
+   if (e < 0) { printf("ERROR: %s (%d)\n", lguErrorText(e), e); return 1; }
 .br
 
 .br
@@ -2281,7 +2281,7 @@ int main(int argc, char *argv[])
 .br
 
 .br
-   if (h < 0) { printf("ERROR: %s (%d)\n", lgErrStr(h), h); return 1; }
+   if (h < 0) { printf("ERROR: %s (%d)\n", lguErrorText(h), h); return 1; }
 .br
 
 .br
@@ -2375,9 +2375,9 @@ The notification pipes are created in the library working directory
 
 .br
 Pipe notifications for handle x will be available at the pipe
-named lgd-nfy* (where * is the handle number).  E.g. if the
+named .lgd-nfy* (where * is the handle number).  E.g. if the
 function returns 15 then the notifications must be read
-from lgd-nfy15.
+from .lgd-nfy15.
 
 .br
 
@@ -2400,7 +2400,7 @@ if (h >= 0)
 .br
 {
 .br
-   sprintf(str, "lgd-nfy%d", h);
+   sprintf(str, ".lgd-nfy%d", h);
 .br
 
 .br
@@ -4070,7 +4070,7 @@ If OK returns 0.
 .br
 On failure returns a negative error code.
 
-.IP "\fBconst char *lgErrStr(int error)\fP"
+.IP "\fBconst char *lguErrorText(int error)\fP"
 .IP "" 4
 Returns the error text for an error code.
 

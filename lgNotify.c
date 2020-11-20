@@ -127,7 +127,7 @@ int lgNotifyOpenWithSize(int bufSize)
 
    if (handle < 0) {return LG_NO_MEMORY;}
 
-   snprintf(name, sizeof(name), "%s/lgd-nfy%d", lguGetWorkDir(), handle);
+   snprintf(name, sizeof(name), "%s/.lgd-nfy%d", lguGetWorkDir(), handle);
 
    xCreatePipe(name, 0664);
 

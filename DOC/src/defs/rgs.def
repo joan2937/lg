@@ -1174,11 +1174,11 @@ On error a negative status code will be returned.
 The pipes are created in the daemon's working directory (the command
 [#pwd#] will show the working directory).
 
-Notifications for handle g will be available at the pipe named lgd-nfyx
-(where g is the handle number).
+Notifications for handle x will be available at the pipe named .lgd-nfyx
+(where x is the handle number).
 
 E.g. if the command returns 15 then the notifications must be read
-from lgd-nfy15.
+from .lgd-nfy15.
 
 ...
 $ rgs c 1 no
