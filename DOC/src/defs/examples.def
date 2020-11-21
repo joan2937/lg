@@ -26,6 +26,11 @@ If your program is called foobar.c then build with
 gcc -Wall -o foobar foobar.c -llgpio
 
 
+?4|28BYJ_48.c|2020-11-21|28BYJ_48
+Simple code to spin a 28BYJ_48 stepper clockwise then counterclockwise.
+
+./28BYJ_48 [chip] gpio1 gpio2 gpio3 gpio4
+
 ?4|bench.c|2020-11-18|GPIO Toggle
 A crude benchmark of how many toggles a second can be completed.
 
@@ -82,6 +87,11 @@ Examples of Python lgpio module scripts.
 
 lgpio Python scripts may be run on any Linux computer with Python installed.  The scripts allow control of the local GPIO.
 
+
+?4|28BYJ_48.py|2020-11-21|28BYJ_48
+Simple code to spin a 28BYJ_48 stepper clockwise then counterclockwise.
+
+./28BYJ_48.py [chip] gpio1 gpio2 gpio3 gpio4
 
 ?4|bench.py|2020-11-18|GPIO Toggle
 A crude benchmark of how many toggles a second can be completed.
@@ -152,6 +162,11 @@ If your program is called foobar.c then build with
 gcc -Wall -o foobar foobar.c -lrgpio
 
 
+?4|28BYJ_48.c|2020-11-21|28BYJ_48
+Simple code to spin a 28BYJ_48 stepper clockwise then counterclockwise.
+
+./28BYJ_48 [chip] gpio1 gpio2 gpio3 gpio4
+
 ?4|bench.c|2020-11-18|GPIO Toggle
 A crude benchmark of how many toggles a second can be completed.
 
@@ -221,6 +236,11 @@ The computer need not be Linux, it may run Windows, Mac, etc, anything as long a
 
 Each SBC needs the rgpiod daemon to be running.  The rgpiod daemon may be started with the command rgpiod &.
 
+
+?4|28BYJ_48.py|2020-11-21|28BYJ_48
+Simple code to spin a 28BYJ_48 stepper clockwise then counterclockwise.
+
+./28BYJ_48.py [chip] gpio1 gpio2 gpio3 gpio4
 
 ?4|bench.py|2020-11-18|GPIO Toggle
 A crude benchmark of how many toggles a second can be completed.

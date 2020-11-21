@@ -4,13 +4,15 @@ A few packages are needed during installation of the Python modules.
 
 [ul]
 the SWIG code generator (to build lgpio.py from the C library)
+the Python development files (to build lgpio.py)
 the Python set up tools (to install lgpio.py and rgpio.py)
 [ul]
 
 These packages may be installed with the following command.
 
 . .
-sudo apt install python-setuptools python3-setuptools swig
+sudo apt install swig python-dev python3-dev
+sudo apt install python-setuptools python3-setuptools
 . .
 
 TEXT*/
