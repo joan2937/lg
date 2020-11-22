@@ -50,3 +50,32 @@ EXAMPLES directory.
 
 ALL GPIO are identified by their gpiochip line number.
 
+## Download & Install
+
+### Prerequisites
+
+A few packages are needed during installation of the Python modules.
+
+* the SWIG code generator (to build lgpio.py from the C library)
+* the Python development files (to build lgpio.py)
+* the Python set up tools (to install lgpio.py and rgpio.py)
+
+On Debian like systems these packages may be installed with the following commands.
+
+```
+sudo apt install swig python-dev python3-dev
+sudo apt install python-setuptools python3-setuptools
+
+```
+
+### Download & Install
+
+```
+wget https://github.com/joan2937/lg/archive/master.zip
+unzip master.zip
+cd lg-master
+make
+sudo make install
+
+```
+

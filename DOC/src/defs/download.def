@@ -1,4 +1,4 @@
-/*TEXT Preliminary
+/*TEXT Prerequisites
 
 A few packages are needed during installation of the Python modules.
 
@@ -13,6 +13,7 @@ These packages may be installed with the following command.
 . .
 sudo apt install swig python-dev python3-dev
 sudo apt install python-setuptools python3-setuptools
+
 . .
 
 TEXT*/
@@ -28,6 +29,7 @@ unzip lg.zip
 cd lg
 make
 sudo make install
+
 . .
 
 TEXT*/
