@@ -19,7 +19,7 @@ Although many are complete programs they are intended to be a starting point in 
 
 Examples of C lgpio programs.
 
-C rgpio programs may be run on any Linux computer.  The programs allow control of the local GPIO.
+C lgpio programs may be run on any Linux computer.  The programs allow control of the local GPIO.
 
 If your program is called foobar.c then build with
 
@@ -116,6 +116,21 @@ e.g.
 
 ./monitor.py 23 24 25 # chip0: 23,24,25
 ./monitor.py 0:23 1:0 5 # chip0: 23, chip1: 0,5
+
+?4|motor_sync.py|2020-11-30|Motor Sync
+A class to send synchronised outputs to output devices. Unipolar steppers and servos are specifically supported. PWM is supported. An adhoc method allows for setting the levels of one or more GPIO at set times.
+
+The following steps are required.
+
+1. sync = motor_sync.sync(sbc)
+2. call one or more setup_() functions to define the devices and the GPIO to use.
+3. call setup_complete() when all devices have been allocated.
+4. add waypoints for each device to be moved in the next period.
+5. call batch() to start transmission.
+6. wait until batching() is False (all movements calculated).
+7. If more movements are desired repeat from step 4.
+8. wait till busy() is False (all movements completed).
+9. call finish() to release resources.
 
 ?4|rotary_encoder.py|2020-11-18|Rotary Encoder
 Code to monitor a rotary encoder and show the detent changes.
@@ -271,6 +286,21 @@ e.g.
 
 ./monitor.py 23 24 25 # chip0: 23,24,25
 ./monitor.py 0:23 1:0 5 # chip0: 23, chip1: 0,5
+
+?4|motor_sync.py|2020-11-30|Motor Sync
+A class to send synchronised outputs to output devices. Unipolar steppers and servos are specifically supported. PWM is supported. An adhoc method allows for setting the levels of one or more GPIO at set times.
+
+The following steps are required.
+
+1. sync = motor_sync.sync(sbc)
+2. call one or more setup_() functions to define the devices and the GPIO to use.
+3. call setup_complete() when all devices have been allocated.
+4. add waypoints for each device to be moved in the next period.
+5. call batch() to start transmission.
+6. wait until batching() is False (all movements calculated).
+7. If more movements are desired repeat from step 4.
+8. wait till busy() is False (all movements completed).
+9. call finish() to release resources.
 
 ?4|rotary_encoder.py|2020-11-18|Rotary Encoder
 Code to monitor a rotary encoder and show the detent changes.
