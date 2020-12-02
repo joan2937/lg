@@ -99,7 +99,7 @@ A crude benchmark of how many toggles a second can be completed.
 ?4|chipline.py|2020-11-18|gpiochip Info
 Prints gpiochip information and line information for each GPIO.
 
-?4|DHT.py|2020-11-18|DHT11/22/XX
+?4|DHT.py|2020-12-01|DHT11/22/XX
 Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
 
 ?4|errors.py|2020-11-18|Errors

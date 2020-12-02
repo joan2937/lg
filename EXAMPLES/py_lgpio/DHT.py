@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 DHT.py
-2020-11-18
+2020-12-01
 Public Domain
 
 http://abyz.me.uk/lg/py_lgpio.html
@@ -197,7 +197,7 @@ class sensor:
 if __name__== "__main__":
    import sys
    import argparse
-   import lgpio
+   import lgpio as sbc
    import DHT # import current module as a class
 
    ap = argparse.ArgumentParser()

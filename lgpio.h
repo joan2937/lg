@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <pthread.h>
 #include <linux/gpio.h>
 
-#define LGPIO_VERSION 0x00010000
+#define LGPIO_VERSION 0x00010001
 
 #define LG_CD "LG_CD"  /* configuration directory */
 #define LG_WD "LG_WD"  /* working directory */
@@ -2313,7 +2313,7 @@ void *myfunc(void *arg)
 {
    while (1)
    {
-      printf("%s\n", arg);
+      printf("%s\n", (char *)arg);
       sleep(1);
    }
 }
