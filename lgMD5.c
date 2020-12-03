@@ -279,14 +279,18 @@ void lgMd5Final(lgMd5_p ctx, unsigned char *result)
 }
 
 void lgMd5UserHash(
-   char *user, char *salt1, char *salt2, char *secretFile, char *hash)
+   const char *user,
+   const char *salt1,
+   const char *salt2,
+   const char *secretFile,
+   char *hash)
 {
    lgMd5_t md5;
    lgCfg_p sCfg;
    char *secret=NULL;
    char sPath[1024];
 
-   if (strlen(secretFile) == 0)
+   if (!secretFile || strlen(secretFile) == 0)
    {
       snprintf(sPath, sizeof(sPath), "%s/.lg_secret", getenv("HOME"));
       secretFile = sPath;

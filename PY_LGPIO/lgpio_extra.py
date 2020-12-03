@@ -5,7 +5,7 @@ import sys
 import threading
 import time
 
-LGPIO_PY_VERSION = 0x00010000
+LGPIO_PY_VERSION = 0x00010001
 
 exceptions = True
 

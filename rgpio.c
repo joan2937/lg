@@ -501,6 +501,7 @@ int rgpiod_start(const char *addrStr, const char *portStr)
    int sbc;
    int *userdata;
    struct sigaction new_action, old_action;
+   const char *userStr;
 
    if (!xInited)
    {
@@ -580,11 +581,21 @@ int rgpiod_start(const char *addrStr, const char *portStr)
             if (gPthNotify[sbc])
             {
                gMsgBuf[sbc] = malloc(CMD_MAX_EXTENSION);
-               if (gMsgBuf[sbc] != NULL) return sbc;
+
+               if (gMsgBuf[sbc] != NULL)
+               {
+                  userStr = getenv(LG_ENVUSER);
+
+                  if (userStr && strlen(userStr))
+                  {
+                     lgu_set_user(sbc, userStr, NULL);
+                  }
+
+                  return sbc;
+               }
                else return lgif_bad_malloc;
             }
             else return lgif_notify_failed;
-
          }
       }
       else return gPigNotify[sbc];
@@ -1656,7 +1667,7 @@ int lgu_get_sbc_name(int sbc, char *name, int count)
    return bytes;
 }
 
-int lgu_set_user(int sbc, char *user, char *secretFile)
+int lgu_set_user(int sbc, const char *user, const char *secretFile)
 {
    lgExtent_t ext[1];
    int len;
@@ -1668,7 +1679,7 @@ int lgu_set_user(int sbc, char *user, char *secretFile)
 
    hash[0] = 0;
 
-   if (strlen(user) == 0) user = LG_DEFAULT_USER;
+   if (!user || strlen(user) == 0) user = LG_DEFAULT_USER;
 
    snprintf(salt1, LG_SALT_LEN, "%015"PRIx64, xMakeSalt());
    sprintf(buf, "%s.%s", salt1, user);

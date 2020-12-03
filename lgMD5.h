@@ -49,7 +49,11 @@ void lgMd5Update(lgMd5_p ctx, const void *data, unsigned long size);
 void lgMd5Final (lgMd5_p ctx, unsigned char *result);
 
 void lgMd5UserHash(
-   char *user, char *salt1, char *salt2, char *secretFile, char *hash);
+   const char *user,
+   const char *salt1,
+   const char *salt2,
+   const char *secretFile,
+   char *hash);
 
 #endif
 

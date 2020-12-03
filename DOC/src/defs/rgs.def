@@ -95,9 +95,20 @@ This means the handle is preserved and may be used in subsequent commands.
 rgs c 1 go 0 # get and preserve handle to gpiochip 0
 . .
 
+If the LG_SHARE environment variable exists that share will be
+automatically used in rgs commands.
+
+E.g. [#export LG_SHARE=12#] will automatically use share id 12.
+
 If a command is privileged it is indicated in the notes for the
 command.  The examples given here assume the daemon access control
 system is not active (so any user can use privileged commands).
+
+If the LG_USER environment variable exists that user will be
+automatically used in rgs commands.  This only has an effect if
+the rgpiod daemon is running with access control enabled.
+
+E.g. [#export LG_USER=joan#] will automatically use user joan.
 
 OVERVIEW
 

@@ -461,7 +461,14 @@ On failure returns a negative error code.
 
 .br
 This sbc value is passed to the other functions to specify
-the SBC to be operated on.
+the SBC to be used.
+
+.br
+
+.br
+If the LG_USER environment variable exists that user will be
+"logged in" using \fBlgu_set_user\fP.  This only has an effect if
+the rgpiod daemon is running with access control enabled.
 
 .IP "\fBvoid rgpiod_stop(int sbc)\fP"
 .IP "" 4
@@ -4200,7 +4207,7 @@ If OK returns the count of bytes copied and updates buf.
 .br
 On failure returns a negative error code.
 
-.IP "\fBint lgu_set_user(int sbc, char *user, char *secretsFile)\fP"
+.IP "\fBint lgu_set_user(int sbc, const char *user, const char *secretsFile)\fP"
 .IP "" 4
 Sets the rgpiod daemon user.  The user then has the
 associated permissions.

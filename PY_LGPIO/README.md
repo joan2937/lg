@@ -14,7 +14,7 @@ lgpio is a module for Linux Single Board Computers (SBC) which allows control of
 
 ## Installation
 
-pypy can not handle Linux libararies properly at the moment.
+pypy can not handle Linux libraries properly at the moment.
 
 You need to install the lgpio module from the lg archive.
 

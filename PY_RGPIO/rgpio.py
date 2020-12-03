@@ -240,7 +240,7 @@ import os
 import atexit
 import hashlib
 
-RGPIO_PY_VERSION = 0x00010000
+RGPIO_PY_VERSION = 0x00010100
 
 exceptions = True
 
@@ -994,9 +994,9 @@ class sbc():
 
       host:= the host name of the SBC on which the rgpiod daemon is
              running.  The default is localhost unless overridden by
-             the ADDR environment variable.
+             the LG_ADDR environment variable.
       port:= the port number on which the rgpiod daemon is listening.
-             The default is 8889 unless overridden by the PORT
+             The default is 8889 unless overridden by the LG_PORT
              environment variable.  The rgpiod daemon must have been
              started with the same port number.
 
@@ -1006,6 +1006,10 @@ class sbc():
       An instance attribute [*connected*] may be used to check the
       success of the connection.  If the connection is established
       successfully [*connected*] will be True, otherwise False.
+
+      If the LG_USER environment variable exists that user will be
+      "logged in" using [*set_user*].  This only has an effect if
+      the rgpiod daemon is running with access control enabled.
 
       ...
       sbc = rgpio.sbc()             # use defaults
@@ -1072,6 +1076,13 @@ class sbc():
             else:
                 print(_except_3)
             print(_except_z)
+
+      else: # auto login if LG_USER exists
+
+         user = os.getenv("LG_USER", '')
+
+         if len(user) > 0:
+            self.set_user(user)
 
    def stop(self):
       """

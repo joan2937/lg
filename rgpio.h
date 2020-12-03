@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "lgpio.h"
 
-#define RGPIO_VERSION 0x00010000
+#define RGPIO_VERSION 0x00010100
 
 /*TEXT
 
@@ -279,7 +279,11 @@ If OK returns a sbc (>= 0).
 On failure returns a negative error code.
 
 This sbc value is passed to the other functions to specify
-the SBC to be operated on.
+the SBC to be used.
+
+If the LG_USER environment variable exists that user will be
+"logged in" using [*lgu_set_user*].  This only has an effect if
+the rgpiod daemon is running with access control enabled.
 D*/
 
 /*F*/
@@ -2355,7 +2359,7 @@ On failure returns a negative error code.
 D*/
 
 /*F*/
-int lgu_set_user(int sbc, char *user, char *secretsFile);
+int lgu_set_user(int sbc, const char *user, const char *secretsFile);
 /*D
 Sets the rgpiod daemon user.  The user then has the
 associated permissions.

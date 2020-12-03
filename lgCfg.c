@@ -65,7 +65,7 @@ typedef struct lgCfg_s
    lgCfgS_p first_section;
 } lgCfg_t, *lgCfg_p;
 
-lgCfg_p lgCfgNew(char *file)
+lgCfg_p lgCfgNew(const char *file)
 {
    lgCfg_p cfg;
 
@@ -109,7 +109,7 @@ lgCfg_p lgCfgNew(char *file)
    return cfg;
 }
 
-lgCfgKV_p lgCfgFindKey(lgCfgS_p section, char *key)
+lgCfgKV_p lgCfgFindKey(lgCfgS_p section, const char *key)
 {
    lgCfgKV_p k;
 
@@ -120,7 +120,7 @@ lgCfgKV_p lgCfgFindKey(lgCfgS_p section, char *key)
    return k;
 }
 
-lgCfgS_p lgCfgFindSection(lgCfg_p cfg, char *section)
+lgCfgS_p lgCfgFindSection(lgCfg_p cfg, const char *section)
 {
    lgCfgS_p s;
 
@@ -131,7 +131,7 @@ lgCfgS_p lgCfgFindSection(lgCfg_p cfg, char *section)
    return s;
 }
 
-char *lgCfgGetValue(lgCfg_p cfg, char *section, char *key)
+char *lgCfgGetValue(lgCfg_p cfg, const char *section, const char *key)
 {
    lgCfgS_p cfgS;
    lgCfgKV_p cfgKV;
@@ -303,7 +303,7 @@ void lgCfgFree(lgCfg_p cfg)
    free(cfg);
 }
 
-lgCfg_p lgCfgRead(char *file)
+lgCfg_p lgCfgRead(const char *file)
 {
    FILE *fp;
    lgCfgS_p cs = NULL; /* current section */

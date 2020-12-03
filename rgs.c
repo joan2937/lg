@@ -49,7 +49,7 @@ This program provides a socket interface to some of
 the commands available from lg.
 */
 
-#define RGS_VERSION 0x00010000
+#define RGS_VERSION 0x00010100
 
 #define RGS_CONNECT_ERR 255
 #define RGS_OPTION_ERR  254
@@ -477,6 +477,7 @@ int main(int argc , char *argv[])
    int args, idx, i, pp, l, len;
    char salt1[LG_SALT_LEN];
    char user[LG_USER_LEN];
+   const char *userStr, *shareStr;
    cmdCtl_t ctl;
    cmdScript_t s;
    lgCmd_t cmdBuf[CMD_MAX_EXTENSION/sizeof(lgCmd_t)];
@@ -490,6 +491,24 @@ int main(int argc , char *argv[])
    text[0] = 0;
    l = 0;
    pp = 0;
+
+   userStr = getenv(LG_ENVUSER);
+
+   if (userStr && strlen(userStr))
+   {
+      sprintf(text, "u %s ", userStr);
+      l = strlen(text);
+      pp = l;
+   }
+
+   shareStr = getenv(LG_ENVSHARE);
+
+   if (shareStr && strlen(shareStr))
+   {
+      sprintf(text+pp, "c %s ", shareStr);
+      l = strlen(text);
+      pp = l;
+   }
 
    for (i=args; i<argc; i++)
    {

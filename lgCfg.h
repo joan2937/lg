@@ -36,9 +36,9 @@ For more information, please refer to <http://unlicense.org/>
 
 typedef struct lgCfg_s lgCfg_t, *lgCfg_p;
 
-lgCfg_p lgCfgRead(char *file);
+lgCfg_p lgCfgRead(const char *file);
 
-char    *lgCfgGetValue(lgCfg_p cfg, char *section, char *key);
+char    *lgCfgGetValue(lgCfg_p cfg, const char *section, const char *key);
 
 void    lgCfgFree(lgCfg_p cfg);
 

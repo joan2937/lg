@@ -183,9 +183,24 @@ rgs c 1 go 0 # get and preserve handle to gpiochip 0
 .EE
 
 .br
+If the LG_SHARE environment variable exists that share will be
+automatically used in rgs commands.
+
+.br
+E.g. \fBexport LG_SHARE=12\fP will automatically use share id 12.
+
+.br
 If a command is privileged it is indicated in the notes for the
 command.  The examples given here assume the daemon access control
 system is not active (so any user can use privileged commands).
+
+.br
+If the LG_USER environment variable exists that user will be
+automatically used in rgs commands.  This only has an effect if
+the rgpiod daemon is running with access control enabled.
+
+.br
+E.g. \fBexport LG_USER=joan\fP will automatically use user joan.
 
 .br
 

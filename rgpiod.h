@@ -32,10 +32,12 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "lgCmd.h"
 
-#define RGPIOD_VERSION 0x00010000
+#define RGPIOD_VERSION 0x00010100
 
-#define LG_ENVPORT "LG_PORT"
 #define LG_ENVADDR "LG_ADDR"
+#define LG_ENVPORT "LG_PORT"
+#define LG_ENVSHARE "LG_SHARE"
+#define LG_ENVUSER "LG_USER"
 
 #define LG_DEFAULT_USER "default"
 
