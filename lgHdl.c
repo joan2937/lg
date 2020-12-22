@@ -154,6 +154,7 @@ int lgHdlAlloc(
    if (h == NULL)
    {
       free(*objPtr);
+      *objPtr = NULL;
       lgHdl[handle].header = (void *)LG_HDL_FREE;
       ALLOC_ERROR(LG_NO_MEMORY, "");
    }

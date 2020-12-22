@@ -197,24 +197,34 @@ void *pthSocketThread(void *x)
 
          sock = malloc(sizeof(int));
 
-         *sock = fdC;
-
-         /* Enable tcp_keepalive */
-         int optval = 1;
-         socklen_t optlen = sizeof(optval);
-
-         if (setsockopt(fdC, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen) < 0)
+         if (sock != NULL)
          {
-           LG_DBG(LG_DEBUG_ALWAYS, "setsockopt() fail, closing socket %d", fdC);
-           close(fdC);
+            *sock = fdC;
+
+            /* Enable tcp_keepalive */
+            int optval = 1;
+            socklen_t optlen = sizeof(optval);
+
+            if (setsockopt(fdC, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen) < 0)
+            {
+              LG_DBG(LG_DEBUG_ALWAYS,
+                 "setsockopt() fail, closing socket %d", fdC);
+              close(fdC);
+            }
+
+            LG_DBG(LG_DEBUG_INTERNAL,
+               "SO_KEEPALIVE enabled on socket %d\n", fdC);
+
+            if (pthread_create
+               (&thr, &attr, xSocketThreadHandler, (void*) sock) < 0)
+               PARAM_ERROR((void*)LG_INIT_FAILED,
+                  "socket pthread_create failed (%m)");
          }
-
-         LG_DBG(LG_DEBUG_INTERNAL, "SO_KEEPALIVE enabled on socket %d\n", fdC);
-
-         if (pthread_create
-            (&thr, &attr, xSocketThreadHandler, (void*) sock) < 0)
-            PARAM_ERROR((void*)LG_INIT_FAILED,
-               "socket pthread_create failed (%m)");
+         else
+         {
+            LG_DBG(LG_DEBUG_ALWAYS, "no memory, closing");
+            close(fdC);
+         }
       }
       else
       {

@@ -550,7 +550,11 @@ static int xWave(
          p->entries++;
          status = LG_TX_BUF - p->entries;
       }
-      else status = LG_TX_QUEUE_FULL;
+      else
+      {
+         free(pulsesTmp);
+         status = LG_TX_QUEUE_FULL;
+      }
 
       lgPthTxUnlock();
    }
@@ -603,6 +607,7 @@ int lgGpiochipOpen(int gpioDev)
    lgChipObj_p chip;
    struct gpiochip_info info;
    char chipName[128];
+   lgLineInf_p lInf; /* used to stop -fanalyzer warning */
 
    LG_DBG(LG_DEBUG_TRACE, "gpioDev=%d", gpioDev);
 
@@ -636,13 +641,15 @@ int lgGpiochipOpen(int gpioDev)
    chip->handle = handle;
 
    /* calloc will zero all members */
-   chip->LineInf = calloc(info.lines, sizeof(lgLineInf_t));
+   lInf = calloc(info.lines, sizeof(lgLineInf_t));
 
-   if (chip->LineInf == NULL)
+   if (lInf == NULL)
    {
       lgHdlFree(handle, LG_HDL_TYPE_GPIO);
       ALLOC_ERROR(LG_NOT_ENOUGH_MEMORY, "can't allocate gpio lines");
    }
+
+   chip->LineInf = lInf;
 
    LG_DBG(LG_DEBUG_ALLOC, "alloc LineInf: *%p", (void*)chip->LineInf);
 
@@ -962,8 +969,8 @@ int lgGpioClaimAlert(
    int mode;
    lgAlertRec_p p;
    struct gpioevent_request req;
-   uint32_t *offsets;
-   uint8_t *values;
+   uint32_t *offs;
+   uint8_t *vals;
 
    LG_DBG(LG_DEBUG_TRACE, "handle=%d lFlags=%x eFlags=%x gpio=%d nfyHandle=%d",
       handle, lFlags, eFlags, gpio, nfyHandle);
@@ -995,18 +1002,29 @@ int lgGpioClaimAlert(
 
             if (status == 0)
             {
-               offsets = calloc(1, sizeof(uint32_t));
+               offs = calloc(1, sizeof(uint32_t));
 
-               // struct needs GPIOHANDLES_MAX entries
-               values = calloc(GPIOHANDLES_MAX, sizeof(uint8_t));
-
-               if ((offsets == NULL) || (values == NULL))
+               if (offs == NULL)
                {
-                  free(offsets); // passing NULL is legal
-                  free(values); // passing NULL is legal
                   close(req.fd);
                   return LG_NOT_ENOUGH_MEMORY;
                }
+
+               chip->LineInf[gpio].offsets = offs;
+
+               // struct needs GPIOHANDLES_MAX entries
+               vals = calloc(GPIOHANDLES_MAX, sizeof(uint8_t));
+
+               if (vals == NULL)
+               {
+                  free(offs);
+                  chip->LineInf[gpio].offsets = NULL;
+                  chip->LineInf[gpio].values = NULL;
+                  close(req.fd);
+                  return LG_NOT_ENOUGH_MEMORY;
+               }
+
+               chip->LineInf[gpio].values = vals;
 
                chip->LineInf[gpio].mode = LG_CHIP_BIT_ALERT;
                chip->LineInf[gpio].lFlags = lFlags;
@@ -1014,8 +1032,6 @@ int lgGpioClaimAlert(
                chip->LineInf[gpio].group_size = 1;
                chip->LineInf[gpio].fd = req.fd;
                chip->LineInf[gpio].offset = 0;
-               chip->LineInf[gpio].offsets = offsets;
-               chip->LineInf[gpio].values = values;
 
                if ((p = lgGpioGetAlertRec(chip, gpio)) != NULL)
                   p->active= 0;
