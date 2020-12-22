@@ -132,7 +132,7 @@ The following steps are required.
 8. wait till busy() is False (all movements completed).
 9. call finish() to release resources.
 
-?4|NRF24.py|2020-12-21|NRF24 Radio Transceiver
+?4|NRF24.py|2020-12-22|NRF24 Radio Transceiver
 Script to transmit and receive messages using the nRF24L01 radio transceiver.
 
 ?4|rotary_encoder.py|2020-11-18|Rotary Encoder
@@ -305,7 +305,7 @@ The following steps are required.
 8. wait till busy() is False (all movements completed).
 9. call finish() to release resources.
 
-?4|NRF24.py|2020-12-21|NRF24 Radio Transceiver
+?4|NRF24.py|2020-12-22|NRF24 Radio Transceiver
 Script to transmit and receive messages using the nRF24L01 radio transceiver.
 
 ?4|rotary_encoder.py|2020-11-18|Rotary Encoder

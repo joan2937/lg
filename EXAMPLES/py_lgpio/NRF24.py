@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 NRF24.py
-2020-12-21
+2020-12-22
 Public Domain
 
 http://abyz.me.uk/lg/py_lgpio.html
@@ -39,12 +39,6 @@ class NRF24:
    |Power Down|  0     |  ---    |  ---   | ---                         |
    +----------+--------+---------+--------+-----------------------------+
    """
-
-   SPI_MAIN_CE0 = 0
-   SPI_MAIN_CE1 = 1
-   SPI_AUX_CE0  = 2
-   SPI_AUX_CE1  = 3
-   SPI_AUX_CE2  = 4
 
    TX = 0
    RX = 1
@@ -136,7 +130,9 @@ class NRF24:
 
       self.unsetCE()
 
-      assert NRF24.SPI_MAIN_CE0 <= spi_channel <= NRF24.SPI_AUX_CE2
+      assert 0 <= spi_channel
+
+      assert 0 <= spi_device
 
       assert 32000 <= spi_speed <= 10e6
 
