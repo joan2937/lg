@@ -49,7 +49,6 @@ typedef struct
 static int xSpiXfer(
    int fd, int speed, const char *txBuf, char *rxBuf, int count)
 {
-   int err;
    struct spi_ioc_transfer spi;
 
    memset(&spi, 0, sizeof(spi));
@@ -62,9 +61,10 @@ static int xSpiXfer(
    spi.bits_per_word = 8;
    spi.cs_change     = 0;
 
-   err = ioctl(fd, SPI_IOC_MESSAGE(1), &spi);
-
-   return err;
+   if (ioctl(fd, SPI_IOC_MESSAGE(1), &spi) >= 0)
+      return count;
+   else
+      return LG_SPI_XFER_FAILED;
 }
 
 static void _lgSpiClose(lgSpiObj_p spi)

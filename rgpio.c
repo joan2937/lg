@@ -49,6 +49,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "rgpio.h"
 #include "lgCfg.h"
+#include "lgDbg.h"
 #include "lgMD5.h"
 
 #define LG_MAX_REPORTS_PER_READ 4096
@@ -208,8 +209,10 @@ static int lg_command
    }
 
    len = sizeof(lgCmd_t) + h->size;
-
-   if (send(gPigCommand[sbc], gMsgBuf[sbc], len, 0) != len)
+/*
+   printf("tx=%s\n", lgDbgStr2Hex(len, (char *)h));
+*/
+   if (send(gPigCommand[sbc], h, len, 0) != len)
    {
       _pmu(sbc);
       return lgif_bad_send;
@@ -223,7 +226,9 @@ static int lg_command
    }
 
    if (rl) _pmu(sbc);
-
+/*
+   printf("rx=%s\n", lgDbgStr2Hex(sizeof(lgCmd_t), (char *)h));
+*/
    return h->status;
 }
 
@@ -469,16 +474,25 @@ static int recvMax(int sbc, void *buf, int bufsize, int sent)
 {
    /*
    Copy at most bufSize bytes from the receieved message to
-   buf.  Discard the rest of the message.
+   buf (if buf non-null).  Discard the rest of the message.
    */
    uint8_t scratch[4096];
    int remaining, fetch, count;
 
+   remaining = sent;
+
    if (sent < bufsize) count = sent; else count = bufsize;
 
-   if (count) recv(gPigCommand[sbc], buf, count, MSG_WAITALL);
+   if (count && buf)
+   {
+      recv(gPigCommand[sbc], buf, count, MSG_WAITALL);
+      remaining -= count;
 
-   remaining = sent - count;
+/*
+      printf("recvMax(bs=%d sent=%d): %s\n",
+         bufsize, sent, lgDbgStr2Hex(count, (unsigned char *)buf));
+*/
+   }
 
    while (remaining)
    {
@@ -1534,6 +1548,10 @@ int spi_xfer(int sbc, int handle, const char *txBuf, char *rxBuf, int count)
    int bytes;
    lgExtent_t ext[2];
    uint32_t pars[] = {handle};
+
+   if (!txBuf)                return spi_read(sbc, handle, rxBuf, count);
+   else if (!rxBuf)           return spi_write(sbc, handle, txBuf, count);
+   else if (!txBuf && !rxBuf) return LG_SPI_XFER_FAILED;
 
    ext[0].size = sizeof(pars);
    ext[0].count = sizeof(pars)/sizeof(pars[0]);

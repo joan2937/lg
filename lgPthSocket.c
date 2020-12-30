@@ -114,12 +114,10 @@ static void *xSocketThreadHandler(void *fdC)
          cmdP->status, cmdP->size, cmdP->cmd,
          cmdP->doubles, cmdP->longs, cmdP->shorts);
 
-      if (write(sock, cmdBuf, sizeof(lgCmd_t))) ; /* ignore errors */
+      if (write(sock, cmdBuf, sizeof(lgCmd_t)+cmdP->size)) ; /* ignore errors */
 
-      if (cmdP->size)
-      {
-         if (write(sock, &cmdBuf[1], cmdP->size)); /* ignore errors */
-      }
+      LG_DBG(LG_DEBUG_INTERNAL, "ret=%s",
+         lgDbgStr2Hex(sizeof(lgCmd_t)+cmdP->size, (char *)&cmdBuf));
    }
 
    //lgNotifyCloseOrphans(-1, sock);

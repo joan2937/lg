@@ -50,7 +50,7 @@ char *lgDbgStr2Hex(int count, const char *buf)
    {
       if (count > 40) c = 40; else c = count;
 
-      for (i=0; i<c; i++) sprintf(str[which]+(3*i), "%02X ", buf[i]);
+      for (i=0; i<c; i++) sprintf(str[which]+(3*i), "%02X ", (unsigned)buf[i]);
       str[which][(3*c)-1] = 0;
    }
    else str[which][0] = 0;
@@ -88,37 +88,42 @@ char *lgDbgInt2Str(int count, const int *buf)
 char *lgDbgTimeStamp(void)
 {
    static struct timeval last;
-   static char buf[32];
+   static char buf[LG_DBG_MAX_BUFS][32];
+   static int which = 0;
    struct timeval now;
-
    struct tm tmp;
+
 
    gettimeofday(&now, NULL);
 
    if (now.tv_sec != last.tv_sec)
    {
+      if (++which >= LG_DBG_MAX_BUFS) which = 0;
       localtime_r(&now.tv_sec, &tmp);
-      strftime(buf, sizeof(buf), "%F %T", &tmp);
+      strftime(buf[which], sizeof(buf[0]), "%F %T", &tmp);
       last.tv_sec = now.tv_sec;
    }
 
-   return buf;
+   return buf[which];
 }
 
 char *lgDbgBuf2Str(int count, const char *buf)
 {
-   static char str[128];
+   static char str[LG_DBG_MAX_BUFS][128];
+   static int which = 0;
    int i, c;
+
+   if (++which >= LG_DBG_MAX_BUFS) which = 0;
 
    if (count && buf)
    {
       if (count > 40) c = 40; else c = count;
 
-      for (i=0; i<c; i++) sprintf(str+(3*i), "%02X ", buf[i]);
-      str[(3*c)-1] = 0;
+      for (i=0; i<c; i++) sprintf(str[which]+(3*i), "%02X ", (unsigned)buf[i]);
+      str[which][(3*c)-1] = 0;
    }
-   else str[0] = 0;
+   else str[which][0] = 0;
 
-   return str;
+   return str[which];
 }
 

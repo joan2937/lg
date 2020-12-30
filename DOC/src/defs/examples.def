@@ -52,6 +52,9 @@ e.g.
 ./monitor 23 24 25 # chip0: 23,24,25
 ./monitor 0:23 1:0 5 # chip0: 23, chip1: 0,5
 
+?4|NRF24.c|2020-12-30|NRF24 Radio Transceiver
+Script to transmit and receive messages using the nRF24L01 radio transceiver.
+
 ?4|rotary_encoder.c|2020-11-20|Rotary Encoder
 Code to monitor a rotary encoder and show the detent changes.
 
@@ -214,6 +217,9 @@ e.g.
 
 ./monitor 23 24 25 # chip0: 23,24,25
 ./monitor 0:23 1:0 5 # chip0: 23, chip1: 0,5
+
+?4|NRF24.c|2020-12-30|NRF24 Radio Transceiver
+Script to transmit and receive messages using the nRF24L01 radio transceiver.
 
 ?4|rotary_encoder.c|2020-11-18|Rotary Encoder
 Code to monitor a rotary encoder and show the detent changes.
