@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 testbed.py
-2020-11-18
+2020-12-31
 Public Domain
 
 http://abyz.me.uk/lg/py_lgpio.html
@@ -21,15 +21,15 @@ ADC_CS=25  # spidev 0.1
 NANO_CS=24 # spidev 0.1
 
 chip = sbc.gpiochip_open(0)
-sbc.gpio_claim_output(chip, 0, ADC_CS, 1)
-sbc.gpio_claim_output(chip, 0, NANO_CS, 1)
+sbc.gpio_claim_output(chip, ADC_CS, 1)
+sbc.gpio_claim_output(chip, NANO_CS, 1)
 
-dac = sbc.spi_open(0, 0, 50000, 0)
-others = sbc.spi_open(0, 1, 50000, 0)
+dac = sbc.spi_open(0, 0, 50000)
+others = sbc.spi_open(0, 1, 50000)
 
-nano_i2c = sbc.i2c_open(1, NANO, 0)
+nano_i2c = sbc.i2c_open(1, NANO)
 
-nano_serial = sbc.serial_open("serial0", 115200, 0)
+nano_serial = sbc.serial_open("serial0", 115200)
 
 inc = True
 

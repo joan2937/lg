@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 testbed.py
-2020-11-18
+2020-12-31
 Public Domain
 
 http://abyz.me.uk/lg/py_rgpio.html
@@ -25,10 +25,10 @@ if not sbc.connected:
    exit()
 
 chip = sbc.gpiochip_open(0)
-sbc.gpio_claim_output(chip, 0, ADC_CS, 1)
-sbc.gpio_claim_output(chip, 0, NANO_CS, 1)
+sbc.gpio_claim_output(chip, ADC_CS, 1)
+sbc.gpio_claim_output(chip, NANO_CS, 1)
 
-dac = sbc.spi_open(0, 0, 500000)
+dac = sbc.spi_open(0, 0, 50000)
 others = sbc.spi_open(0, 1, 50000)
 
 nano_i2c = sbc.i2c_open(1, NANO)

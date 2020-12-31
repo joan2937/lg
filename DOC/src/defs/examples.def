@@ -160,7 +160,7 @@ E.g.
 
 ./sonar_ranger.py 2 7 5 # gpiochip 2, trigger 7, echo 5
 
-?4|testbed.py|2020-11-18|Testbed
+?4|testbed.py|2020-12-31|Testbed
 Exercises SPI, I2C, and serial links with miscellaneous hardware.
 
 ?4|tx_pulse.py|2020-11-18|Tx Pulse
@@ -336,7 +336,7 @@ E.g.
 
 ./sonar_ranger.py 2 7 5 # gpiochip 2, trigger 7, echo 5
 
-?4|testbed.py|2020-11-18|Testbed
+?4|testbed.py|2020-12-31|Testbed
 Exercises SPI, I2C, and serial links with miscellaneous hardware.
 
 ?4|tx_pulse.py|2020-11-18|Tx Pulse
