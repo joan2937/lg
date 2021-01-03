@@ -38,7 +38,7 @@ sitemap = ""
 
 header = '<a href="index.html"><img src="images/lg-logo.gif" border="0" /></a> lg archive'
 
-footer1 = "<small>&copy; 2020-2020</small>";
+footer1 = "<small>&copy; 2020-2021</small>";
 footer2 = "";
 footer3 = "<small> (" + time.strftime("%F %R") + ")</small>";
 

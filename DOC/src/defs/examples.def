@@ -347,7 +347,11 @@ Demonstrates usage of the tx wave function.
 
 
 
-?1|rgs|rgs shell
+?1|rgs|rgs command line
+
+?4|chipline.rgs|2021-01-03|gpiochip Info
+Prints gpiochip information and line information for each GPIO.
+
 
 
 ?1|Index|Index

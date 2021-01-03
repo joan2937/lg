@@ -6,7 +6,7 @@ lgpio_m1="""
 .\" Process this file with
 .\" groff -man -Tascii lg.3
 .\"
-.TH lgpio 3 2020-2020 Linux "lg archive"
+.TH lgpio 3 2020-2021 Linux "lg archive"
 .SH NAME
 lgpio - A C library to manipulate a local SBC's GPIO.\n
 .SH SYNOPSIS\n
@@ -21,7 +21,7 @@ rgpio_m1="""
 .\" Process this file with
 .\" groff -man -Tascii lgd_if.3
 .\"
-.TH rgpio 3 2020-2020 Linux "lg archive"
+.TH rgpio 3 2020-2021 Linux "lg archive"
 .SH NAME
 rgpio - A C library to manipulate a remote SBC's GPIO.\n
 .SH SYNOPSIS\n
