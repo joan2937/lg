@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# default to gpiochip 0 if not specified
+
+chip=${1:-0}
+
+# a share id of 999 is used to preserve the handle
+
+h=$(rgs c 999 go $chip) # get handle to gpiochip
+
+if [[ $h -lt 0 ]]
+then
+   echo "can't open /dev/gpiochip"$chip
+   exit
+fi
+
+gic=$(rgs c 999 gic $h)
+
+echo $gic
+
+words=(${gic// / }) # split gic result into individual words
+lines=${words[0]}   # first word is the number of GPIO lines
+
+for ((i=0; i<$lines; i++))
+do
+   rgs c 999 gil $h $i
+done
+
+rgs c 999 gc $h # release gpiochip
+
