@@ -61,6 +61,7 @@ OBJ_RGPIOD = \
 OBJ_RGS = \
    lgCmd.o \
    lgCfg.o \
+   lgDbg.o \
    lgErr.o \
    lgMD5.o \
 
@@ -169,7 +170,7 @@ $(LIB_RGPIO):	$(OBJ_RGPIO)
 # generated using gcc -MM *.c
 
 lgCfg.o: lgCfg.c lgCfg.h
-lgCmd.o: lgCmd.c lgpio.h rgpiod.h lgCmd.h
+lgCmd.o: lgCmd.c lgpio.h rgpiod.h lgCmd.h lgDbg.h
 lgCtx.o: lgCtx.c lgpio.h lgDbg.h lgCtx.h
 lgDbg.o: lgDbg.c lgpio.h lgDbg.h
 lgErr.o: lgErr.c lgpio.h
@@ -192,6 +193,6 @@ lgSerial.o: lgSerial.c lgpio.h lgDbg.h lgHdl.h
 lgSPI.o: lgSPI.c lgpio.h lgDbg.h lgHdl.h
 lgThread.o: lgThread.c lgpio.h lgDbg.h
 lgUtil.o: lgUtil.c lgpio.h lgDbg.h
-rgpio.o: rgpio.c rgpiod.h lgCmd.h lgpio.h rgpio.h lgCfg.h lgMD5.h
+rgpio.o: rgpio.c rgpiod.h lgCmd.h lgpio.h rgpio.h lgCfg.h lgDbg.h lgMD5.h
 rgpiod.o: rgpiod.c lgpio.h rgpiod.h lgCmd.h lgDbg.h
-rgs.o: rgs.c lgpio.h rgpiod.h lgCmd.h lgMD5.h
+rgs.o: rgs.c lgpio.h rgpiod.h lgCmd.h lgDbg.h lgMD5.h

@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "rgpiod.h"
 
 #include "lgCmd.h"
+#include "lgDbg.h"
 
 cmdInfo_t cmdInfo[]=
 {
@@ -696,12 +697,12 @@ int cmdParse(char *text, cmdCtl_p ctlP, lgCmd_p cmdP, int cmdBufSize)
 
          break;
 
-      case 103: /* BI2CZ  BSPIX  FW  I2CWD  I2CZ  SERW SPIW  SPIX
+      case 103: /* FW  I2CWD  I2CZ  SERW  SPIW  SPIX
 
                    Two or more parameters, first >=0, rest 0-255.
                 */
 
-         valid = cmdScanf(text, ctlP, cmdP, "I>b", &matches);
+         valid = cmdScanf(text, ctlP, cmdP, "Ib", &matches);
          pars = matches;
 
          if (pars > 1)
@@ -717,7 +718,7 @@ int cmdParse(char *text, cmdCtl_p ctlP, lgCmd_p cmdP, int cmdBufSize)
                    Three to 34 parameters, all 0-255.
                 */
 
-         valid = cmdScanf(text, ctlP, cmdP, "II>>b", &matches);
+         valid = cmdScanf(text, ctlP, cmdP, "IIb", &matches);
          pars = matches;
 
          if ((pars > 2) && (pars < 35))

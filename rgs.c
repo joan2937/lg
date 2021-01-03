@@ -42,6 +42,7 @@ For more information, please refer to <http://unlicense.org/>
 #include "rgpiod.h"
 
 #include "lgCmd.h"
+#include "lgDbg.h"
 #include "lgMD5.h"
 
 /*
@@ -49,7 +50,7 @@ This program provides a socket interface to some of
 the commands available from lg.
 */
 
-#define RGS_VERSION 0x00010100
+#define RGS_VERSION 0x00010200
 
 #define RGS_CONNECT_ERR 255
 #define RGS_OPTION_ERR  254
@@ -330,8 +331,8 @@ static void xShowResult(int rv, lgCmd_p cmdP, char *cmdExt)
          break;
 
       case 6: /*
-                 BI2CZ  CF2  FL  FR  I2CPK  I2CRD  I2CRI  I2CRK
-                 I2CZ  SBC SERR  SLR  SPIX  SPIR USER
+                 FL  FR  I2CPK  I2CRD  I2CRI  I2CRK
+                 I2CZ  PCD PWD SBC SERR  SPIX  SPIR USER
               */
 
          if ((cmdP->cmd == LG_CMD_PCD) ||
@@ -430,29 +431,27 @@ static void xShowResult(int rv, lgCmd_p cmdP, char *cmdExt)
 
 static int xSendCommand(int sock, lgCmd_p cmdP, char *cmdExt)
 {
+   int msgLen;
+
    if (sock == SOCKET_OPEN_FAILED)
    {
       xReport(RGS_CONNECT_ERR, "socket connect failed");
       return -1;
    }
 
-   if (send(sock, cmdP, sizeof(lgCmd_t), 0) != sizeof(lgCmd_t))
+   msgLen = sizeof(lgCmd_t) + cmdP->size;
+
+   /*
+   printf("cmd=%s\n", lgDbgStr2Hex(sizeof(lgCmd_t), (char *)cmdP));
+   */
+
+   if (send(sock, cmdP, msgLen, 0) != msgLen)
    {
       xReport(RGS_CONNECT_ERR, "socket send failed");
       return -1;
    }
 
-   if (cmdP->size)
-   {
-      if (send(sock, cmdExt, cmdP->size, 0) != cmdP->size)
-      {
-         xReport(RGS_CONNECT_ERR, "socket send failed");
-         return -1;
-      }
-   }
-
-   if (recv(sock, cmdP, sizeof(lgCmd_t), MSG_WAITALL) !=
-   sizeof(lgCmd_t))
+   if (recv(sock, cmdP, sizeof(lgCmd_t), MSG_WAITALL) != sizeof(lgCmd_t))
    {
       xReport(RGS_CONNECT_ERR, "socket receive failed");
       return -1;
@@ -460,8 +459,7 @@ static int xSendCommand(int sock, lgCmd_p cmdP, char *cmdExt)
 
    if (cmdP->size)
    {
-      if (recv(sock, cmdExt, cmdP->size, MSG_WAITALL) !=
-                     cmdP->size)
+      if (recv(sock, cmdExt, cmdP->size, MSG_WAITALL) != cmdP->size)
       {
          xReport(RGS_CONNECT_ERR, "socket receive failed");
          return -1;
