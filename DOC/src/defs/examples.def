@@ -14,7 +14,6 @@ Although many are complete programs they are intended to be a starting point in 
 
 ?0|rgs shell
 
-
 ?1|lgpio|C lgpio
 
 Examples of C lgpio programs.
@@ -39,6 +38,18 @@ Prints gpiochip information and line information for each GPIO.
 
 ?4|dhtxx.c|2020-11-18|DHT11/22/XX
 Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
+
+?4|lg_mcp3008.h|2021-01-09|MCP3008 ADC .h
+MCP3008 ADC functions header file.
+
+?4|lg_mcp4131.h|2021-01-09|MCP4131 Digital Pot .h
+MCP4131 digital pot functions header file.
+
+?4|lgl_mcp3008.c|2021-01-09|MCP3008 ADC
+MCP3008 ADC functions.
+
+?4|lgl_mcp4131.c|2021-01-09|MCP4131 Digital Pot
+MCP4131 digital pot functions.
 
 ?4|monitor.c|2020-11-20|Monitor GPIO
 Monitors one or more GPIO as specified on the command line.
@@ -107,6 +118,12 @@ Reads the DHT series of temperature and humidity sensors.  The sensor type is au
 
 ?4|errors.py|2020-11-18|Errors
 Checks that the correct errors are reported when erroneous parameters are used.  The checks are limited in scope to those that can be detected without having any hardware connected.
+
+?4|lg_mcp3008.py|2021-01-09|MCP3008 ADC
+MCP3008 ADC functions.
+
+?4|lg_mcp4131.py|2021-01-09|MCP4131 Digital Pot
+MCP4131 digital pot functions.
 
 ?4|monitor.py|2020-11-18|Monitor GPIO
 Monitors one or more GPIO as specified on the command line.
@@ -206,6 +223,18 @@ Checks that the correct errors are reported when erroneous parameters are used. 
 ?4|files.c|2020-11-18|Files
 Demonstrates usage of the remote file handling features of the daemon.
 
+?4|lg_mcp3008.h|2021-01-09|MCP3008 ADC .h
+MCP3008 ADC functions header file.
+
+?4|lg_mcp4131.h|2021-01-09|MCP4131 Digital Pot .h
+MCP4131 digital pot functions header file.
+
+?4|lgr_mcp3008.c|2021-01-09|MCP3008 ADC
+MCP3008 ADC functions.
+
+?4|lgr_mcp4131.c|2021-01-09|MCP4131 Digital Pot
+MCP4131 digital pot functions.
+
 ?4|monitor.c|2020-11-18|Monitor GPIO
 Monitors one or more GPIO as specified on the command line.
 
@@ -283,6 +312,12 @@ Checks that the correct errors are reported when erroneous parameters are used. 
 
 ?4|files.py|2020-11-18|Files
 Demonstrates usage of the remote file handling features of the daemon.
+
+?4|lg_mcp3008.py|2021-01-09|MCP3008 ADC
+MCP3008 ADC functions.
+
+?4|lg_mcp4131.py|2021-01-09|MCP4131 Digital Pot
+MCP4131 digital pot functions.
 
 ?4|monitor.py|2020-11-18|Monitor GPIO
 Monitors one or more GPIO as specified on the command line.
