@@ -125,7 +125,7 @@ MCP3008 ADC functions.
 ?4|lg_mcp4131.py|2021-01-09|MCP4131 Digital Pot
 MCP4131 digital pot functions.
 
-?4|monitor.py|2020-11-18|Monitor GPIO
+?4|monitor.py|2021-01-11|Monitor GPIO
 Monitors one or more GPIO as specified on the command line.
 
 ./monitor.py [chip:]gpio ...
@@ -319,7 +319,7 @@ MCP3008 ADC functions.
 ?4|lg_mcp4131.py|2021-01-09|MCP4131 Digital Pot
 MCP4131 digital pot functions.
 
-?4|monitor.py|2020-11-18|Monitor GPIO
+?4|monitor.py|2021-01-11|Monitor GPIO
 Monitors one or more GPIO as specified on the command line.
 
 ./monitor.py [chip:]gpio ...

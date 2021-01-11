@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 monitor.py
-2020-11-18
+2021-01-11
 Public Domain
 
 http://abyz.me.uk/lg/py_rgpio.html
@@ -88,8 +88,8 @@ for i in range(1, argc):
 
          if err < 0:
 
-            print("GPIO in use {}:{} ({})",
-               chip, gpio, rgpio.error_text(err))
+            print("GPIO in use {}:{} ({})".format(
+               chip, gpio, rgpio.error_text(err)))
             exit()
 
          cb_id = sbc.callback(handle, gpio, rgpio.BOTH_EDGES, cbf)
