@@ -39,14 +39,21 @@ Prints gpiochip information and line information for each GPIO.
 ?4|dhtxx.c|2020-11-18|DHT11/22/XX
 Reads the DHT series of temperature and humidity sensors.  The sensor type is autodetected.
 
-?4|lg_mcp3008.h|2021-01-09|MCP3008 ADC .h
-MCP3008 ADC functions header file.
+?4|lg_ads1x15.h|2021-01-17|ADS1x15 ADC (.h)
+ADS1x15 header file.
 
-?4|lg_mcp4131.h|2021-01-09|MCP4131 Digital Pot .h
-MCP4131 digital pot functions header file.
+?4|lgl_ads1x15.c|2021-01-17|ADS1x15 ADC
+ADS1015 (12-bit) and ADS1115 (16-bit) ADC functions.  The ALERT/RDY
+pin is fully supported.
+
+?4|lg_mcp3008.h|2021-01-09|MCP3008 ADC (.h)
+MCP3008 header file.
 
 ?4|lgl_mcp3008.c|2021-01-09|MCP3008 ADC
 MCP3008 ADC functions.
+
+?4|lg_mcp4131.h|2021-01-09|MCP4131 Digital Pot (.h)
+MCP4131 header file.
 
 ?4|lgl_mcp4131.c|2021-01-09|MCP4131 Digital Pot
 MCP4131 digital pot functions.
@@ -119,7 +126,7 @@ Reads the DHT series of temperature and humidity sensors.  The sensor type is au
 ?4|errors.py|2020-11-18|Errors
 Checks that the correct errors are reported when erroneous parameters are used.  The checks are limited in scope to those that can be detected without having any hardware connected.
 
-?4|lg_ads1x15.py|2021-01-14|ADS1015/ADS1115 ADC
+?4|lg_ads1x15.py|2021-01-17|ADS1x15 ADC
 ADS1015 (12-bit) and ADS1115 (16-bit) ADC functions.  The ALERT/RDY
 pin is fully supported.
 
@@ -227,14 +234,21 @@ Checks that the correct errors are reported when erroneous parameters are used. 
 ?4|files.c|2020-11-18|Files
 Demonstrates usage of the remote file handling features of the daemon.
 
-?4|lg_mcp3008.h|2021-01-09|MCP3008 ADC .h
-MCP3008 ADC functions header file.
+?4|lg_ads1x15.h|2021-01-17|ADS1x15 ADC (.h)
+ADS1x15 header file.
 
-?4|lg_mcp4131.h|2021-01-09|MCP4131 Digital Pot .h
-MCP4131 digital pot functions header file.
+?4|lgr_ads1x15.c|2021-01-17|ADS1x15 ADC
+ADS1015 (12-bit) and ADS1115 (16-bit) ADC functions.  The ALERT/RDY
+pin is fully supported.
+
+?4|lg_mcp3008.h|2021-01-09|MCP3008 ADC (.h)
+MCP3008 header file.
 
 ?4|lgr_mcp3008.c|2021-01-09|MCP3008 ADC
 MCP3008 ADC functions.
+
+?4|lg_mcp4131.h|2021-01-09|MCP4131 Digital Pot (.h)
+MCP4131 header file.
 
 ?4|lgr_mcp4131.c|2021-01-09|MCP4131 Digital Pot
 MCP4131 digital pot functions.
@@ -317,7 +331,7 @@ Checks that the correct errors are reported when erroneous parameters are used. 
 ?4|files.py|2020-11-18|Files
 Demonstrates usage of the remote file handling features of the daemon.
 
-?4|lg_ads1x15.py|2021-01-14|ADS1015/ADS1115 ADC
+?4|lg_ads1x15.py|2021-01-17|ADS1x15 ADC
 ADS1015 (12-bit) and ADS1115 (16-bit) ADC functions.  The ALERT/RDY
 pin is fully supported.
 

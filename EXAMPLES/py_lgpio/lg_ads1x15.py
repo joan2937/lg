@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 lg_ads1x15.py
-2021-01-14
+2021-01-17
 Public Domain
 
 http://abyz.me.uk/lg/py_lgpio.html
@@ -243,9 +243,10 @@ class _ads1x15:
       if val > 0:
          val = val - 1
       self._gain = val
+      self._voltage_range = self._GAIN[val]
       self._update_comparators()
       self._update_config()
-      return self._GAIN[val]
+      return self._voltage_range
 
    def set_channel(self, channel):
       """
@@ -281,7 +282,7 @@ class _ads1x15:
       above high.  It will continue to be asserted until the
       voltage drops beneath low.
 
-      This sets continuous coversion mode.
+      This sets continuous conversion mode.
 
       To be useful your script will have to monitor the
       ALERT/RDY pin and react when it changes level (both
@@ -307,7 +308,7 @@ class _ads1x15:
       above high or drops beneath low.  It will continue to be
       asserted until the voltage is between low to high.
 
-      This sets continuous coversion mode.
+      This sets continuous conversion mode.
 
       To be useful your script will have to monitor the
       ALERT/RDY pin and react when it changes level (both
@@ -330,7 +331,7 @@ class _ads1x15:
       Set the ALERT/RDY pin to be used as a conversion
       complete signal.
 
-      This sets continuous coversion mode.
+      This sets continuous conversion mode.
 
       To be useful your script will have to monitor the
       ALERT/RDY pin and react when it is asserted (use
