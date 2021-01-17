@@ -3,7 +3,7 @@
 
 /*
 lg_mcp3008.h
-2021-01-09
+2021-01-17
 Public Domain
 
 http://abyz.me.uk/lg/lgpio.html
@@ -25,18 +25,7 @@ Be aware that SDO will be at the same voltage as V+.
 
 #include <lgpio.h>
 
-typedef struct
-{
-   int sbc;     // sbc connection
-   int device;  // SPI device
-   int channel; // SPI channel
-   int speed;   // SPI bps
-   int flags;   // SPI flags
-   int spih;    // SPI handle
-   int value;   // wiper value
-   callbk_t chip_select;
-   callbk_t chip_deselect;
-} mcp3008_t, *mcp3008_p;
+typedef struct mcp3008_s mcp3008_t, *mcp3008_p;
 
 mcp3008_p MCP3008_open(int sbc, int device, int channel, int speed, int flags);
 mcp3008_p MCP3008_close(mcp3008_p s);
@@ -44,6 +33,8 @@ mcp3008_p MCP3008_close(mcp3008_p s);
 int MCP3008_read_single_ended(mcp3008_p s, int channel);
 int MCP3008_read_differential_plus(mcp3008_p s, int channel);
 int MCP3008_read_differential_minus(mcp3008_p s, int channel);
+
+int MCP3008_set_enable(mcp3008_p s, callbk_t enable);
 
 #endif
 

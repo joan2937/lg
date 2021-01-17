@@ -1,6 +1,6 @@
 /*
 lgl_mcp4131.c
-2021-01-09
+2021-01-17
 Public Domain
 */
 
@@ -9,6 +9,18 @@ Public Domain
 #include <lgpio.h>
 
 #include "lg_mcp4131.h"
+
+typedef struct mcp4131_s
+{
+   int sbc;     // sbc connection
+   int device;  // SPI device
+   int channel; // SPI channel
+   int speed;   // SPI bps
+   int flags;   // SPI flags
+   int spih;    // SPI handle
+   int value;   // wiper value
+   callbk_t enable;
+} mcp4131_t, *mcp4131_p;
 
 mcp4131_p MCP4131_open(int sbc, int device, int channel, int speed, int flags)
 {
@@ -56,14 +68,14 @@ int MCP4131_set_wiper(mcp4131_p s, int value)
 
    s->value = value;
 
-   if (s->chip_select != NULL) s->chip_select();
+   if (s->enable != NULL) s->enable(1);
 
    buf[0] = 0;
    buf[1] = value;
 
    lgSpiWrite(s->spih, buf, 2);
 
-   if (s->chip_deselect != NULL) s->chip_deselect();
+   if (s->enable != NULL) s->enable(0);
 
    return 0;
 }
@@ -80,6 +92,8 @@ int MCP4131_increment_wiper(mcp4131_p s)
    if (s == NULL) return -1;
 
    if (s->value < 128) MCP4131_set_wiper(s, s->value + 1);
+
+   return 0;
 }
 
 int MCP4131_decrement_wiper(mcp4131_p s)
@@ -87,6 +101,15 @@ int MCP4131_decrement_wiper(mcp4131_p s)
    if (s == NULL) return -1;
 
    if (s->value > 0) MCP4131_set_wiper(s, s->value - 1);
+
+   return 0;
+}
+
+int MCP4131_set_enable(mcp4131_p s, callbk_t enable)
+{
+   s->enable = enable;
+
+   return 0;
 }
 
 #ifdef EXAMPLE
@@ -109,6 +132,8 @@ int main(int argc, char *argv[])
    int potpos;
 
    dac = MCP4131_open(sbc, 0, 0, 50000, 0);
+
+   if (dac == NULL) return -1;
 
    potpos = 0;
 

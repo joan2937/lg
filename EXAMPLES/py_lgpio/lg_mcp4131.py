@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 lg_mcp4131.py
-2021-01-09
+2021-01-17
 Public Domain
 
 http://abyz.me.uk/lg/py_lgpio.html
@@ -23,12 +23,11 @@ class MCP4131:
    For safety put a resistor in series between MOSI and SDI/SDO.
    """
    def __init__(self, sbc, channel, device, speed=1e6, flags=0,
-      wiper_value=64, chip_select=None, chip_deselect=None):
+      wiper_value=64, enable=None):
       """
       """
       self._sbc = sbc
-      self._chip_select = chip_select
-      self._chip_deselect = chip_deselect
+      self._enable = enable
       self._dac = sbc.spi_open(channel, device, speed, flags)
       self._wiper_value = wiper_value
       self.set_wiper(wiper_value)
@@ -37,13 +36,13 @@ class MCP4131:
       assert 0 <= value <= 128
       self._wiper_value = value
 
-      if self._chip_select is not None:
-         self._chipselect
+      if self._enable is not None:
+         self._enable(True)
 
       self._sbc.spi_write(self._dac, [0, value])
 
-      if self._chip_deselect is not None:
-         self._chipdeselect
+      if self._enable is not None:
+         self._enable(False)
 
    def get_wiper(self):
       return self._wiper_value

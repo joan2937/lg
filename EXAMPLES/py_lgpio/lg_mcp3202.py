@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-lg_mcp3008.py
+lg_mcp3202.py
 2021-01-17
 Public Domain
 
@@ -8,20 +8,16 @@ http://abyz.me.uk/lg/py_lgpio.html
 http://abyz.me.uk/lg/py_rgpio.html
 """
 
-class MCP3008:
+class MCP3202:
    """
-   MCP3008 8 ch 10-bit ADC
+   MCP3202 2 ch 12-bit ADC
 
-   CH0     1 o o 16 V+
-   CH1     2 o o 15 Vref
-   CH2     3 o o 14 AGND
-   CH3     4 o o 13 SCLK
-   CH4     5 o o 12 SDO 
-   CH5     6 o o 11 SDI 
-   CH6     7 o o 10 CS/SHDN
-   CH7     8 o o  9 DGND
+   CS  1 o o 8 V+
+   CH0 2 o o 7 CLK
+   CH1 3 o o 6 DO
+   GND 5 o o 4 DI
 
-   Be aware that SDO will be at the same voltage as V+.
+   Be aware that DO will be at the same voltage as V+.
    """
    def __init__(self, sbc, channel, device, speed=1e6, flags=0, enable=None):
       """
@@ -31,51 +27,49 @@ class MCP3008:
       self._adc = sbc.spi_open(channel, device, speed, flags)
 
    def read_single_ended(self, channel):
-      assert 0 <= channel <= 7
+      assert 0 <= channel <= 1
 
       if self._enable is not None:
          self._enable(True)
 
-      (b, d) = self._sbc.spi_xfer(self._adc, [1, 0x80+(channel<<4), 0])
+      (b, d) = self._sbc.spi_xfer(self._adc, [1, 0xA0+(channel<<6), 0])
 
       if self._enable is not None:
          self._enable(False)
 
-      c1 = d[1] & 0x03
+      c1 = d[1] & 0x0f
       c2 = d[2]
       val = (c1<<8)+c2
 
       return val
 
-   def read_differential_plus(self, channel):
-      assert 0 <= channel <= 3
+   def read_differential_plus(self):
 
       if self._enable is not None:
          self._enable(True)
 
-      (b, d) = self._sbc.spi_xfer(self._adc, [1, channel<<5, 0])
+      (b, d) = self._sbc.spi_xfer(self._adc, [1, 0x20, 0])
 
       if self._enable is not None:
          self._enable(False)
 
-      c1 = d[1] & 0x03
+      c1 = d[1] & 0x0f
       c2 = d[2]
       val = (c1<<8)+c2
 
       return val
 
-   def read_differential_minus(self, channel):
-      assert 0 <= channel <= 3
+   def read_differential_minus(self):
 
       if self._enable is not None:
          self._enable(True)
 
-      (b, d) = self._sbc.spi_xfer(self._adc, [1, (channel<<5)+16, 0])
+      (b, d) = self._sbc.spi_xfer(self._adc, [1, 0x60, 0])
 
       if self._enable is not None:
          self._enable(False)
 
-      c1 = d[1] & 0x03
+      c1 = d[1] & 0x0f
       c2 = d[2]
       val = (c1<<8)+c2
 
@@ -86,10 +80,10 @@ class MCP3008:
 
 if __name__ == "__main__":
 
-   RGPIO = True # set to True if using rgpio, False if using lgpio
+   RGPIO = False # set to True if using rgpio, False if using lgpio
 
    import time
-   import lg_mcp3008
+   import lg_mcp3202
 
    if RGPIO:
 
@@ -102,7 +96,7 @@ if __name__ == "__main__":
 
       import lgpio as sbc
 
-   adc = lg_mcp3008.MCP3008(sbc, 0, 1, 50000)
+   adc = lg_mcp3202.MCP3202(sbc, 0, 1, 50000)
 
    end_time = time.time() + 60
 

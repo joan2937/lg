@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 lg_mcp3008.py
-2021-01-09
+2021-01-17
 Public Domain
 
 http://abyz.me.uk/lg/py_lgpio.html
@@ -23,25 +23,23 @@ class MCP3008:
 
    Be aware that SDO will be at the same voltage as V+.
    """
-   def __init__(self, sbc, channel, device, speed=1e6, flags=0,
-      chip_select=None, chip_deselect=None):
+   def __init__(self, sbc, channel, device, speed=1e6, flags=0, enable=None):
       """
       """
       self._sbc = sbc
-      self._chip_select = chip_select
-      self._chip_deselect = chip_deselect
+      self._enable = enable
       self._adc = sbc.spi_open(channel, device, speed, flags)
 
    def read_single_ended(self, channel):
       assert 0 <= channel <= 7
 
-      if self._chip_select is not None:
-         self._chipselect
+      if self._enable is not None:
+         self._enable(True)
 
       (b, d) = self._sbc.spi_xfer(self._adc, [1, 0x80+(channel<<4), 0])
 
-      if self._chip_deselect is not None:
-         self._chipdeselect
+      if self._enable is not None:
+         self._enable(False)
 
       c1 = d[1] & 0x03
       c2 = d[2]
@@ -52,13 +50,13 @@ class MCP3008:
    def read_differential_plus(self, channel):
       assert 0 <= channel <= 3
 
-      if self._chip_select is not None:
-         self._chipselect
+      if self._enable is not None:
+         self._enable(True)
 
       (b, d) = self._sbc.spi_xfer(self._adc, [1, channel<<5, 0])
 
-      if self._chip_deselect is not None:
-         self._chipdeselect
+      if self._enable is not None:
+         self._enable(False)
 
       c1 = d[1] & 0x03
       c2 = d[2]
@@ -69,13 +67,13 @@ class MCP3008:
    def read_differential_minus(self, channel):
       assert 0 <= channel <= 3
 
-      if self._chip_select is not None:
-         self._chipselect
+      if self._enable is not None:
+         self._enable(True)
 
       (b, d) = self._sbc.spi_xfer(self._adc, [1, (channel<<5)+16, 0])
 
-      if self._chip_deselect is not None:
-         self._chipdeselect
+      if self._enable is not None:
+         self._enable(False)
 
       c1 = d[1] & 0x03
       c2 = d[2]
