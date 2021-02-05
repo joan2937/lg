@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 lg_mcp4131.py
-2021-01-17
+2021-01-20
 Public Domain
 
 http://abyz.me.uk/lg/py_lgpio.html
@@ -22,6 +22,9 @@ class MCP4131:
 
    For safety put a resistor in series between MOSI and SDI/SDO.
    """
+   MAX_WIPER_VALUE = 128
+   WIPERS = 1
+
    def __init__(self, sbc, channel, device, speed=1e6, flags=0,
       wiper_value=64, enable=None):
       """
@@ -33,7 +36,7 @@ class MCP4131:
       self.set_wiper(wiper_value)
 
    def set_wiper(self, value):
-      assert 0 <= value <= 128
+      assert 0 <= value <= self.MAX_WIPER_VALUE
       self._wiper_value = value
 
       if self._enable is not None:
@@ -48,7 +51,7 @@ class MCP4131:
       return self._wiper_value
 
    def increment_wiper(self):
-      if self._wiper_value < 128:
+      if self._wiper_value < self.MAX_WIPER_VALUE:
          self.set_wiper(self._wiper_value + 1)
 
    def decrement_wiper(self):
@@ -78,7 +81,7 @@ if __name__ == "__main__":
 
    dac = lg_mcp4131.MCP4131(sbc, 0, 0, 50000)
 
-   for i in range(129):
+   for i in range(dac.MAX_WIPER_VALUE+1):
       dac.set_wiper(i)
       time.sleep(0.2)
 
