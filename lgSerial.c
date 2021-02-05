@@ -226,7 +226,15 @@ int lgSerialWrite(int handle, const char *txBuf, int count)
          {
             written += wrote; 
 
-            if (written != count) usleep(50000);
+            if (written != count) usleep(2000);
+         }
+         else
+         {
+            if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
+            {
+               wrote = 0;
+               usleep(2000);
+            }
          }
       }
 
