@@ -12,12 +12,12 @@ STRIPLIB     = $(STRIP) --strip-unneeded
 
 SOVERSION    = 1
 
-prefix = /usr/local
-exec_prefix = $(prefix)
-bindir = $(exec_prefix)/bin
-includedir = $(prefix)/include
-libdir = $(prefix)/lib
-mandir = $(prefix)/man
+prefix ?= /usr/local
+exec_prefix ?= $(prefix)
+bindir ?= $(exec_prefix)/bin
+includedir ?= $(prefix)/include
+libdir ?= $(prefix)/lib
+mandir ?= $(prefix)/man
 
 CFLAGS	+= -O3 -Wall -pthread -fpic
 #CFLAGS	+= -O0 -g -Wall -pthread -fpic
