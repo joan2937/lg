@@ -171,7 +171,7 @@ S h g spw                    :: GPIO tx servo pulses (simple)
 SX h g spw sf off cyc        :: GPIO tx servo pulses
 
 GWAVE h g p*                 :: GPIO group tx wave
-GBUSY h g k                  :: GPIO or group tx busy 
+GBUSY h g k                  :: GPIO or group tx busy
 GROOM h g k                  :: GPIO or group tx entries
 
 GDEB h g us                  :: GPIO debounce time

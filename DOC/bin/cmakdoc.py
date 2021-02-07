@@ -3,9 +3,9 @@
 import sys
 
 lgpio_m1="""
-.\" Process this file with
-.\" groff -man -Tascii lg.3
-.\"
+.\\" Process this file with
+.\\" groff -man -Tascii lg.3
+.\\"
 .TH lgpio 3 2020-2021 Linux "lg archive"
 .SH NAME
 lgpio - A C library to manipulate a local SBC's GPIO.\n
@@ -13,14 +13,14 @@ lgpio - A C library to manipulate a local SBC's GPIO.\n
 #include <lgpio.h>\n
 
 gcc -Wall -o prog prog.c -llgpio\n
- ./prog
+\&./prog
 .SH DESCRIPTION\n
 """
 
 rgpio_m1="""
-.\" Process this file with
-.\" groff -man -Tascii lgd_if.3
-.\"
+.\\" Process this file with
+.\\" groff -man -Tascii lgd_if.3
+.\\"
 .TH rgpio 3 2020-2021 Linux "lg archive"
 .SH NAME
 rgpio - A C library to manipulate a remote SBC's GPIO.\n
@@ -28,7 +28,7 @@ rgpio - A C library to manipulate a remote SBC's GPIO.\n
 #include <rgpio.h>\n
 
 gcc -Wall -o prog prog.c -lrgpio\n
- ./prog
+\&./prog
 .SH DESCRIPTION\n
 """
 

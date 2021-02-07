@@ -3,9 +3,9 @@
 import sys
 
 rgpiod_m1="""
-.\" Process this file with
-.\" groff -man -Tascii lgd.1
-.\"
+.\\" Process this file with
+.\\" groff -man -Tascii lgd.1
+.\\"
 .TH rgpiod 1 2020-2021 Linux "lg archive"
 .SH NAME
 rgpiod - a daemon to allow remote access to a SBC's GPIO.\n
