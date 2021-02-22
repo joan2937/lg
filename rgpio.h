@@ -648,9 +648,9 @@ Mode bit @ Value @ Meaning
 2        @  4    @ Kernel: Active low
 3        @  8    @ Kernel: Open drain
 4        @ 16    @ Kernel: Open source
-5        @ 32    @ Kernel: ---
-6        @ 64    @ Kernel: ---
-7        @ 128   @ Kernel: ---
+5        @ 32    @ Kernel: Pulled up bias
+6        @ 64    @ Kernel: Pulled down bias
+7        @ 128   @ Kernel: No bias
 8        @ 256   @ LG: Input
 9        @ 512   @ LG: Output
 10       @ 1024  @ LG: Alert
@@ -678,7 +678,8 @@ If OK returns 0.
 On failure returns a negative error code.
 
 The line flags may be used to set the GPIO
-as active low, open drain, or open source.
+as active low, open drain, open source,
+or to enable or disable a bias on the pin.
 
 ...
 status = gpio_claim_input(sbc, h, 0, 23); // open GPIO 23 for input
@@ -753,7 +754,7 @@ If OK returns 0.
 On failure returns a negative error code.
 
 The line flags may be used to set the group as active low,
-open drain, or open source.
+open drain, open source, or to enable or disable a bias on the pin.
 
 gpios is an array of one or more GPIO. The first GPIO in the array
 is called the group leader and is used to reference the group as a whole.
@@ -1209,7 +1210,7 @@ On failure returns a negative error code.
 
 
 The line flags may be used to set the GPIO as active low,
-open drain, or open source.
+open drain, open source, or to enable or disable a bias on the pin.
 
 The event flags are used to generate alerts for a rising edge,
 falling edge, or both edges.
@@ -2658,6 +2659,9 @@ The following values may be or'd to form the value.
 LG_SET_ACTIVE_LOW
 LG_SET_OPEN_DRAIN
 LG_SET_OPEN_SOURCE
+LG_SET_BIAS_PULL_UP
+LG_SET_BIAS_PULL_DOWN
+LG_SET_BIAS_DISABLE
 . .
 
 lgChipInfo_p::
