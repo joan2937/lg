@@ -1142,11 +1142,11 @@ Mode bit   Value   Meaning
 .br
 4          16      Kernel: Open source
 .br
-5          32      Kernel: ---
+5          32      Kernel: Pulled up bias
 .br
-6          64      Kernel: ---
+6          64      Kernel: Pulled down bias
 .br
-7          128     Kernel: ---
+7          128     Kernel: No bias
 .br
 8          256     LG: Input
 .br
@@ -1199,7 +1199,8 @@ On failure returns a negative error code.
 
 .br
 The line flags may be used to set the GPIO
-as active low, open drain, or open source.
+as active low, open drain, open source,
+or to enable or disable a bias on the pin.
 
 .br
 
@@ -1334,7 +1335,7 @@ On failure returns a negative error code.
 
 .br
 The line flags may be used to set the group as active low,
-open drain, or open source.
+open drain, open source, or to enable or disable a bias on the pin.
 
 .br
 
@@ -2147,7 +2148,7 @@ On failure returns a negative error code.
 
 .br
 The line flags may be used to set the GPIO as active low,
-open drain, or open source.
+open drain, open source, or to enable or disable a bias on the pin.
 
 .br
 
@@ -4812,6 +4813,12 @@ LG_SET_ACTIVE_LOW
 LG_SET_OPEN_DRAIN
 .br
 LG_SET_OPEN_SOURCE
+.br
+LG_SET_BIAS_PULL_UP
+.br
+LG_SET_BIAS_PULL_DOWN
+.br
+LG_SET_BIAS_DISABLE
 .br
 
 .EE
