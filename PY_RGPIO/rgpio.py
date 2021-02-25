@@ -265,6 +265,9 @@ GROUP_ALL = 0xffffffffffffffff
 SET_ACTIVE_LOW = 4
 SET_OPEN_DRAIN = 8
 SET_OPEN_SOURCE = 16
+SET_BIAS_PULL_UP = 32
+SET_BIAS_PULL_DOWN = 64
+SET_BIAS_DISABLE = 128
 
 # GPIO event flags
 
@@ -1424,9 +1427,9 @@ class sbc():
       2        @  4    @ Kernel: Active low
       3        @  8    @ Kernel: Open drain
       4        @ 16    @ Kernel: Open source
-      5        @ 32    @ Kernel: ---
-      6        @ 64    @ Kernel: ---
-      7        @ 128   @ Kernel: ---
+      5        @ 32    @ Kernel: Pulled up bias
+      6        @ 64    @ Kernel: Pulled down bias
+      7        @ 128   @ Kernel: No bias
       8        @ 256   @ LG: Input
       9        @ 512   @ LG: Output
       10       @ 1024  @ LG: Alert
@@ -1452,7 +1455,8 @@ class sbc():
       On failure returns a negative error code.
 
       The line flags may be used to set the GPIO
-      as active low, open drain, or open source.
+      as active low, open drain, open source,
+      or to enable or disable a bias on the pin.
 
       ...
       sbc.gpio_claim_input(h, 23) # open GPIO 23 for input.
@@ -1517,7 +1521,8 @@ class sbc():
       On failure returns a negative error code.
 
       The line flags may be used to set the group
-      as active low, open drain, or open source.
+      as active low, open drain, open source,
+      or to enable or disable a bias on the pin.
 
       gpio is a list of one or more GPIO.  The first GPIO in the
       list is called the group leader and is used to reference the
@@ -2007,7 +2012,8 @@ class sbc():
       On failure returns a negative error code.
 
       The line flags may be used to set the GPIO
-      as active low, open drain, or open source.
+      as active low, open drain, open source,
+      or to enable or disable a bias on the pin.
 
       The event flags are used to generate alerts for a rising edge,
       falling edge, or both edges.
@@ -3652,6 +3658,9 @@ def xref():
    SET_ACTIVE_LOW
    SET_OPEN_DRAIN
    SET_OPEN_SOURCE
+   SET_BIAS_PULL_UP
+   SET_BIAS_PULL_DOWN
+   SET_BIAS_DISABLE
    . .
 
    notify_handle:

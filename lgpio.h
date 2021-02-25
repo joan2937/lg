@@ -265,21 +265,27 @@ extern "C" {
 #define LG_GPIO_NAME_LEN  32
 #define LG_GPIO_USER_LEN  32
 
-#define LG_GPIO_IS_KERNEL       GPIOLINE_FLAG_KERNEL
-#define LG_GPIO_IS_OUT          GPIOLINE_FLAG_IS_OUT
-#define LG_GPIO_IS_ACTIVE_LOW   GPIOLINE_FLAG_ACTIVE_LOW
-#define LG_GPIO_IS_OPEN_DRAIN   GPIOLINE_FLAG_OPEN_DRAIN
-#define LG_GPIO_IS_OPEN_SOURCE  GPIOLINE_FLAG_OPEN_SOURCE
+#define LG_GPIO_IS_KERNEL           GPIOLINE_FLAG_KERNEL
+#define LG_GPIO_IS_OUT              GPIOLINE_FLAG_IS_OUT
+#define LG_GPIO_IS_ACTIVE_LOW       GPIOLINE_FLAG_ACTIVE_LOW
+#define LG_GPIO_IS_OPEN_DRAIN       GPIOLINE_FLAG_OPEN_DRAIN
+#define LG_GPIO_IS_OPEN_SOURCE      GPIOLINE_FLAG_OPEN_SOURCE
+#define LG_GPIO_IS_BIAS_PULL_UP     GPIOLINE_FLAG_BIAS_PULL_UP
+#define LG_GPIO_IS_BIAS_PULL_DOWN   GPIOLINE_FLAG_BIAS_PULL_DOWN
+#define LG_GPIO_IS_BIAS_DISABLE     GPIOLINE_FLAG_BIAS_DISABLE
 
-#define LG_SET_INPUT            GPIOHANDLE_REQUEST_INPUT
-#define LG_SET_OUTPUT           GPIOHANDLE_REQUEST_OUTPUT
-#define LG_SET_ACTIVE_LOW       GPIOHANDLE_REQUEST_ACTIVE_LOW
-#define LG_SET_OPEN_DRAIN       GPIOHANDLE_REQUEST_OPEN_DRAIN
-#define LG_SET_OPEN_SOURCE      GPIOHANDLE_REQUEST_OPEN_SOURCE
+#define LG_SET_INPUT                GPIOHANDLE_REQUEST_INPUT
+#define LG_SET_OUTPUT               GPIOHANDLE_REQUEST_OUTPUT
+#define LG_SET_ACTIVE_LOW           GPIOHANDLE_REQUEST_ACTIVE_LOW
+#define LG_SET_OPEN_DRAIN           GPIOHANDLE_REQUEST_OPEN_DRAIN
+#define LG_SET_OPEN_SOURCE          GPIOHANDLE_REQUEST_OPEN_SOURCE
+#define LG_SET_BIAS_PULL_UP         GPIOHANDLE_REQUEST_BIAS_PULL_UP
+#define LG_SET_BIAS_PULL_DOWN       GPIOHANDLE_REQUEST_BIAS_PULL_DOWN
+#define LG_SET_BIAS_DISABLE         GPIOHANDLE_REQUEST_BIAS_DISABLE
 
-#define LG_RISING_EDGE          GPIOEVENT_REQUEST_RISING_EDGE
-#define LG_FALLING_EDGE         GPIOEVENT_REQUEST_FALLING_EDGE
-#define LG_BOTH_EDGES           GPIOEVENT_REQUEST_BOTH_EDGES
+#define LG_RISING_EDGE              GPIOEVENT_REQUEST_RISING_EDGE
+#define LG_FALLING_EDGE             GPIOEVENT_REQUEST_FALLING_EDGE
+#define LG_BOTH_EDGES               GPIOEVENT_REQUEST_BOTH_EDGES
 
 #define LG_LOW 0
 #define LG_HIGH 1
@@ -518,6 +524,9 @@ Bit @ value @ Bit meaning
 2   @  4    @ GPIO is active low
 3   @  8    @ GPIO is open drain
 4   @ 16    @ GPIO is open source
+5   @ 32    @ GPIO is pulled up
+6   @ 64    @ GPIO is pulled down
+7   @ 128   @ GPIO is not biased up or down
 
 The user and purpose fields are filled in by the software which has
 claimed the GPIO and may be blank.
@@ -556,9 +565,9 @@ Mode bit @ Value @ Meaning
 2        @  4    @ Kernel: Active low
 3        @  8    @ Kernel: Open drain
 4        @ 16    @ Kernel: Open source
-5        @ 32    @ Kernel: ---
-6        @ 64    @ Kernel: ---
-7        @ 128   @ Kernel: ---
+5        @ 32    @ Kernel: Pulled up bias
+6        @ 64    @ Kernel: Pulled down bias
+7        @ 128   @ Kernel: No bias
 8        @ 256   @ LG: Input
 9        @ 512   @ LG: Output
 10       @ 1024  @ LG: Alert
@@ -606,7 +615,8 @@ If OK returns 0.
 On failure returns a negative error code.
 
 The line flags may be used to set the GPIO
-as active low, open drain, or open source.
+as active low, open drain, open source,
+or to enable or disable a bias on the pin.
 
 ...
 // open GPIO 23 for input
@@ -662,7 +672,8 @@ If OK returns 0.
 On failure returns a negative error code.
 
 The line flags may be used to set the GPIO
-as active low, open drain, or open source.
+as active low, open drain, open source,
+or to enable or disable a bias on the pin.
 
 The event flags are used to specify alerts for a rising edge,
 falling edge, or both edges.
@@ -721,7 +732,8 @@ If OK returns 0.
 On failure returns a negative error code.
 
 The line flags may be used to set the group
-as active low, open drain, or open source.
+as active low, open drain, open source,
+or to enable or disable a bias on the pins.
 
 gpios is an array of one or more GPIO.  The first GPIO is
 called the group leader and is used to reference the group as a whole.
@@ -2611,6 +2623,9 @@ The following values may be or'd to form the value.
 LG_SET_ACTIVE_LOW
 LG_SET_OPEN_DRAIN
 LG_SET_OPEN_SOURCE
+LG_SET_BIAS_PULL_UP
+LG_SET_BIAS_PULL_DOWN
+LG_SET_BIAS_DISABLE
 . .
 
 lgChipInfo_p::
