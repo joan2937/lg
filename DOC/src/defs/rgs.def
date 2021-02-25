@@ -456,6 +456,9 @@ Bit value @ Bit meaning
 4         @ GPIO is active low
 8         @ GPIO is open drain
 16        @ GPIO is open source
+32        @ GPIO has pulled up bias
+64        @ GPIO has pulled down bias
+128       @ GPIO has no bias
 
 The user and purpose fields are filled in by the software which has
 claimed the GPIO and may be blank.
@@ -482,9 +485,9 @@ Mode bit @ Value @ Meaning
 2        @  4    @ Kernel: Active low
 3        @  8    @ Kernel: Open drain
 4        @ 16    @ Kernel: Open source
-5        @ 32    @ Kernel: ---
-6        @ 64    @ Kernel: ---
-7        @ 128   @ Kernel: ---
+5        @ 32    @ Kernel: Pulled up bias
+6        @ 64    @ Kernel: Pulled down bias
+7        @ 128   @ Kernel: No bias
 8        @ 256   @ LG: Input
 9        @ 512   @ LG: Output
 10       @ 1024  @ LG: Alert
@@ -1890,6 +1893,9 @@ Value @ Meaning
 4     @ Active low
 8     @ Open drain
 16    @ Open source
+32    @ Pull up bias
+64    @ Pull down bias
+128   @ Disable bias
 
 mode :: lgFile open mode
 One of the following values.
