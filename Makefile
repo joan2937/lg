@@ -9,8 +9,7 @@ SIZE         = $(CROSS_PREFIX)size
 STRIP        = $(CROSS_PREFIX)strip
 SHLIB        = $(CC) -shared
 STRIPLIB     = $(STRIP) --strip-unneeded
-SWIG         = swig
-PYTHON      ?= -all-
+PYTHON      ?= python2 python3
 
 SOVERSION    = 1
 
@@ -77,7 +76,7 @@ DOCS = \
 
 LIB = $(LIB_LGPIO) $(LIB_RGPIO)
 
-ALL = $(LIB) rgpiod rgs DOC/.docs
+ALL = $(LIB) rgpiod rgs DOC/.docs lgpio.py
 
 LINK_LGPIO  = -L. -llgpio -pthread -lrt
 LINK_RGPIO  = -L. -lrgpio -pthread -lrt
@@ -101,16 +100,15 @@ DOC/.docs: $(DOCS)
 	@[ -d "DOC" ] && cd DOC && ./cdoc || echo "*** No DOC directory ***"
 	touch DOC/.docs
 
+lgpio.py: $(LIB_LGPIO)
+	@for PBIN in $(PYTHON); do \
+		if $$PBIN --version >&/dev/null; then \
+			$(MAKE) -C PY_LGPIO build-python PYTHON=$$PBIN $(MAKEFLAGS) || \
+			echo "*** build of $$PBIN lgpio.py failed ***"; \
+		fi; \
+	done
 clean:
 	rm -f *.o *.i *.s *~ $(ALL) *.so.$(SOVERSION)
-
-ifeq ($(DESTDIR),)
-  PYBUILDARGS =
-  PYINSTALLARGS =
-else
-  PYBUILDARGS = --include-dirs=$(DESTDIR)$(includedir) --library-dirs=$(DESTDIR)$(libdir)
-  PYINSTALLARGS = --root=$(DESTDIR)
-endif
 
 html: $(ALL)
 	@[ -d "DOC" ] && cd DOC && ./makedoc || echo "*** No DOC directory ***"
@@ -137,25 +135,16 @@ ifeq ($(DESTDIR),)
 	ldconfig
 endif
 
-install-python:
-	(cd PY_RGPIO && $(PYTHON) setup.py -q install $(PYINSTALLARGS)) || echo "*** install of Python rgpio.py failed ***";
-	if type -p $(SWIG) >&/dev/null; then \
-		(cd PY_LGPIO && $(SWIG) -python lgpio.i) || echo "*** need swig package to install lgpio.py ***"; \
-		(cd PY_LGPIO && \
-		$(PYTHON) setup.py build_ext $(PYBUILDARGS) && \
-		$(PYTHON) setup.py -q install $(PYINSTALLARGS) ) || \
-		echo "*** install of Python lgpio.py failed ***"; \
-	fi
+install-python: lgpio.py
+	@for PBIN in $(PYTHON); do \
+		if $$PBIN --version >&/dev/null; then \
+			$(MAKE) -C PY_RGPIO install PYTHON=$$PBIN $(MAKEFLAGS) && \
+			$(MAKE) -C PY_LGPIO install PYTHON=$$PBIN $(MAKEFLAGS) || \
+			echo "*** install of $$PBIN modules failed ***"; \
+		fi; \
+	done
 
-install: $(ALL) install-native
-	if [ "$(PYTHON)" = '-all-' ]; then \
-		python2 --version >&/dev/null && \
-		$(MAKE) install-python PYTHON=python2 $(MAKEFLAGS); \
-		python3 --version >&/dev/null && \
-		$(MAKE) install-python PYTHON=python3 $(MAKEFLAGS); \
-	elif [ -n "$(PYTHON)" ]; then \
-		$(MAKE) install-python $(MAKEFLAGS); \
-	fi
+install: $(ALL) install-native install-python
 
 uninstall:
 	rm -f $(DESTDIR)$(includedir)/lgpio.h
