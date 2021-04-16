@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <pthread.h>
 #include <linux/gpio.h>
 
-#define LGPIO_VERSION 0x00010001
+#define LGPIO_VERSION 0x00010700
 
 #define LG_CD "LG_CD"  /* configuration directory */
 #define LG_WD "LG_WD"  /* working directory */
@@ -2057,7 +2057,7 @@ D*/
 int lgSerialOpen(const char *serDev, int serBaud, int serFlags);
 /*D
 This function opens a serial device at a specified baud rate
-and with specified flags.  The device must be present in /dev.
+and with specified flags.
 
 . .
   serDev: the serial device to open

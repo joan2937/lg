@@ -639,7 +639,7 @@ script commands.
 
 .SH [serial]
 Each entry in this section takes the form \fBuser=device\fP where
-\fBdevice\fP indicates a serial device. E.g. \fBserial0\fP refers to
+\fBdevice\fP indicates a serial device. E.g. \fB/dev/serial0\fP refers to
 Linux device \fB/dev/serial0\fP
 
 .br
@@ -660,13 +660,15 @@ characters) or \fB?\fP (matches a single character).
 .br
 
 .EX
-fred=serial0         # user fred can access /dev/serial0.
+fred=/dev/serial0              # user fred can access /dev/serial0.
 .br
-peter=tty*           # user peter can access /dev/tty*.
+peter=/dev/tty*                # user peter can access /dev/tty*.
 .br
-boss=*               # user boss can access /dev/*.
+boss=/dev/*                    # user boss can access /dev/*.
 .br
-sally=serial?:ttyS*  # user sally can access /dev/serial? and /dev/ttyS*.
+sally=/dev/serial?:/dev/ttyS*  # user sally can access /dev/serial?
+.br
+                               # and /dev/ttyS*.
 .br
 
 .EE
@@ -811,11 +813,11 @@ test3=y
 .br
 [serial]
 .br
-test1=serial*:ttyUSB*:ttyS*
+test1=/dev/serial*:/dev/ttyUSB*:/dev/ttyS*
 .br
-test2=ttyUSB1:tty0:ttyS0
+test2=/dev/ttyUSB1:/dev/tty0:/dev/ttyS0
 .br
-test3=null
+test3=/dev/null
 .br
 
 .br

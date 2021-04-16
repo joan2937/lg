@@ -2593,13 +2593,13 @@ The baud rate must be one of 50, 75, 110, 134, 150,
 .br
 
 .EX
-$ rgs sero ttyAMA0 9600 0
+$ rgs sero /dev/ttyAMA0 9600 0
 .br
 0
 .br
 
 .br
-$ rgs sero tty1 38400 0
+$ rgs sero /dev/tty1 38400 0
 .br
 1
 .br
@@ -3386,19 +3386,18 @@ The number of PWM pulses to generate.  A value of 0 means infinite.
 .br
 
 .IP "\fBdev\fP: a tty serial device" 0
-The command expects the name of a serial device without the
-leading /dev, e.g.
+The command expects the name of a serial device, e.g.
 
 .br
 
 .EX
-ttyAMA0
+/dev/ttyAMA0
 .br
-ttyUSB0
+/dev/ttyUSB0
 .br
-tty0
+/dev/tty0
 .br
-serial0
+/dev/serial0
 .br
 
 .EE

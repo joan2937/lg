@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "lgpio.h"
 
-#define RGPIO_VERSION 0x00010200
+#define RGPIO_VERSION 0x00010700
 
 /*TEXT
 

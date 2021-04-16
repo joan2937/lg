@@ -240,7 +240,7 @@ import os
 import atexit
 import hashlib
 
-RGPIO_PY_VERSION = 0x00010100
+RGPIO_PY_VERSION = 0x00010700
 
 exceptions = True
 
@@ -2937,7 +2937,7 @@ class sbc():
    def serial_open(self, tty, baud, ser_flags=0):
       """
       Returns a handle for the serial tty device opened
-      at baud bits per second.  The device muse be in /dev.
+      at baud bits per second.
 
       This is a privileged command. See [+Permits+].
 
@@ -2954,11 +2954,11 @@ class sbc():
       38400, 57600, 115200, or 230400.
 
       ...
-      h1 = sbc.serial_open("ttyAMA0", 300)
+      h1 = sbc.serial_open("/dev/ttyAMA0", 300)
 
-      h2 = sbc.serial_open("ttyUSB1", 19200, 0)
+      h2 = sbc.serial_open("/dev/ttyUSB1", 19200, 0)
 
-      h3 = sbc.serial_open("serial0", 9600)
+      h3 = sbc.serial_open("/dev/serial0", 9600)
       ...
       """
       ext = [struct.pack("II", baud, ser_flags)] + [tty]
@@ -3755,7 +3755,7 @@ def xref():
    See [*spi_open*].
 
    tty:
-   A serial device, e.g. ttyAMA0, ttyUSB0
+   A serial device, e.g. /dev/ttyAMA0, /dev/ttyUSB0
 
    uint32:
    An unsigned 32 bit number.

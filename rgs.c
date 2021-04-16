@@ -50,7 +50,7 @@ This program provides a socket interface to some of
 the commands available from lg.
 */
 
-#define RGS_VERSION 0x00010200
+#define RGS_VERSION 0x00010700
 
 #define RGS_CONNECT_ERR 255
 #define RGS_OPTION_ERR  254

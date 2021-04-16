@@ -30,10 +30,10 @@ test2=n
 test3=y
 
 [serial]
-default=serial0
-test1=serial*:ttyUSB*:ttyS*
-test2=ttyUSB1:tty0:ttyS0
-test3=null
+default=/dev/serial0
+test1=/dev/serial*:/dev/ttyUSB*:/dev/ttyS*
+test2=/dev/ttyUSB1:/dev/tty0:/dev/ttyS0
+test3=/dev/null
 
 [spi]
 default=0.*

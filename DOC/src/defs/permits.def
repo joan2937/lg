@@ -207,7 +207,7 @@ TEXT*/
 
 /*TEXT [serial]
 Each entry in this section takes the form [#user=device#] where
-[#device#] indicates a serial device. E.g. [#serial0#] refers to
+[#device#] indicates a serial device. E.g. [#/dev/serial0#] refers to
 Linux device [#/dev/serial0#]
 
 There may be more than one [#device#] entry per user, each must be separated by a [#:#] character.
@@ -216,10 +216,11 @@ There may be more than one [#device#] entry per user, each must be separated by 
 characters) or [#?#] (matches a single character).
 
 ...
-fred=serial0         # user fred can access /dev/serial0.
-peter=tty*           # user peter can access /dev/tty*.
-boss=*               # user boss can access /dev/*.
-sally=serial?:ttyS*  # user sally can access /dev/serial? and /dev/ttyS*.
+fred=/dev/serial0              # user fred can access /dev/serial0.
+peter=/dev/tty*                # user peter can access /dev/tty*.
+boss=/dev/*                    # user boss can access /dev/*.
+sally=/dev/serial?:/dev/ttyS*  # user sally can access /dev/serial?
+                               # and /dev/ttyS*.
 ...
 
 TEXT*/
@@ -292,9 +293,9 @@ test2=n
 test3=y
 
 [serial]
-test1=serial*:ttyUSB*:ttyS*
-test2=ttyUSB1:tty0:ttyS0
-test3=null
+test1=/dev/serial*:/dev/ttyUSB*:/dev/ttyS*
+test2=/dev/ttyUSB1:/dev/tty0:/dev/ttyS0
+test3=/dev/null
 
 [spi]
 test1=0.0:0.1:1.0:1.1:1.2:2.0:2.1

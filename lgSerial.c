@@ -56,7 +56,6 @@ int lgSerialOpen(const char *serDev, int serBaud, int serFlags)
    int speed;
    int fd;
    int handle;
-   char serName[LG_MAX_PATH];
    lgSerialObj_p ser;
 
    LG_DBG(LG_DEBUG_TRACE, "serDev=%s serBaud=%d serFlags=0x%X",
@@ -90,9 +89,7 @@ int lgSerialOpen(const char *serDev, int serBaud, int serFlags)
    if (serFlags)
       PARAM_ERROR(LG_BAD_SERIAL_FLAGS, "bad serial flags (0x%X)", serFlags);
 
-   snprintf(serName, LG_MAX_PATH, "/dev/%s", serDev);
-
-   if ((fd = open(serName, O_RDWR | O_NOCTTY | O_NDELAY | O_NONBLOCK)) == -1)
+   if ((fd = open(serDev, O_RDWR | O_NOCTTY | O_NDELAY | O_NONBLOCK)) == -1)
    {
       return LG_SERIAL_OPEN_FAILED;
    }

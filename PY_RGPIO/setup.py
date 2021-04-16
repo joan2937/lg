@@ -6,7 +6,7 @@ with open('README.md') as f:
     long_description = f.read()
 
 setup(name='rgpio',
-      version='0.1.1.0',
+      version='0.1.7.0',
       zip_safe=False,
       author='joan',
       author_email='joan@abyz.me.uk',

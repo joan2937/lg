@@ -1396,10 +1396,10 @@ The baud rate must be one of 50, 75, 110, 134, 150,
 38400, 57600, 115200, or 230400.
 
 ...
-$ rgs sero ttyAMA0 9600 0
+$ rgs sero /dev/ttyAMA0 9600 0
 0
 
-$ rgs sero tty1 38400 0
+$ rgs sero /dev/tty1 38400 0
 1
 ...
 
@@ -1794,14 +1794,13 @@ cyc :: >= 0
 The number of PWM pulses to generate.  A value of 0 means infinite.
 
 dev :: a tty serial device
-The command expects the name of a serial device without the
-leading /dev, e.g.
+The command expects the name of a serial device, e.g.
 
 ...
-ttyAMA0
-ttyUSB0
-tty0
-serial0
+/dev/ttyAMA0
+/dev/ttyUSB0
+/dev/tty0
+/dev/serial0
 ...
 
 ef :: GPIO event flags

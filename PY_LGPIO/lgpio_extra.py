@@ -5,7 +5,7 @@ import sys
 import threading
 import time
 
-LGPIO_PY_VERSION = 0x00010001
+LGPIO_PY_VERSION = 0x00010700
 
 exceptions = True
 
@@ -1738,7 +1738,7 @@ def notify_close(handle):
 def serial_open(tty, baud, ser_flags=0):
    """
    Returns a handle for the serial tty device opened
-   at baud bits per second.  The device muse be in /dev.
+   at baud bits per second.
 
          tty:= the serial device to open.
         baud:= baud rate in bits per second, see below.
@@ -1753,11 +1753,11 @@ def serial_open(tty, baud, ser_flags=0):
    38400, 57600, 115200, or 230400.
 
    ...
-   h1 = sbc.serial_open("ttyAMA0", 300)
+   h1 = sbc.serial_open("/dev/ttyAMA0", 300)
 
-   h2 = sbc.serial_open("ttyUSB1", 19200, 0)
+   h2 = sbc.serial_open("/dev/ttyUSB1", 19200, 0)
 
-   h3 = sbc.serial_open("serial0", 9600)
+   h3 = sbc.serial_open("/dev/serial0", 9600)
    ...
    """
    return _u2i(_lgpio._serial_open(tty, baud, ser_flags))
@@ -2234,7 +2234,7 @@ def xref():
    See [*spi_open*].
 
    tty:
-   A serial device, e.g. ttyAMA0, ttyUSB0
+   A serial device, e.g. /dev/ttyAMA0, /dev/ttyUSB0
 
    uint32:
    An unsigned 32 bit number.
