@@ -19,7 +19,7 @@ includedir ?= $(prefix)/include
 libdir ?= $(prefix)/lib
 mandir ?= $(prefix)/man
 
-CFLAGS	+= -O3 -Wall -pthread -fpic
+CFLAGS	+= -O3 -Wall -pthread -fpic $(CPPFLAGS)
 #CFLAGS	+= -O0 -g -Wall -pthread -fpic
 
 # -Wunused-local-typedefs -Wunused-macros -fno-common
