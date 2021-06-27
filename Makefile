@@ -19,7 +19,7 @@ includedir ?= $(prefix)/include
 libdir ?= $(prefix)/lib
 mandir ?= $(prefix)/man
 
-CFLAGS	+= -O3 -Wall -pthread -fpic
+CFLAGS	+= -O3 -Wall -pthread -fpic $(CPPFLAGS)
 #CFLAGS	+= -O0 -g -Wall -pthread -fpic
 
 # -Wunused-local-typedefs -Wunused-macros -fno-common
@@ -88,11 +88,11 @@ rgpio.o: rgpio.c lgpio.h lgCmd.h rgpio.h
 	$(CC) $(CFLAGS) -c -o rgpio.o rgpio.c
 
 rgpiod:	rgpiod.o $(OBJ_RGPIOD) $(LIB_LGPIO)
-	$(CC) -o rgpiod rgpiod.o $(OBJ_RGPIOD) $(LINK_LGPIO)
+	$(CC) $(LDFLAGS) -o rgpiod rgpiod.o $(OBJ_RGPIOD) $(LINK_LGPIO)
 	$(STRIP) rgpiod
 
 rgs:	rgs.o $(OBJ_RGS)
-	$(CC) -o rgs rgs.o $(OBJ_RGS)
+	$(CC) $(LDFLAGS) -o rgs rgs.o $(OBJ_RGS)
 	$(STRIP) rgs
 
 DOC/.docs: $(DOCS)
@@ -168,13 +168,13 @@ ifeq ($(DESTDIR),)
 endif
 
 $(LIB_LGPIO):	$(OBJ_LGPIO)
-	$(SHLIB) -pthread -Wl,-soname,$(LIB_LGPIO).$(SOVERSION) -o $(LIB_LGPIO).$(SOVERSION) $(OBJ_LGPIO)
+	$(SHLIB) -pthread $(LDFLAGS) -Wl,-soname,$(LIB_LGPIO).$(SOVERSION) -o $(LIB_LGPIO).$(SOVERSION) $(OBJ_LGPIO)
 	ln -fs $(LIB_LGPIO).$(SOVERSION) $(LIB_LGPIO)
 	$(STRIPLIB) $(LIB_LGPIO)
 	$(SIZE)     $(LIB_LGPIO)
 
 $(LIB_RGPIO):	$(OBJ_RGPIO)
-	$(SHLIB) -pthread -Wl,-soname,$(LIB_RGPIO).$(SOVERSION) -o $(LIB_RGPIO).$(SOVERSION) $(OBJ_RGPIO)
+	$(SHLIB) -pthread $(LDFLAGS) -Wl,-soname,$(LIB_RGPIO).$(SOVERSION) -o $(LIB_RGPIO).$(SOVERSION) $(OBJ_RGPIO)
 	ln -fs $(LIB_RGPIO).$(SOVERSION) $(LIB_RGPIO)
 	$(STRIPLIB) $(LIB_RGPIO)
 	$(SIZE)     $(LIB_RGPIO)
