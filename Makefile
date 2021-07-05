@@ -9,6 +9,7 @@ SIZE         = $(CROSS_PREFIX)size
 STRIP        = $(CROSS_PREFIX)strip
 SHLIB        = $(CC) -shared
 STRIPLIB     = $(STRIP) --strip-unneeded
+PYTHON      ?= python2 python3
 
 SOVERSION    = 1
 
@@ -75,7 +76,7 @@ DOCS = \
 
 LIB = $(LIB_LGPIO) $(LIB_RGPIO)
 
-ALL = $(LIB) rgpiod rgs DOC/.docs
+ALL = $(LIB) rgpiod rgs DOC/.docs lgpio.py
 
 LINK_LGPIO  = -L. -llgpio -pthread -lrt
 LINK_RGPIO  = -L. -lrgpio -pthread -lrt
@@ -99,21 +100,20 @@ DOC/.docs: $(DOCS)
 	@[ -d "DOC" ] && cd DOC && ./cdoc || echo "*** No DOC directory ***"
 	touch DOC/.docs
 
+lgpio.py: $(LIB_LGPIO)
+	@for PBIN in $(PYTHON); do \
+		if $$PBIN --version >&/dev/null; then \
+			$(MAKE) -C PY_LGPIO build-python PYTHON=$$PBIN $(MAKEFLAGS) || \
+			echo "*** build of $$PBIN lgpio.py failed ***"; \
+		fi; \
+	done
 clean:
 	rm -f *.o *.i *.s *~ $(ALL) *.so.$(SOVERSION)
-
-ifeq ($(DESTDIR),)
-  PYBUILDARGS =
-  PYINSTALLARGS =
-else
-  PYBUILDARGS = --include-dirs=$(DESTDIR)$(includedir) --library-dirs=$(DESTDIR)$(libdir)
-  PYINSTALLARGS = --root=$(DESTDIR)
-endif
 
 html: $(ALL)
 	@[ -d "DOC" ] && cd DOC && ./makedoc || echo "*** No DOC directory ***"
 
-install: $(ALL)
+install-native: $(ALL)
 	@install -m 0755 -d                      $(DESTDIR)$(includedir)
 	install -m 0644 lgpio.h                  $(DESTDIR)$(includedir)
 	install -m 0644 rgpio.h                  $(DESTDIR)$(includedir)
@@ -134,21 +134,17 @@ install: $(ALL)
 ifeq ($(DESTDIR),)
 	ldconfig
 endif
-	@if which python2; then cd PY_RGPIO && python2 setup.py -q install $(PYINSTALLARGS) || echo "*** install of Python2 rgpio.py failed ***"; fi
-	@if which python3; then cd PY_RGPIO && python3 setup.py -q install $(PYINSTALLARGS) || echo "*** install of Python3 rgpio.py failed ***"; fi
-	@if which swig; then cd PY_LGPIO && swig -python lgpio.i || echo "*** need swig package to install lgpio.py ***"; fi
-	@if which swig python2; then \
-		cd PY_LGPIO && \
-		python2 setup.py build_ext $(PYBUILDARGS) && \
-		python2 setup.py -q install $(PYINSTALLARGS) || \
-		echo "*** install of Python2 lgpio.py failed ***"; \
-	fi
-	@if which swig python3; then \
-		cd PY_LGPIO && \
-		python3 setup.py build_ext $(PYBUILDARGS) && \
-		python3 setup.py -q install $(PYINSTALLARGS) || \
-		echo "*** install of Python3 lgpio.py failed ***"; \
-	fi
+
+install-python: lgpio.py
+	@for PBIN in $(PYTHON); do \
+		if $$PBIN --version >&/dev/null; then \
+			$(MAKE) -C PY_RGPIO install PYTHON=$$PBIN $(MAKEFLAGS) && \
+			$(MAKE) -C PY_LGPIO install PYTHON=$$PBIN $(MAKEFLAGS) || \
+			echo "*** install of $$PBIN modules failed ***"; \
+		fi; \
+	done
+
+install: $(ALL) install-native install-python
 
 uninstall:
 	rm -f $(DESTDIR)$(includedir)/lgpio.h
