@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "lgpio.h"
 
-#define RGPIO_VERSION 0x00010700
+#define RGPIO_VERSION 0x00020000
 
 /*TEXT
 
@@ -624,6 +624,9 @@ lineInfo: address to store returned line info.
 If OK returns a list of okay status, offset,
 line flags, name, and user.
 
+The meaning of the line flags bits are as given for the mode
+by [*gpio_get_mode*].
+
 On failure returns a negative error code.
 D*/
 
@@ -642,23 +645,30 @@ If OK returns the mode of the GPIO.
 
 On failure returns a negative error code.
 
-Mode bit @ Value @ Meaning
-0        @  1    @ Kernel: In use by the kernel
-1        @  2    @ Kernel: Output
-2        @  4    @ Kernel: Active low
-3        @  8    @ Kernel: Open drain
-4        @ 16    @ Kernel: Open source
-5        @ 32    @ Kernel: ---
-6        @ 64    @ Kernel: ---
-7        @ 128   @ Kernel: ---
-8        @ 256   @ LG: Input
-9        @ 512   @ LG: Output
-10       @ 1024  @ LG: Alert
-11       @ 2048  @ LG: Group
-12       @ 4096  @ LG: ---
-13       @ 8192  @ LG: ---
-14       @ 16384 @ LG: ---
-15       @ 32768 @ LG: ---
+Bit @ Value @ Meaning
+0   @  1    @ Kernel: In use by the kernel
+1   @  2    @ Kernel: Output
+2   @  4    @ Kernel: Active low
+3   @  8    @ Kernel: Open drain
+4   @ 16    @ Kernel: Open source
+5   @ 32    @ Kernel: Pull up set
+6   @ 64    @ Kernel: Pull down set
+7   @ 128   @ Kernel: Pulls off set
+8   @ 256   @ LG: Input
+9   @ 512   @ LG: Output
+10  @ 1024  @ LG: Alert
+11  @ 2048  @ LG: Group
+12  @ 4096  @ LG: ---
+13  @ 8192  @ LG: ---
+14  @ 16384 @ LG: ---
+15  @ 32768 @ LG: ---
+16  @ 65536 @ Kernel: Input
+17  @ 1<<17 @ Kernel: Rising edge alert
+18  @ 1<<18 @ Kernel: Falling edge alert
+19  @ 1<<19 @ Kernel: Realtime clock alert
+
+The LG bits are only set if the query was made by the process that
+owns the GPIO.
 D*/
 
 /*F*/
@@ -678,7 +688,8 @@ If OK returns 0.
 On failure returns a negative error code.
 
 The line flags may be used to set the GPIO
-as active low, open drain, or open source.
+as active low, open drain, open source,
+pull up, pull down, pull off.
 
 ...
 status = gpio_claim_input(sbc, h, 0, 23); // open GPIO 23 for input
@@ -704,7 +715,8 @@ If OK returns 0.
 On failure returns a negative error code.
 
 The line flags may be used to set the GPIO
-as active low, open drain, or open source.
+as active low, open drain, open source,
+pull up, pull down, pull off.
 
 If value is zero the GPIO will be initialised low (0).  If any other
 value is used the GPIO will be initialised high (1).
@@ -753,7 +765,7 @@ If OK returns 0.
 On failure returns a negative error code.
 
 The line flags may be used to set the group as active low,
-open drain, or open source.
+open drain, open source, pull up, pull down, pull off.
 
 gpios is an array of one or more GPIO. The first GPIO in the array
 is called the group leader and is used to reference the group as a whole.
@@ -779,7 +791,8 @@ If OK returns 0.
 
 On failure returns a negative error code.
 
-The line flags may be used to set the group as active low, open drain, or open source.
+The line flags may be used to set the group as active low, open drain,
+open source, pull up, pull down, pull off.
 
 gpios is an array of one or more GPIO. The first GPIO in the array is
 called the group leader and is used to reference the group as a whole.
@@ -1209,7 +1222,7 @@ On failure returns a negative error code.
 
 
 The line flags may be used to set the GPIO as active low,
-open drain, or open source.
+open drain, open source, pull up, pull down, pull off.
 
 The event flags are used to generate alerts for a rising edge,
 falling edge, or both edges.
@@ -2658,6 +2671,9 @@ The following values may be or'd to form the value.
 LG_SET_ACTIVE_LOW
 LG_SET_OPEN_DRAIN
 LG_SET_OPEN_SOURCE
+LG_SET_PULL_UP
+LG_SET_PULL_DOWN
+LG_SET_PULL_NONE
 . .
 
 lgChipInfo_p::

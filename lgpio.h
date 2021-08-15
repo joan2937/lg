@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <pthread.h>
 #include <linux/gpio.h>
 
-#define LGPIO_VERSION 0x00010700
+#define LGPIO_VERSION 0x00020000
 
 #define LG_CD "LG_CD"  /* configuration directory */
 #define LG_WD "LG_WD"  /* working directory */
@@ -265,21 +265,44 @@ extern "C" {
 #define LG_GPIO_NAME_LEN  32
 #define LG_GPIO_USER_LEN  32
 
-#define LG_GPIO_IS_KERNEL       GPIOLINE_FLAG_KERNEL
-#define LG_GPIO_IS_OUT          GPIOLINE_FLAG_IS_OUT
-#define LG_GPIO_IS_ACTIVE_LOW   GPIOLINE_FLAG_ACTIVE_LOW
-#define LG_GPIO_IS_OPEN_DRAIN   GPIOLINE_FLAG_OPEN_DRAIN
-#define LG_GPIO_IS_OPEN_SOURCE  GPIOLINE_FLAG_OPEN_SOURCE
+/* used to report line status */
 
-#define LG_SET_INPUT            GPIOHANDLE_REQUEST_INPUT
-#define LG_SET_OUTPUT           GPIOHANDLE_REQUEST_OUTPUT
-#define LG_SET_ACTIVE_LOW       GPIOHANDLE_REQUEST_ACTIVE_LOW
-#define LG_SET_OPEN_DRAIN       GPIOHANDLE_REQUEST_OPEN_DRAIN
-#define LG_SET_OPEN_SOURCE      GPIOHANDLE_REQUEST_OPEN_SOURCE
+#define LG_GPIO_IS_KERNEL         1
+#define LG_GPIO_IS_OUTPUT         2
+#define LG_GPIO_IS_ACTIVE_LOW     4
+#define LG_GPIO_IS_OPEN_DRAIN     8
+#define LG_GPIO_IS_OPEN_SOURCE    16
+#define LG_GPIO_IS_PULL_UP        32
+#define LG_GPIO_IS_PULL_DOWN      64
+#define LG_GPIO_IS_PULL_NONE      128
 
-#define LG_RISING_EDGE          GPIOEVENT_REQUEST_RISING_EDGE
-#define LG_FALLING_EDGE         GPIOEVENT_REQUEST_FALLING_EDGE
-#define LG_BOTH_EDGES           GPIOEVENT_REQUEST_BOTH_EDGES
+#define LG_GPIO_IS_INPUT          65536
+#define LG_GPIO_IS_RISING_EDGE    131072
+#define LG_GPIO_IS_FALLING_EDGE   262144
+#define LG_GPIO_IS_REALTIME_CLOCK 524288
+
+/* use to set event flags */
+
+#define LG_RISING_EDGE        1
+#define LG_FALLING_EDGE       2
+#define LG_BOTH_EDGES         3
+
+/* use to set line flags */
+
+#define LG_SET_ACTIVE_LOW  4
+#define LG_SET_OPEN_DRAIN  8
+#define LG_SET_OPEN_SOURCE 16
+#define LG_SET_PULL_UP     32
+#define LG_SET_PULL_DOWN   64
+#define LG_SET_PULL_NONE   128
+
+/* used internally */
+
+#define LG_SET_REALTIME_CLOCK 256
+#define LG_SET_INPUT          512
+#define LG_SET_OUTPUT         1024
+
+/* reported GPIO levels */
 
 #define LG_LOW 0
 #define LG_HIGH 1
@@ -506,18 +529,10 @@ If OK returns 0 and updates lineInfo.
 
 On failure returns a negative error code.
 
-This command gets information for a GPIO of a gpiochip.
-In particular it gets the GPIO number, kernel usage flags,
-its user, and its purpose.
+This command gets information for a GPIO of a gpiochip.  In particular
+it gets the GPIO number, flags, its user, and its purpose.
 
-The usage flags are bits.
-
-Bit @ value @ Bit meaning
-0   @  1    @ GPIO in use by the kernel
-1   @  2    @ GPIO is an output
-2   @  4    @ GPIO is active low
-3   @  8    @ GPIO is open drain
-4   @ 16    @ GPIO is open source
+The meaning of the flags bits are as given for the mode by [*lgGpioGetMode*].
 
 The user and purpose fields are filled in by the software which has
 claimed the GPIO and may be blank.
@@ -530,7 +545,7 @@ status = lgGpioGetLineInfo(h, gpio, &lInfo);
 if (status == LG_OKAY)
 {
    printf("lFlags=%d name=%s user=%s\n",
-      lInfo.lines, lInfo.name, lInfo.user))
+      lInfo.lFlags, lInfo.name, lInfo.user))
 }
 ...
 D*/
@@ -550,23 +565,30 @@ If OK returns the GPIO mode.
 
 On failure returns a negative error code.
 
-Mode bit @ Value @ Meaning
-0        @  1    @ Kernel: In use by the kernel
-1        @  2    @ Kernel: Output
-2        @  4    @ Kernel: Active low
-3        @  8    @ Kernel: Open drain
-4        @ 16    @ Kernel: Open source
-5        @ 32    @ Kernel: ---
-6        @ 64    @ Kernel: ---
-7        @ 128   @ Kernel: ---
-8        @ 256   @ LG: Input
-9        @ 512   @ LG: Output
-10       @ 1024  @ LG: Alert
-11       @ 2048  @ LG: Group
-12       @ 4096  @ LG: ---
-13       @ 8192  @ LG: ---
-14       @ 16384 @ LG: ---
-15       @ 32768 @ LG: ---
+Bit @ Value @ Meaning
+0   @  1    @ Kernel: In use by the kernel
+1   @  2    @ Kernel: Output
+2   @  4    @ Kernel: Active low
+3   @  8    @ Kernel: Open drain
+4   @ 16    @ Kernel: Open source
+5   @ 32    @ Kernel: Pull up set
+6   @ 64    @ Kernel: Pull down set
+7   @ 128   @ Kernel: Pulls off set
+8   @ 256   @ LG: Input
+9   @ 512   @ LG: Output
+10  @ 1024  @ LG: Alert
+11  @ 2048  @ LG: Group
+12  @ 4096  @ LG: ---
+13  @ 8192  @ LG: ---
+14  @ 16384 @ LG: ---
+15  @ 32768 @ LG: ---
+16  @ 65536 @ Kernel: Input
+17  @ 1<<17 @ Kernel: Rising edge alert
+18  @ 1<<18 @ Kernel: Falling edge alert
+19  @ 1<<19 @ Kernel: Realtime clock alert
+
+The LG bits are only set if the query was made by the process that
+owns the GPIO.
 D*/
 
 
@@ -2611,6 +2633,9 @@ The following values may be or'd to form the value.
 LG_SET_ACTIVE_LOW
 LG_SET_OPEN_DRAIN
 LG_SET_OPEN_SOURCE
+LG_SET_PULL_UP
+LG_SET_PULL_DOWN
+LG_SET_PULL_NONE
 . .
 
 lgChipInfo_p::

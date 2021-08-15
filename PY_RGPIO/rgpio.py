@@ -240,7 +240,7 @@ import os
 import atexit
 import hashlib
 
-RGPIO_PY_VERSION = 0x00010700
+RGPIO_PY_VERSION = 0x00020000
 
 exceptions = True
 
@@ -265,6 +265,9 @@ GROUP_ALL = 0xffffffffffffffff
 SET_ACTIVE_LOW = 4
 SET_OPEN_DRAIN = 8
 SET_OPEN_SOURCE = 16
+SET_PULL_UP = 32
+SET_PULL_DOWN = 64
+SET_PULL_NONE = 128
 
 # GPIO event flags
 
@@ -1389,6 +1392,9 @@ class sbc():
       If OK returns a list of okay status, offset,
       line flags, name, and user.
 
+      The meaning of the line flags bits are as given for the mode
+      by [*gpio_get_mode*].
+
       On failure returns a negative error code.
       """
       bytes = CMD_INTERRUPTED
@@ -1418,23 +1424,30 @@ class sbc():
 
       On failure returns a negative error code.
 
-      Mode bit @ Value @ Meaning
-      0        @  1    @ Kernel: In use by the kernel
-      1        @  2    @ Kernel: Output
-      2        @  4    @ Kernel: Active low
-      3        @  8    @ Kernel: Open drain
-      4        @ 16    @ Kernel: Open source
-      5        @ 32    @ Kernel: ---
-      6        @ 64    @ Kernel: ---
-      7        @ 128   @ Kernel: ---
-      8        @ 256   @ LG: Input
-      9        @ 512   @ LG: Output
-      10       @ 1024  @ LG: Alert
-      11       @ 2048  @ LG: Group
-      12       @ 4096  @ LG: ---
-      13       @ 8192  @ LG: ---
-      14       @ 16384 @ LG: ---
-      15       @ 32768 @ LG: ---
+      Bit @ Value @ Meaning
+      0   @  1    @ Kernel: In use by the kernel
+      1   @  2    @ Kernel: Output
+      2   @  4    @ Kernel: Active low
+      3   @  8    @ Kernel: Open drain
+      4   @ 16    @ Kernel: Open source
+      5   @ 32    @ Kernel: Pull up set
+      6   @ 64    @ Kernel: Pull down set
+      7   @ 128   @ Kernel: Pulls off set
+      8   @ 256   @ LG: Input
+      9   @ 512   @ LG: Output
+      10  @ 1024  @ LG: Alert
+      11  @ 2048  @ LG: Group
+      12  @ 4096  @ LG: ---
+      13  @ 8192  @ LG: ---
+      14  @ 16384 @ LG: ---
+      15  @ 32768 @ LG: ---
+      16  @ 65536 @ Kernel: Input
+      17  @ 1<<17 @ Kernel: Rising edge alert
+      18  @ 1<<18 @ Kernel: Falling edge alert
+      19  @ 1<<19 @ Kernel: Realtime clock alert
+
+      The LG bits are only set if the query was made by the process
+      that owns the GPIO.
       """
       ext = [struct.pack("II", handle&0xffff, gpio)]
       return _u2i(_lg_command_ext(self.sl, _CMD_GMODE, 8, ext, L=2))
@@ -1452,7 +1465,8 @@ class sbc():
       On failure returns a negative error code.
 
       The line flags may be used to set the GPIO
-      as active low, open drain, or open source.
+      as active low, open drain, open source,
+      pull up, pull down, pull off.
 
       ...
       sbc.gpio_claim_input(h, 23) # open GPIO 23 for input.
@@ -1475,7 +1489,8 @@ class sbc():
       On failure returns a negative error code.
 
       The line flags may be used to set the GPIO
-      as active low, open drain, or open source.
+      as active low, open drain, open source,
+      pull up, pull down, pull off.
 
       If level is zero the GPIO will be initialised low (0).  If any other
       value is used the GPIO will be initialised high (1).
@@ -1517,7 +1532,8 @@ class sbc():
       On failure returns a negative error code.
 
       The line flags may be used to set the group
-      as active low, open drain, or open source.
+      as active low, open drain, open source,
+      pull up, pull down, pull off.
 
       gpio is a list of one or more GPIO.  The first GPIO in the
       list is called the group leader and is used to reference the
@@ -1548,7 +1564,8 @@ class sbc():
       On failure returns a negative error code.
 
       The line flags may be used to set the group
-      as active low, open drain, or open source.
+      as active low, open drain, open source,
+      pull up, pull down, pull off.
 
       gpio is a list of one or more GPIO.  The first GPIO in the list is
       called the group leader and is used to reference the group as a whole.
@@ -2007,7 +2024,8 @@ class sbc():
       On failure returns a negative error code.
 
       The line flags may be used to set the GPIO
-      as active low, open drain, or open source.
+      as active low, open drain, open source,
+      pull up, pull down, pull off.
 
       The event flags are used to generate alerts for a rising edge,
       falling edge, or both edges.
@@ -3652,6 +3670,9 @@ def xref():
    SET_ACTIVE_LOW
    SET_OPEN_DRAIN
    SET_OPEN_SOURCE
+   SET_PULL_UP
+   SET_PULL_DOWN
+   SET_PULL_NONE
    . .
 
    notify_handle:

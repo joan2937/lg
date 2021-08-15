@@ -532,30 +532,13 @@ On failure returns a negative error code.
 .br
 
 .br
-This command gets information for a GPIO of a gpiochip.
-In particular it gets the GPIO number, kernel usage flags,
-its user, and its purpose.
+This command gets information for a GPIO of a gpiochip.  In particular
+it gets the GPIO number, flags, its user, and its purpose.
 
 .br
 
 .br
-The usage flags are bits.
-
-.br
-
-.br
-Bit   value   Bit meaning
-.br
-0      1      GPIO in use by the kernel
-.br
-1      2      GPIO is an output
-.br
-2      4      GPIO is active low
-.br
-3      8      GPIO is open drain
-.br
-4     16      GPIO is open source
-.br
+The meaning of the flags bits are as given for the mode by \fBlgGpioGetMode\fP.
 
 .br
 
@@ -584,7 +567,7 @@ if (status == LG_OKAY)
 .br
    printf("lFlags=%d name=%s user=%s\n",
 .br
-      lInfo.lines, lInfo.name, lInfo.user))
+      lInfo.lFlags, lInfo.name, lInfo.user))
 .br
 }
 .br
@@ -620,40 +603,54 @@ On failure returns a negative error code.
 .br
 
 .br
-Mode bit   Value   Meaning
+Bit   Value   Meaning
 .br
-0           1      Kernel: In use by the kernel
+0      1      Kernel: In use by the kernel
 .br
-1           2      Kernel: Output
+1      2      Kernel: Output
 .br
-2           4      Kernel: Active low
+2      4      Kernel: Active low
 .br
-3           8      Kernel: Open drain
+3      8      Kernel: Open drain
 .br
-4          16      Kernel: Open source
+4     16      Kernel: Open source
 .br
-5          32      Kernel: ---
+5     32      Kernel: Pull up set
 .br
-6          64      Kernel: ---
+6     64      Kernel: Pull down set
 .br
-7          128     Kernel: ---
+7     128     Kernel: Pulls off set
 .br
-8          256     LG: Input
+8     256     LG: Input
 .br
-9          512     LG: Output
+9     512     LG: Output
 .br
-10         1024    LG: Alert
+10    1024    LG: Alert
 .br
-11         2048    LG: Group
+11    2048    LG: Group
 .br
-12         4096    LG: ---
+12    4096    LG: ---
 .br
-13         8192    LG: ---
+13    8192    LG: ---
 .br
-14         16384   LG: ---
+14    16384   LG: ---
 .br
-15         32768   LG: ---
+15    32768   LG: ---
 .br
+16    65536   Kernel: Input
+.br
+17    1<<17   Kernel: Rising edge alert
+.br
+18    1<<18   Kernel: Falling edge alert
+.br
+19    1<<19   Kernel: Realtime clock alert
+.br
+
+.br
+
+.br
+The LG bits are only set if the query was made by the process that
+owns the GPIO.
 
 .IP "\fBint lgGpioSetUser(int handle, const char *gpiouser)\fP"
 .IP "" 4
@@ -4446,6 +4443,12 @@ LG_SET_ACTIVE_LOW
 LG_SET_OPEN_DRAIN
 .br
 LG_SET_OPEN_SOURCE
+.br
+LG_SET_PULL_UP
+.br
+LG_SET_PULL_DOWN
+.br
+LG_SET_PULL_NONE
 .br
 
 .EE

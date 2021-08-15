@@ -5,7 +5,7 @@ import sys
 import threading
 import time
 
-LGPIO_PY_VERSION = 0x00010700
+LGPIO_PY_VERSION = 0x00020000
 
 exceptions = True
 
@@ -28,6 +28,9 @@ GROUP_ALL = 0xffffffffffffffff
 SET_ACTIVE_LOW = 4
 SET_OPEN_DRAIN = 8
 SET_OPEN_SOURCE = 16
+SET_PULL_UP = 32
+SET_PULL_DOWN = 64
+SET_PULL_NONE = 128
 
 # GPIO event flags
 
@@ -451,6 +454,9 @@ def gpio_get_line_info(handle, gpio):
    If OK returns a list of okay status, GPIO number,
    line flags, name, and user.
 
+   The meaning of the line flags bits are as given for the mode
+   by [*gpio_get_mode*].
+
    On failure returns a negative error code.
    """
    return _u2i_list(_lgpio._gpio_get_line_info(handle&0xffff, gpio))
@@ -467,23 +473,30 @@ def gpio_get_mode(handle, gpio):
 
    On failure returns a negative error code.
 
-   Mode bit @ Value @ Meaning
-   0        @  1    @ Kernel: In use by the kernel
-   1        @  2    @ Kernel: Output
-   2        @  4    @ Kernel: Active low
-   3        @  8    @ Kernel: Open drain
-   4        @ 16    @ Kernel: Open source
-   5        @ 32    @ Kernel: ---
-   6        @ 64    @ Kernel: ---
-   7        @ 128   @ Kernel: ---
-   8        @ 256   @ LG: Input
-   9        @ 512   @ LG: Output
-   10       @ 1024  @ LG: Alert
-   11       @ 2048  @ LG: Group
-   12       @ 4096  @ LG: ---
-   13       @ 8192  @ LG: ---
-   14       @ 16384 @ LG: ---
-   15       @ 32768 @ LG: ---
+   Bit @ Value @ Meaning
+   0   @  1    @ Kernel: In use by the kernel
+   1   @  2    @ Kernel: Output
+   2   @  4    @ Kernel: Active low
+   3   @  8    @ Kernel: Open drain
+   4   @ 16    @ Kernel: Open source
+   5   @ 32    @ Kernel: Pull up set
+   6   @ 64    @ Kernel: Pull down set
+   7   @ 128   @ Kernel: Pulls off set
+   8   @ 256   @ LG: Input
+   9   @ 512   @ LG: Output
+   10  @ 1024  @ LG: Alert
+   11  @ 2048  @ LG: Group
+   12  @ 4096  @ LG: ---
+   13  @ 8192  @ LG: ---
+   14  @ 16384 @ LG: ---
+   15  @ 32768 @ LG: ---
+   16  @ 65536 @ Kernel: Input
+   17  @ 1<<17 @ Kernel: Rising edge alert
+   18  @ 1<<18 @ Kernel: Falling edge alert
+   19  @ 1<<19 @ Kernel: Realtime clock alert
+
+   The LG bits are only set if the query was made by the process
+   that owns the GPIO.
    """
    return _u2i(_lgpio._gpio_get_mode(handle&0xffff, gpio))
 
@@ -501,7 +514,8 @@ def gpio_claim_input(handle, gpio, lFlags=0):
    On failure returns a negative error code.
 
    The line flags may be used to set the GPIO
-   as active low, open drain, or open source.
+   as active low, open drain, open source,
+   pull up, pull down, pull off.
 
    ...
    sbc.gpio_claim_input(h, 23) # open GPIO 23 for input.
@@ -523,7 +537,8 @@ def gpio_claim_output(handle, gpio, level=0, lFlags=0):
    On failure returns a negative error code.
 
    The line flags may be used to set the GPIO
-   as active low, open drain, or open source.
+   as active low, open drain, open source,
+   pull up, pull down, pull off.
 
    If level is zero the GPIO will be initialised low (0).  If any other
    value is used the GPIO will be initialised high (1).
@@ -563,7 +578,8 @@ def group_claim_input(handle, gpio, lFlags=0):
    On failure returns a negative error code.
 
    The line flags may be used to set the group
-   as active low, open drain, or open source.
+   as active low, open drain, open source,
+   pull up, pull down, pull off.
 
    gpio is a list of one or more GPIO.  The first GPIO in the
    list is called the group leader and is used to reference the
@@ -592,7 +608,8 @@ def group_claim_output(handle, gpio, levels=[0], lFlags=0):
    On failure returns a negative error code.
 
    The line flags may be used to set the group
-   as active low, open drain, or open source.
+   as active low, open drain, open source,
+   pull up, pull down, pull off.
 
    gpio is a list of one or more GPIO.  The first GPIO in the list is
    called the group leader and is used to reference the group as a whole.
@@ -1034,7 +1051,8 @@ def gpio_claim_alert(
    falling edge, or both edges.
 
    The line flags may be used to set the GPIO
-   as active low, open drain, or open source.
+   as active low, open drain, open source,
+   pull up, pull down, pull off.
 
    Use the default notification handle of None unless you plan
    to read the alerts from a notification pipe you have opened.
@@ -2176,6 +2194,9 @@ def xref():
    SET_ACTIVE_LOW
    SET_OPEN_DRAIN
    SET_OPEN_SOURCE
+   SET_PULL_UP
+   SET_PULL_DOWN
+   SET_PULL_NONE
    . .
 
    notify_handle:

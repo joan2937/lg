@@ -34,7 +34,6 @@ typedef struct lgLineInf_s
 {
    int      banned;
    int      mode;
-   int      lFlags;
    int      eFlags;
    int      group_size;
    int      fd;
@@ -43,8 +42,9 @@ typedef struct lgLineInf_s
    callbk_t alertFunc;
    void     *userdata;
    uint32_t offset;
-   uint32_t *offsets;
-   uint8_t  *values;
+   uint32_t *offsets_p;
+   uint64_t *values_p; /* redundant to store values with gpiochip API2  */
+                       /* kept in case it is needed again in the future */
 } lgLineInf_t, *lgLineInf_p;
 
 typedef struct lgChipObj_s

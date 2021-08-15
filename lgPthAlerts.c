@@ -273,7 +273,7 @@ void lgcheck(int count, char *str)
 }
 
 void xDebWatEvt(
-   lgAlertRec_p p, uint64_t ts, int *cp, struct gpioevent_data *ep)
+   lgAlertRec_p p, uint64_t ts, int *cp, struct gpio_v2_line_event *ep)
 {
    int64_t nano_diff;
 
@@ -416,7 +416,7 @@ void *lgPthAlert(void)
    uint64_t tmax;
    struct pollfd pfd[64];
    lgAlertRec_p pAlertRec[64];
-   struct gpioevent_data eIn[LG_GPIO_MAX_ALERTS_PER_READ];
+   struct gpio_v2_line_event eIn[LG_GPIO_MAX_ALERTS_PER_READ];
    struct timespec tspec = {0, 5e5}; /* 0.5 ms timeout */
 
    while (1)
@@ -485,7 +485,7 @@ void *lgPthAlert(void)
                      while (bytes >= sizeof(eIn[0]))
                      {
                         /* debounce and watchdog */
-                        xDebWatEvt(p, eIn[e].timestamp, &count, &eIn[e]);
+                        xDebWatEvt(p, eIn[e].timestamp_ns, &count, &eIn[e]);
 
                         bytes -= sizeof(eIn[0]);
 
@@ -494,11 +494,11 @@ void *lgPthAlert(void)
 
                      if (e)
                      {
-                        p->last_rpt_ts = eIn[e-1].timestamp;
+                        p->last_rpt_ts = eIn[e-1].timestamp_ns;
 
-                        if (eIn[e-1].timestamp < tmax)
+                        if (eIn[e-1].timestamp_ns < tmax)
                         {
-                           tmax = eIn[e-1].timestamp;
+                           tmax = eIn[e-1].timestamp_ns;
                         }
                      }
 
