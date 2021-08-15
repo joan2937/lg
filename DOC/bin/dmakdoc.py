@@ -81,6 +81,15 @@ while True:
    if line == "":
       break
 
+   while line.find("[&") != -1 and line.find("&]") != -1:
+      (b, s, e) = line.partition("[&")
+      (l, s, e) = e.partition("&]")
+
+      if man:
+         line = "{}\\fB{}\\fP{}".format(b, l, e)
+      else:
+         line = "{}<a href=\"{}\">{}</a>".format(b, l, e)
+
    while line.find("[*") != -1 and line.find("*]") != -1:
       (b, s, e) = line.partition("[*")
       (l, s, e) = e.partition("*]")

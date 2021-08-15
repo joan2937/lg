@@ -44,3 +44,16 @@ ALL GPIO are identified by their gpiochip device number.
 
 TEXT*/
 
+/*TEXT Other Languages
+
+There are several third party projects which provide wrappers for lg.
+
+Some are listed here:
+
+[ul]
+NodeJS (thanks to Dan Kadera) [&https://github.com/jahudka/node-lgpio&]NodeJS bindings
+NodeJS (thanks to Dan Kadera) [&https://www.npmjs.com/package/lgpio&]NPM package
+[ul]
+
+TEXT*/
+

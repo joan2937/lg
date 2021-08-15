@@ -59,6 +59,32 @@ void xWrite(lgChipObj_p chip, int gpio, int value);
 callbk_t lgGpioSamplesFunc = NULL;
 void *lgGpioSamplesUserdata = NULL;
 
+static inline void xSetBit(uint64_t *b, int n)
+{
+   *b |= ((uint64_t)1 << n);
+}
+
+static inline void xChangeBit(uint64_t *b, int n)
+{
+   *b ^= ((uint64_t)1 << n);
+}
+
+static inline void xClearBit(uint64_t *b, int n)
+{
+   *b &= ~((uint64_t)1 << n);
+}
+
+static inline int xTestBit(uint64_t b, int n)
+{
+   return !!(b & ((uint64_t)1 << n));
+}
+
+static inline void xAssignBit(uint64_t *b, int n, int value)
+{
+   if (value) xSetBit(b, n);
+   else       xClearBit(b, n);
+}
+
 static void _lgGpiochipClose(void *objPtr)
 {
    int i;
@@ -75,7 +101,7 @@ static void _lgGpiochipClose(void *objPtr)
    lgPthAlertStop(chip);
 
    usleep(100000); /* should be long enough for PWM/events to stop */
-   
+
    for (i=0; i<chip->lines; i++)
    {
       if (chip->LineInf[i].mode != LG_CHIP_MODE_UNKNOWN)
@@ -98,21 +124,21 @@ static void _lgGpiochipClose(void *objPtr)
                chip->LineInf[i].fd = -1;
             }
 
-            if (chip->LineInf[i].offsets)
+            if (chip->LineInf[i].offsets_p)
             {
                LG_DBG(LG_DEBUG_ALLOC, "free offsets: *%p",
-                  (void*)chip->LineInf[i].offsets);
-               free(chip->LineInf[i].offsets);
-               chip->LineInf[i].offsets = NULL;
+                  (void*)chip->LineInf[i].offsets_p);
+               free(chip->LineInf[i].offsets_p);
+               chip->LineInf[i].offsets_p = NULL;
             }
 
-            if (chip->LineInf[i].values)
+            if (chip->LineInf[i].values_p)
             {
                LG_DBG(LG_DEBUG_ALLOC, "free values: *%p",
-                  (void*)chip->LineInf[i].values);
+                  (void*)chip->LineInf[i].values_p);
 
-               free(chip->LineInf[i].values);
-               chip->LineInf[i].values = NULL;
+               free(chip->LineInf[i].values_p);
+               chip->LineInf[i].values_p = NULL;
             }
          }
       }
@@ -128,61 +154,63 @@ static void _lgGpiochipClose(void *objPtr)
 }
 
 static int xGpioHandleRequest(
-   lgChipObj_p chip, struct gpiohandle_request *req)
+   lgChipObj_p chip, struct gpio_v2_line_request *req)
 {
    int i, gpio, mode;
    int status;
-   uint32_t *offsets;
-   uint8_t *values;
+   uint32_t *offsets_p;
+   uint64_t *values_p;
 
    LG_DBG(LG_DEBUG_USER, "chip=*%p req=*%p", (void*)chip, (void*)req);
 
-   LG_DBG(LG_DEBUG_ALLOC, "request %d with flags %d: GPIO=[%s]",
-      req->lines, req->flags, lgDbgInt2Str(req->lines,
-      (int *)req->lineoffsets));
+   LG_DBG(LG_DEBUG_ALLOC, "request %d with flags %llu GPIO=[%s]",
+      req->num_lines, req->config.flags, lgDbgInt2Str(req->num_lines,
+      (int *)req->offsets));
 
-   status = ioctl(chip->fd, GPIO_GET_LINEHANDLE_IOCTL, req);
+   status = ioctl(chip->fd, GPIO_V2_GET_LINE_IOCTL, req);
 
    if (status == 0)
    {
-      offsets = calloc(req->lines, sizeof(uint32_t));
+      offsets_p = calloc(req->num_lines, sizeof(uint32_t));
 
-      // struct needs GPIOHANDLES_MAX entries
-      values = calloc(GPIOHANDLES_MAX, sizeof(uint8_t));
+      values_p = calloc(1, sizeof(uint64_t));
 
-      if ((offsets == NULL) || (values == NULL))
+      if ((offsets_p == NULL) || (values_p == NULL))
       {
-         free(offsets); // passing NULL is legal
-         free(values); // passing NULL is legal
+         free(offsets_p); // passing NULL is legal
+         free(values_p); // passing NULL is legal
          close(req->fd);
          return LG_NOT_ENOUGH_MEMORY;
       }
 
       LG_DBG(LG_DEBUG_ALLOC, "alloc offsets: *%p, values: *%p",
-         (void*)offsets, (void*)values);
+         (void*)offsets_p, (void*)values_p);
 
       mode = 0;
 
-      if (req->flags & GPIOHANDLE_REQUEST_INPUT)  mode |= LG_CHIP_BIT_INPUT;
-      if (req->flags & GPIOHANDLE_REQUEST_OUTPUT) mode |= LG_CHIP_BIT_OUTPUT;
-      if (req->lines > 1)                         mode |= LG_CHIP_BIT_GROUP;
+      if (req->config.flags & GPIO_V2_LINE_FLAG_INPUT)
+         mode |= LG_CHIP_BIT_INPUT;
 
-      for (i=0; i<req->lines; i++)
+      if (req->config.flags & GPIO_V2_LINE_FLAG_OUTPUT)
+         mode |= LG_CHIP_BIT_OUTPUT;
+
+      if (req->num_lines > 1)
+         mode |= LG_CHIP_BIT_GROUP;
+
+      for (i=0; i<req->num_lines; i++)
       {
-         gpio = req->lineoffsets[i];
+         gpio = req->offsets[i];
 
          chip->LineInf[gpio].mode = mode;
-         chip->LineInf[gpio].lFlags = req->flags;
-         chip->LineInf[gpio].group_size = req->lines;
+         chip->LineInf[gpio].group_size = req->num_lines;
          chip->LineInf[gpio].fd = req->fd;
 
          chip->LineInf[gpio].offset = i;
 
-         chip->LineInf[gpio].offsets = offsets;
-         chip->LineInf[gpio].values = values;
+         chip->LineInf[gpio].offsets_p = offsets_p;
+         chip->LineInf[gpio].values_p = values_p;
 
-         offsets[i] = gpio;
-         values[i] = req->default_values[i];
+         offsets_p[i] = gpio;
       }
    }
    else
@@ -190,12 +218,61 @@ static int xGpioHandleRequest(
       if (errno == EBUSY) status = LG_GPIO_BUSY;
       else
       {
-         fprintf(stderr, "*** error %d (%s) ***\n", errno, strerror(errno));
+         LG_DBG(LG_DEBUG_ALWAYS, "%s", strerror(errno));
          status = LG_UNEGPECTED_ERROR;
       }
    }
    return status;
 }
+
+uint64_t xMakeFlags(uint64_t s)
+{
+   uint64_t f = 0;
+
+   if (s & LG_RISING_EDGE)     f |= GPIO_V2_LINE_FLAG_EDGE_RISING;
+   if (s & LG_FALLING_EDGE)    f |= GPIO_V2_LINE_FLAG_EDGE_FALLING;
+   if (s & LG_SET_ACTIVE_LOW)  f |= GPIO_V2_LINE_FLAG_ACTIVE_LOW;
+   if (s & LG_SET_OPEN_DRAIN)  f |= GPIO_V2_LINE_FLAG_OPEN_DRAIN;
+   if (s & LG_SET_OPEN_SOURCE) f |= GPIO_V2_LINE_FLAG_OPEN_SOURCE;
+   if (s & LG_SET_PULL_UP)     f |= GPIO_V2_LINE_FLAG_BIAS_PULL_UP;
+   if (s & LG_SET_PULL_DOWN)   f |= GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN;
+   if (s & LG_SET_PULL_NONE)   f |= GPIO_V2_LINE_FLAG_BIAS_DISABLED;
+   if (s & LG_SET_INPUT)       f |= GPIO_V2_LINE_FLAG_INPUT;
+   if (s & LG_SET_OUTPUT)      f |= GPIO_V2_LINE_FLAG_OUTPUT;
+
+   /*
+   if (s & LG_SET_REALTIME_CLOCK) f |=
+      GPIO_V2_LINE_FLAG_EVENT_CLOCK_REALTIME;
+   */
+
+
+   return f;
+}
+
+uint64_t xMakeStatus(uint64_t f)
+{
+   uint64_t s = 0;
+
+   if (f & GPIO_V2_LINE_FLAG_USED)           s |= LG_GPIO_IS_KERNEL;
+   if (f & GPIO_V2_LINE_FLAG_ACTIVE_LOW)     s |= LG_GPIO_IS_ACTIVE_LOW;
+   if (f & GPIO_V2_LINE_FLAG_INPUT)          s |= LG_GPIO_IS_INPUT;
+   if (f & GPIO_V2_LINE_FLAG_OUTPUT)         s |= LG_GPIO_IS_OUTPUT;
+   if (f & GPIO_V2_LINE_FLAG_EDGE_RISING)    s |= LG_GPIO_IS_RISING_EDGE;
+   if (f & GPIO_V2_LINE_FLAG_EDGE_FALLING)   s |= LG_GPIO_IS_FALLING_EDGE;
+   if (f & GPIO_V2_LINE_FLAG_OPEN_DRAIN)     s |= LG_GPIO_IS_OPEN_DRAIN;
+   if (f & GPIO_V2_LINE_FLAG_OPEN_SOURCE)    s |= LG_GPIO_IS_OPEN_SOURCE;
+   if (f & GPIO_V2_LINE_FLAG_BIAS_PULL_UP)   s |= LG_GPIO_IS_PULL_UP;
+   if (f & GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN) s |= LG_GPIO_IS_PULL_DOWN;
+   if (f & GPIO_V2_LINE_FLAG_BIAS_DISABLED)  s |= LG_GPIO_IS_PULL_NONE;
+
+   /*
+   if (f & GPIO_V2_LINE_FLAG_EVENT_CLOCK_REALTIME)
+      s |= LG_GPIO_IS_REALTIME_CLOCK;
+   */
+
+   return s;
+}
+
 
 static int xClaim(
    lgChipObj_p chip,
@@ -205,31 +282,46 @@ static int xClaim(
    const int *values)
 {
    int i;
+   uint64_t m=0, v=0;
 
-   struct gpiohandle_request req;
+   struct gpio_v2_line_request req;
 
    LG_DBG(LG_DEBUG_USER, "chip=*%p size=%d gpios=[%s] values=[%s] lFlags=%x",
       chip, size, lgDbgInt2Str(size, (int*)gpios),
       lgDbgInt2Str(size, (int*)values), lFlags);
 
-   if (size && (size <= GPIOHANDLES_MAX))
-   { 	
+   memset(&req, 0, sizeof(req));
+
+   if (size && (size <= GPIO_V2_LINES_MAX))
+   {
       for (i=0; i<size; i++)
       {
          if (((unsigned)gpios[i] > chip->lines) ||
              (chip->LineInf[gpios[i]].banned)) return LG_NOT_PERMITTED;
 
-         req.lineoffsets[i] = gpios[i];
-
-         if (values != NULL) req.default_values[i] = values[i];
-         else                req.default_values[i] = 0;
+         req.offsets[i] = gpios[i];
       }
 
-      req.flags = lFlags;
+      if (values != NULL)
+      {
+         req.config.num_attrs = 1;
+	 req.config.attrs[0].attr.id = GPIO_V2_LINE_ATTR_ID_OUTPUT_VALUES;
 
-      strncpy(req.consumer_label, chip->userLabel,
-         sizeof(req.consumer_label));
-      req.lines = size;
+         for (i=0; i<size; i++)
+         {
+            xSetBit(&m, i);
+            xAssignBit(&v, i, values[i]);
+         }
+      }
+
+      req.config.flags = xMakeFlags(lFlags);
+
+      req.config.attrs[0].mask = m;
+      req.config.attrs[0].attr.values = v;
+
+      strncpy(req.consumer, chip->userLabel, sizeof(req.consumer));
+
+      req.num_lines = size;
 
       return xGpioHandleRequest(chip, &req);
    }
@@ -285,14 +377,14 @@ static int xSetAsFree(lgChipObj_p chip, int gpio)
 
    // legal as long as group leader (a singleton is always a leader)
 
-   if (gpio == GPIO->offsets[0])
+   if (gpio == GPIO->offsets_p[0])
    {
       LG_DBG(LG_DEBUG_ALLOC,
          "group free GPIO: %d (mode %d)", gpio, GPIO->mode);
 
       for (i=0; i<GPIO->group_size; i++)
       {
-         g = GPIO->offsets[i];
+         g = GPIO->offsets_p[i];
 
          lgPthTxLock();
 
@@ -320,10 +412,10 @@ static int xSetAsFree(lgChipObj_p chip, int gpio)
       close(GPIO->fd);
 
       LG_DBG(LG_DEBUG_ALLOC, "free offsets: *%p, values: *%p",
-         (void*)GPIO->offsets, (void*)GPIO->values);
+         (void*)GPIO->offsets_p, (void*)GPIO->values_p);
 
-      free(GPIO->offsets);
-      free(GPIO->values);
+      free(GPIO->offsets_p);
+      free(GPIO->values_p);
 
       return LG_OKAY;
    }
@@ -339,8 +431,8 @@ static int xSetAsOutput(
 
    LG_DBG(LG_DEBUG_TRACE, "chip=*%p gpio=%d", (void*)chip, gpios[0]);
 
-   lFlags &= ~(GPIOHANDLE_REQUEST_INPUT);
-   lFlags |= GPIOHANDLE_REQUEST_OUTPUT;
+   lFlags &= ~(LG_SET_INPUT);
+   lFlags |= LG_SET_OUTPUT;
 
    if (size == 1)
    {
@@ -359,7 +451,7 @@ static int xSetAsOutput(
          {
             /* do auto free if singleton */
             LG_DBG(LG_DEBUG_ALLOC, "set as output auto free %d", gpios[0]);
-            xSetAsFree(chip, gpios[0]); 
+            xSetAsFree(chip, gpios[0]);
          }
 
          return xClaim(chip, lFlags, size, gpios, values);
@@ -378,8 +470,8 @@ static int xSetAsInput(
 
    LG_DBG(LG_DEBUG_TRACE, "chip=*%p gpio=%d", (void*)chip, gpios[0]);
 
-   lFlags &= ~(GPIOHANDLE_REQUEST_OUTPUT);
-   lFlags |= GPIOHANDLE_REQUEST_INPUT;
+   lFlags &= ~(LG_SET_OUTPUT);
+   lFlags |= LG_SET_INPUT;
 
    if (size == 1)
    {
@@ -398,7 +490,7 @@ static int xSetAsInput(
          {
             /* do auto free if singleton */
             LG_DBG(LG_DEBUG_ALLOC, "set as input auto free %d", gpios[0]);
-            xSetAsFree(chip, gpios[0]); 
+            xSetAsFree(chip, gpios[0]);
          }
 
          return xClaim(chip, lFlags, size, gpios, NULL);
@@ -432,7 +524,7 @@ static int xSetAsPwm(
    if (GPIO->mode == LG_CHIP_MODE_UNKNOWN)
    {
       xSetAsOutput(
-         chip, GPIOHANDLE_REQUEST_OUTPUT, 1, &gpio, &zero);
+         chip, GPIO_V2_LINE_FLAG_OUTPUT, 1, &gpio, &zero);
    }
    else
    {
@@ -443,7 +535,7 @@ static int xSetAsPwm(
          {
             /* is a singleton */
             xSetAsOutput(
-               chip, GPIOHANDLE_REQUEST_OUTPUT, 1, &gpio, &zero);
+               chip, GPIO_V2_LINE_FLAG_OUTPUT, 1, &gpio, &zero);
          }
       }
    }
@@ -461,12 +553,12 @@ static int xSetAsPwm(
          if ((micros_on + micros_off) > lgMinTxDelay)
          {
             /* delete prior pending entry if it has infinite cycles */
-            
+
             if ((p->entries > 1) && (p->cycles[p->entries-1] == -1))
             {
                --p->entries;
             }
-            
+
             if (p->entries < LG_TX_BUF)
             {
                p->micros_on[p->entries] = micros_on;
@@ -524,7 +616,7 @@ static int xWave(
       {
          /* auto set output if a singleton */
          xSetAsOutput(
-            chip, GPIOHANDLE_REQUEST_OUTPUT, 1, &gpio, &zero);
+            chip, GPIO_V2_LINE_FLAG_OUTPUT, 1, &gpio, &zero);
       }
    }
 
@@ -572,10 +664,20 @@ static int xWave(
 void xWrite(lgChipObj_p chip, int gpio, int value)
 {
    lgLineInf_p GPIO;
+   struct gpio_v2_line_values lv;
+   uint64_t m = 0;
+
+   LG_DBG(LG_DEBUG_TRACE, "chip=*%p gpio=%d value=%d", (void*)chip, gpio, value);
 
    GPIO = &chip->LineInf[gpio];
-   GPIO->values[GPIO->offset]=value;
-   ioctl(GPIO->fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, GPIO->values);
+
+   xSetBit(&m, GPIO->offset);
+   xAssignBit(GPIO->values_p, GPIO->offset, value);
+
+   lv.mask = m;
+   lv.bits = *GPIO->values_p;
+
+   ioctl(GPIO->fd, GPIO_V2_LINE_SET_VALUES_IOCTL, &lv);
 }
 
 void xGroupWrite(
@@ -583,19 +685,22 @@ void xGroupWrite(
 {
    int i;
    lgLineInf_p GPIO;
+   struct gpio_v2_line_values lv;
 
    GPIO = &chip->LineInf[gpio];
 
    for (i=0; i<GPIO->group_size; i++)
    {
-      if (groupMask & (1<<i))
+      if (groupMask & ((uint64_t)1<<i))
       {
-         if (groupBits & (1<<i)) GPIO->values[i] = 1;
-         else                    GPIO->values[i] = 0;
+         xAssignBit(GPIO->values_p, i, groupBits & (1<<i));
       }
    }
 
-   ioctl(GPIO->fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, GPIO->values);
+   lv.mask = groupMask;
+   lv.bits = *GPIO->values_p;
+
+   ioctl(GPIO->fd, GPIO_V2_LINE_SET_VALUES_IOCTL, &lv);
 }
 
 // public API
@@ -610,6 +715,8 @@ int lgGpiochipOpen(int gpioDev)
    lgLineInf_p lInf; /* used to stop -fanalyzer warning */
 
    LG_DBG(LG_DEBUG_TRACE, "gpioDev=%d", gpioDev);
+
+   memset(&info, 0, sizeof(info));
 
    if (gpioDev < 0)
       PARAM_ERROR(LG_BAD_GPIOCHIP, "bad gpioDev (%d)", gpioDev);
@@ -724,6 +831,8 @@ int lgGpioGetChipInfo(int handle, lgChipInfo_p chipInfo)
 
    LG_DBG(LG_DEBUG_TRACE, "handle=%d chipInfo=*%p", handle, (void*)chipInfo);
 
+   memset(&cinfo, 0, sizeof(cinfo));
+
    status = lgHdlGetLockedObj(handle, LG_HDL_TYPE_GPIO, (void **)&chip);
 
    if (status == LG_OKAY)
@@ -747,11 +856,13 @@ int lgGpioGetChipInfo(int handle, lgChipInfo_p chipInfo)
 int lgGpioGetLineInfo(int handle, int gpio, lgLineInfo_p lineInfo)
 {
    int status;
-   struct gpioline_info linfo;
+   struct gpio_v2_line_info linfo;
    lgChipObj_p chip;
 
    LG_DBG(LG_DEBUG_TRACE, "handle=%d gpio=%d lineInfo=*%p",
       handle, gpio, (void*)lineInfo);
+
+   memset(&linfo, 0, sizeof(linfo));
 
    status = lgHdlGetLockedObj(handle, LG_HDL_TYPE_GPIO, (void **)&chip);
 
@@ -759,14 +870,15 @@ int lgGpioGetLineInfo(int handle, int gpio, lgLineInfo_p lineInfo)
    {
       if (gpio < chip->lines)
       {
-         linfo.line_offset = gpio;
+         linfo.offset = gpio;
 
-         status = ioctl(chip->fd, GPIO_GET_LINEINFO_IOCTL, &linfo);
+         status = ioctl(chip->fd, GPIO_V2_GET_LINEINFO_IOCTL, &linfo);
 
          if (status == 0)
          {
-            lineInfo->offset = linfo.line_offset;
-            lineInfo->lFlags = linfo.flags;
+            lineInfo->offset = linfo.offset;
+            lineInfo->lFlags = xMakeStatus(linfo.flags) |
+               (chip->LineInf[gpio].mode << 8);
             strncpy(lineInfo->name, linfo.name, sizeof(lineInfo->name));
             strncpy(lineInfo->user, linfo.consumer, sizeof(lineInfo->user));
          }
@@ -783,10 +895,12 @@ int lgGpioGetLineInfo(int handle, int gpio, lgLineInfo_p lineInfo)
 int lgGpioGetMode(int handle, int gpio)
 {
    int status;
-   struct gpioline_info linfo;
+   struct gpio_v2_line_info linfo;
    lgChipObj_p chip;
 
    LG_DBG(LG_DEBUG_TRACE, "handle=%d gpio=%d", handle, gpio);
+
+   memset(&linfo, 0, sizeof(linfo));
 
    status = lgHdlGetLockedObj(handle, LG_HDL_TYPE_GPIO, (void **)&chip);
 
@@ -794,13 +908,13 @@ int lgGpioGetMode(int handle, int gpio)
    {
       if (gpio < chip->lines)
       {
-         linfo.line_offset = gpio;
+         linfo.offset = gpio;
 
-         status = ioctl(chip->fd, GPIO_GET_LINEINFO_IOCTL, &linfo);
+         status = ioctl(chip->fd, GPIO_V2_GET_LINEINFO_IOCTL, &linfo);
 
          if (status == 0)
          {
-            status = (linfo.flags & 0xff) | (chip->LineInf[gpio].mode << 8);
+            status = xMakeStatus(linfo.flags) | (chip->LineInf[gpio].mode << 8);
          }
          else status = LG_BAD_LINEINFO_IOCTL;
       }
@@ -893,7 +1007,6 @@ int lgGpioSetUser(int handle, const char *user)
    return status;
 }
 
-
 int lgGroupClaimInput(
    int handle, int lFlags, int size, const int *gpios)
 {
@@ -929,8 +1042,8 @@ int lgGpioClaimInput(int handle, int lFlags, int gpio)
 int lgGroupClaimOutput(
    int handle, int lFlags, int size, const int *gpios, const int *values)
 {
-   lgChipObj_p chip;
    int status;
+   lgChipObj_p chip;
 
    LG_DBG(LG_DEBUG_TRACE,
       "handle=%d lFlags=%x size=%d gpios=[%s] values=[%s]",
@@ -964,16 +1077,19 @@ int lgGpioClaimOutput(int handle, int lFlags, int gpio, int value)
 int lgGpioClaimAlert(
    int handle, int lFlags, int eFlags, int gpio, int nfyHandle)
 {
-   lgChipObj_p chip;
    int status;
    int mode;
+   uint64_t flags;
+   uint32_t *offsets_p;
+   lgChipObj_p chip;
    lgAlertRec_p p;
-   struct gpioevent_request req;
-   uint32_t *offs;
-   uint8_t *vals;
+   struct gpio_v2_line_request req;
+   uint64_t *values_p;
 
    LG_DBG(LG_DEBUG_TRACE, "handle=%d lFlags=%x eFlags=%x gpio=%d nfyHandle=%d",
       handle, lFlags, eFlags, gpio, nfyHandle);
+
+   memset(&req, 0, sizeof(req));
 
    status = lgHdlGetLockedObj(handle, LG_HDL_TYPE_GPIO, (void **)&chip);
 
@@ -987,47 +1103,45 @@ int lgGpioClaimAlert(
          {
             LG_DBG(LG_DEBUG_ALLOC, "set as alert auto free %d", gpio);
 
-            xSetAsFree(chip, gpio); 
+            xSetAsFree(chip, gpio);
 
-            lFlags &= ~(GPIOHANDLE_REQUEST_OUTPUT);
-            lFlags |= GPIOHANDLE_REQUEST_INPUT;
+            flags = xMakeFlags(lFlags|eFlags) | GPIO_V2_LINE_FLAG_INPUT;
 
-            req.lineoffset = gpio;
-            req.handleflags = lFlags;
-            req.eventflags = eFlags;
-            strncpy(req.consumer_label, chip->userLabel,
-               sizeof(req.consumer_label));
+            req.num_lines = 1;
+            req.offsets[0] = gpio;
+            req.config.flags = flags;
+            strncpy(req.consumer, chip->userLabel, sizeof(req.consumer));
 
-            status = ioctl(chip->fd, GPIO_GET_LINEEVENT_IOCTL, &req);
+            LG_DBG(LG_DEBUG_TRACE, "flags %"PRIu64, flags);
+
+            status = ioctl(chip->fd, GPIO_V2_GET_LINE_IOCTL, &req);
 
             if (status == 0)
             {
-               offs = calloc(1, sizeof(uint32_t));
+               offsets_p = calloc(1, sizeof(uint32_t));
 
-               if (offs == NULL)
+               if (offsets_p == NULL)
                {
                   close(req.fd);
                   return LG_NOT_ENOUGH_MEMORY;
                }
 
-               chip->LineInf[gpio].offsets = offs;
+               chip->LineInf[gpio].offsets_p = offsets_p;
 
-               // struct needs GPIOHANDLES_MAX entries
-               vals = calloc(GPIOHANDLES_MAX, sizeof(uint8_t));
+               values_p = calloc(1, sizeof(values_p));
 
-               if (vals == NULL)
+               if (values_p == NULL)
                {
-                  free(offs);
-                  chip->LineInf[gpio].offsets = NULL;
-                  chip->LineInf[gpio].values = NULL;
+                  free(offsets_p);
+                  chip->LineInf[gpio].offsets_p = NULL;
+                  chip->LineInf[gpio].values_p = NULL;
                   close(req.fd);
                   return LG_NOT_ENOUGH_MEMORY;
                }
 
-               chip->LineInf[gpio].values = vals;
+               chip->LineInf[gpio].values_p = values_p;
 
                chip->LineInf[gpio].mode = LG_CHIP_BIT_ALERT;
-               chip->LineInf[gpio].lFlags = lFlags;
                chip->LineInf[gpio].eFlags = eFlags;
                chip->LineInf[gpio].group_size = 1;
                chip->LineInf[gpio].fd = req.fd;
@@ -1186,7 +1300,7 @@ int lgTxPwm(
       handle, gpio, pwmFrequency, pwmDutyCycle);
 
    if (pwmFrequency == 0.0) return lgTxPulse(handle, gpio, 0, 0, 0, 0);
-      
+
    if ((pwmFrequency < 0.1) || (pwmFrequency > 1e4))
       PARAM_ERROR(LG_BAD_PWM_FREQ,
          "bad PWM frequency (%f)", pwmFrequency);
@@ -1218,7 +1332,7 @@ int lgTxServo(
       handle, gpio, servoFrequency, pulseWidth);
 
    if (pulseWidth == 0) return lgTxPulse(handle, gpio, 0, 0, 0, 0);
-      
+
    if ((servoFrequency < 40) || (servoFrequency > 500))
       PARAM_ERROR(LG_BAD_SERVO_FREQ,
          "bad servo frequency (%d)", servoFrequency);
@@ -1244,6 +1358,8 @@ int lgGpioRead(int handle, int gpio)
    int status;
    lgLineInf_p GPIO;
    lgChipObj_p chip;
+   struct gpio_v2_line_values lv;
+   uint64_t m = 0;
 
    LG_DBG(LG_DEBUG_TRACE, "handle=%d gpio=%d", handle, gpio);
 
@@ -1262,11 +1378,14 @@ int lgGpioRead(int handle, int gpio)
 
          if (GPIO->mode != LG_CHIP_MODE_UNKNOWN)
          {
-            status = ioctl(
-               GPIO->fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, GPIO->values);
+            xSetBit(&m, GPIO->offset);
+
+            lv.mask = m;
+
+            status = ioctl(GPIO->fd, GPIO_V2_LINE_GET_VALUES_IOCTL, &lv);
 
             if (status == 0)
-               status = GPIO->values[GPIO->offset];
+               status = xTestBit(lv.bits, GPIO->offset);
             else
                status = LG_BAD_READ;
          }
@@ -1285,6 +1404,8 @@ int lgGpioWrite(int handle, int gpio, int value)
    int status;
    lgLineInf_p GPIO;
    lgChipObj_p chip;
+   struct gpio_v2_line_values lv;
+   uint64_t m = 0;
 
    LG_DBG(LG_DEBUG_TRACE, "handle=%d gpio=%d value=%d", handle, gpio, value);
 
@@ -1298,12 +1419,20 @@ int lgGpioWrite(int handle, int gpio, int value)
 
          if (GPIO->mode & LG_CHIP_BIT_OUTPUT)
          {
-            GPIO->values[GPIO->offset] = value;
+            xSetBit(&m, GPIO->offset);
+            xAssignBit(GPIO->values_p, GPIO->offset, value);
+
+            lv.mask = m;
+            lv.bits = *GPIO->values_p;
 
             status = ioctl(
-               GPIO->fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, GPIO->values);
+               GPIO->fd, GPIO_V2_LINE_SET_VALUES_IOCTL, &lv);
 
-            if (status) status = LG_BAD_WRITE;
+            if (status)
+            {
+               LG_DBG(LG_DEBUG_ALWAYS, "%s", strerror(errno));
+               status = LG_BAD_WRITE;
+            }
          }
          else
          {
@@ -1328,10 +1457,10 @@ int lgGpioWrite(int handle, int gpio, int value)
 int lgGroupRead(
    int handle, int gpio, uint64_t *bits)
 {
-   int i;
    lgLineInf_p GPIO;
    int status;
    lgChipObj_p chip;
+   struct gpio_v2_line_values lv;
 
    LG_DBG(LG_DEBUG_TRACE, "handle=%d gpio=%d bits=%"PRIx64"",
       handle, gpio, *bits);
@@ -1348,17 +1477,12 @@ int lgGroupRead(
          {
             if (GPIO->mode != LG_CHIP_MODE_UNKNOWN)
             {
-               status = ioctl(
-                  GPIO->fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, GPIO->values);
+               lv.mask = -1;
+               status = ioctl(GPIO->fd, GPIO_V2_LINE_GET_VALUES_IOCTL, &lv);
 
                if (status == 0)
                {
-                  *bits = 0;
-
-                  for (i=0; i<GPIO->group_size; i++)
-                  {
-                     if (GPIO->values[i]) *bits |= ((uint64_t)1<<i);
-                  }
+                  *bits = lv.bits;
 
                   status = GPIO->group_size;
                }
@@ -1383,6 +1507,7 @@ int lgGroupWrite(
    int i;
    lgLineInf_p GPIO;
    lgChipObj_p chip;
+   struct gpio_v2_line_values lv;
 
    LG_DBG(LG_DEBUG_TRACE, "handle=%d gpio=%d bits=%"PRIx64" mask=%"PRIx64"",
       handle, gpio, groupBits, groupMask);
@@ -1403,13 +1528,14 @@ int lgGroupWrite(
                {
                   if (groupMask & (1<<i))
                   {
-                     if (groupBits & (1<<i)) GPIO->values[i] = 1;
-                     else                    GPIO->values[i] = 0;
+                     xAssignBit(GPIO->values_p, i, groupBits & (1<<i));
                   }
                }
 
-               status = ioctl(
-                  GPIO->fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, GPIO->values);
+               lv.mask = groupMask;
+               lv.bits = groupBits;
+
+               status = ioctl(GPIO->fd, GPIO_V2_LINE_SET_VALUES_IOCTL, &lv);
 
                if (status == 0)
                {
