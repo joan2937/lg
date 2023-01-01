@@ -55,7 +55,7 @@ extern int lgMinTxDelay;
 #define LG_DBG(mask, format, arg...)                               \
    do                                                              \
    {                                                               \
-      if (lgDbgLevel & mask)                                       \
+      if ((lgDbgLevel & mask) == mask)                             \
          fprintf(stderr, "%s %s: " format "\n" ,                   \
             lgDbgTimeStamp(), __FUNCTION__ , ## arg);              \
    }                                                               \

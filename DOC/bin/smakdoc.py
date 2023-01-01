@@ -55,7 +55,7 @@ if man:
 .\\" Process this file with
 .\\" groff -man -Tascii foo.1
 .\\"
-.TH rgs 1 2020-2021 Linux "lg archive"
+.TH rgs 1 2020-2023 Linux "lg archive"
 .SH NAME
 rgs - a shell command to manipulate a remote SBC's GPIO.\n
 .SH SYNOPSIS\n
