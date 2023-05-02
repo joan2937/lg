@@ -168,8 +168,8 @@ SPIX h bvs        SPI transfer bytes\n\
 SX h g sf spw off cyc  | GPIO tx servo pulses\n\
 SHARE             Set share\n\
 \n\
-T                 Get nanoseconds since the epoch\n\
-TICK              Get nanoseconds since the epoch\n\
+T                 Get nanoseconds since the Epoch (start of 1970)\n\
+TICK              Get nanoseconds since the Epoch (start of 1970)\n\
 \n\
 U                 Set user\n\
 USER              Set user\n\

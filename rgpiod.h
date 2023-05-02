@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "lgCmd.h"
 
-#define RGPIOD_VERSION 0x00020000
+#define RGPIOD_VERSION 0x00020200
 
 #define LG_ENVADDR "LG_ADDR"
 #define LG_ENVPORT "LG_PORT"
@@ -207,7 +207,7 @@ extern int gFdSock;
 #define LG_CMD_PCD   137 // print the daemon configuration directory
 
 #define LG_CMD_LGV   140 // print the lg library version
-#define LG_CMD_TICK  141 // print the number of nanonseconds since the epoch
+#define LG_CMD_TICK  141 // print the number of nanonseconds since the Epoch
 
 /*DEF_E*/
 

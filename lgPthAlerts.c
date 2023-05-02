@@ -51,8 +51,6 @@ int pthAlertRunning = LG_THREAD_NONE;
 
 lgGpioAlert_t aBuf[LG_MAX_ALERTS];
 
-static uint64_t xNowTimestamp;
-
 static void xWaitForSignal(pthread_cond_t *cond, pthread_mutex_t *mutex)
 {
    pthread_mutex_lock(mutex);
@@ -73,6 +71,15 @@ int tscomp(const void *p1, const void *p2)
    const lgGpioAlert_t *e2 = p2;
 
    return e1->report.timestamp - e2->report.timestamp;
+}
+
+uint64_t xMonotonicTimestamp(void)
+{
+   struct timespec xts;
+
+   clock_gettime(CLOCK_MONOTONIC, &xts); // get current time
+
+   return ((uint64_t)1E9 * xts.tv_sec) + xts.tv_nsec;
 }
 
 void emitNotifications(int count)
@@ -308,6 +315,10 @@ void xDebWatEvt(
          if ((p->eFlags != LG_BOTH_EDGES) ||
              (p->last_rpt_lv != p->last_evt_lv))
          {
+            /*
+            LG_DBG(LG_DEBUG_ALWAYS, "g=%d(%d) diff=%"PRId64" deb=%"PRIu64" ts=%"PRIu64" lts=%"PRIu64"",
+               p->gpio, p->last_evt_lv, nano_diff, p->debounce_nanos, ts/100000, p->last_evt_ts/100000);
+            */
             aBuf[*cp].report.timestamp = p->last_evt_ts + p->debounce_nanos;
             aBuf[*cp].report.level = p->last_evt_lv;
             aBuf[*cp].report.chip = p->chip->gpiochip;
@@ -351,7 +362,11 @@ void xDebWatEvt(
 
       if (nano_diff > p->watchdog_nanos)
       {
-         aBuf[*cp].report.timestamp = ts;
+         /*
+         LG_DBG(LG_DEBUG_ALWAYS, "g=%d(2) diff=%"PRId64" wdg=%"PRIu64" ts=%"PRIu64" lts=%"PRIu64"",
+            p->gpio, nano_diff, p->watchdog_nanos, ts/100000, p->last_rpt_ts/100000);
+         */
+         aBuf[*cp].report.timestamp = p->last_rpt_ts + p->watchdog_nanos;
          aBuf[*cp].report.level = LG_TIMEOUT;
          aBuf[*cp].report.chip = p->chip->gpiochip;
          aBuf[*cp].report.gpio = p->gpio;
@@ -361,7 +376,7 @@ void xDebWatEvt(
          if (++(*cp) < LG_MAX_ALERTS)
          {
             p->watchdogd = 1;
-            p->last_rpt_ts = ts;
+            p->last_rpt_ts = p->last_rpt_ts + p->watchdog_nanos;
             p->last_rpt_lv = LG_TIMEOUT;
          }
          else
@@ -413,7 +428,10 @@ void *lgPthAlert(void)
    int count=0;
    int sent;
    int bytes;
-   uint64_t tmax;
+   uint64_t lastGT=0;
+   uint64_t lastLT=0;
+   uint64_t nowLT;
+   uint64_t nowGT;
    struct pollfd pfd[64];
    lgAlertRec_p pAlertRec[64];
    struct gpio_v2_line_event eIn[LG_GPIO_MAX_ALERTS_PER_READ];
@@ -460,11 +478,9 @@ void *lgPthAlert(void)
 
          if (num_gpio > 0)
          {
-            tmax = -1; /* largest value as int */
-
             retval = ppoll(pfd, num_gpio, &tspec, NULL);
 
-            xNowTimestamp = lguTimestamp();
+            nowLT = xMonotonicTimestamp();
 
             for (i=0; i<num_gpio; i++)
             {
@@ -496,9 +512,10 @@ void *lgPthAlert(void)
                      {
                         p->last_rpt_ts = eIn[e-1].timestamp_ns;
 
-                        if (eIn[e-1].timestamp_ns < tmax)
+                        if (eIn[e-1].timestamp_ns > lastGT)
                         {
-                           tmax = eIn[e-1].timestamp_ns;
+                           lastGT = eIn[e-1].timestamp_ns;
+                           lastLT = nowLT;
                         }
                      }
 
@@ -516,12 +533,6 @@ void *lgPthAlert(void)
                            errno, strerror(errno));
                   }
                }
-               else 
-               {
-                  /* GPIO not changed during ppoll */
-
-                  xDebWatEvt(p, xNowTimestamp, &count, NULL);
-               }
 
                if (gpiobasecount < count)
                {
@@ -531,22 +542,55 @@ void *lgPthAlert(void)
                         &aBuf[gpiobasecount], p->state->userdata);
                   }
                }
-
             }
 
+            nowGT = lastGT + (nowLT - lastLT);
+
+            // LG_DBG(LG_DEBUG_ALWAYS, "ts=%"PRIu64"", nowGT/100000);
+
+            if (lastGT)
+            {
+               for (i=0; i<num_gpio; i++)
+               {
+                  gpiobasecount = count;
+
+                  p = pAlertRec[i];
+
+                  // The 50 microsecond leeway is to make sure the
+                  // kernel has supplied current data for all GPIO
+                  // before timing out debounce and watchdogs.
+                  xDebWatEvt(p, nowGT-50000, &count, NULL);
+
+                  if (gpiobasecount < count)
+                  {
+                     if (p->state->alertFunc)
+                     {
+                        (p->state->alertFunc)(count-gpiobasecount,
+                           &aBuf[gpiobasecount], p->state->userdata);
+                     }
+                  }
+               }
+            }
 
             if (count > 1)
             {
+               /*
+               LG_DBG(LG_DEBUG_ALWAYS, "nowGT=%"PRIu64" count=%d",
+                  nowGT/100000, count);
+               */
                // printbuf(count, "pre qsort");
                qsort(aBuf, count, sizeof(aBuf[0]), tscomp);
-               lgcheck(count, "check post qsort");
+               //lgcheck(count, "check post qsort");
                // printbuf(count, "post qsort");
             }
 
             /* emit any due alerts */
 
             // printbuf(count, "pre emit");
-            sent = emit(count, tmax);
+            // delay 500 microseconds before reporting a GPIO
+            // to make sure the events are sorted in time order.
+            sent = emit(count, nowGT-500000);
+
             if (sent)
             {
                if (sent != count)
@@ -562,6 +606,7 @@ void *lgPthAlert(void)
          {
             emit(count, -1); /* empty the buffer */
             count = 0;
+            lastGT = 0;
 
             xWaitForSignal(&lgAlertCond, &lgAlertCondMutex);
          }
@@ -572,6 +617,7 @@ void *lgPthAlert(void)
 
          emit(count, -1); /* empty the buffer */
          count = 0;
+         lastGT = 0;
 
          xWaitForSignal(&lgAlertCond, &lgAlertCondMutex);
       }

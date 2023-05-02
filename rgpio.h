@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #include "lgpio.h"
 
-#define RGPIO_VERSION 0x00020000
+#define RGPIO_VERSION 0x00020200
 
 /*TEXT
 
@@ -221,8 +221,8 @@ lgu_get_sbc_name           Get the SBC name
 lgu_get_internal           Get a SBC configuration value
 lgu_set_internal           Set a SBC configuration value
 
-lgu_time                   Returns the number of seconds since the epoch
-lgu_timestamp              Returns the number of nanoseconds since the epoch
+lgu_time                   Returns the number of seconds since the Epoch
+lgu_timestamp              Returns the number of nanoseconds since the Epoch
 
 lgu_sleep                  Sleeps for a number of seconds
 
@@ -1250,17 +1250,19 @@ If OK returns a callback id.
 
 On failure returns a negative error code.
 
-The user supplied callback receives the chip, GPIO, edge, timestamp,
+The user supplied callback receives the chip, GPIO, level, timestamp,
 and the userdata pointer, whenever the GPIO has the identified edge.
 
 The reported level will be one of
 
-0: change to low (a falling edge)
-1: change to high (a rising edge)
+0: change to low (a falling edge) 
+1: change to high (a rising edge) 
 2: no level change (a watchdog timeout)
 
-The timestamp is when the change happened reported as the
-number of nanoseconds since the epoch (start of 1970).
+Early kernels used to provide a timestamp as the number of nanoseconds
+since the Epoch (start of 1970).  Later kernels use the number of
+nanoseconds since boot.  It's probably best not to make any assumption
+as to the timestamp origin.
 
 If you want to track the level of more than one GPIO do so by
 maintaining the state in the callback.  Do not use [*gpio_read*].
@@ -1795,11 +1797,20 @@ typedef struct
 } lgGpioReport_t;
 . .
 
-timestamp: the number of nanoseconds since the epoch (start of 1970)
-chip: the gpiochip device number (NOT the handle). 
-gpio: the GPIO. 
-level: indicates the level of the GPIO 
-flags: no flags are currently defined
+timestamp: the number of nanoseconds since a kernel dependent origin.
+
+Early kernels used to provide a timestamp as the number of nanoseconds
+since the Epoch (start of 1970).  Later kernels use the number of
+nanoseconds since boot.  It's probably best not to make any assumption
+as to the timestamp origin.
+
+chip: the gpiochip device number (NOT the handle).
+
+gpio: the GPIO.
+
+level: indicates the level of the GPIO.
+
+flags: no flags are currently defined.
 
 For future proofing it is probably best to ignore any notification
 with non-zero flags.
@@ -2488,13 +2499,13 @@ D*/
 /*F*/
 double lgu_time(void);
 /*D
-Return the current time in seconds since the Epoch.
+Return the current time in seconds since the Epoch (start of 1970).
 D*/
 
 /*F*/
 uint64_t lgu_timestamp(void);
 /*D
-Return the current time in nanoseconds since the Epoch.
+Return the current time in nanoseconds since the Epoch (start of 1970).
 D*/
 
 
@@ -2525,6 +2536,11 @@ CBFunc_t::
 typedef void (*CBFunc_t)
    (int sbc, int chip, int gpio, int level, uint64_t timestamp, void * userdata);
 . .
+
+Early kernels used to provide a timestamp as the number of nanoseconds
+since the Epoch (start of 1970).  Later kernels use the number of
+nanoseconds since boot.  It's probably best not to make any assumption
+as to the timestamp origin.
 
 char::
 A single character, an 8 bit quantity able to store 0-255.

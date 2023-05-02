@@ -2496,10 +2496,23 @@ typedef struct
 .br
 
 .br
-timestamp: the number of nanoseconds since the epoch (start of 1970)
-level: indicates the level of the GPIO
+timestamp: the number of nanoseconds since a kernel dependent origin.
 .br
-flags: no flags are currently defined
+
+.br
+Early kernels used to provide a timestamp as the number of nanoseconds
+since the Epoch (start of 1970).  Later kernels use the number of
+nanoseconds since boot.  It's probably best not to make any assumption
+as to the timestamp origin.
+
+.br
+
+.br
+level: indicates the level of the GPIO.
+.br
+
+.br
+flags: no flags are currently defined.
 
 .br
 
@@ -3957,7 +3970,7 @@ Returns the current timestamp.
 .br
 
 .br
-The timestamp is the number of nanoseconds since the epoch (start
+The timestamp is the number of nanoseconds since the Epoch (start
 of 1970).
 
 .IP "\fBdouble lguTime(void)\fP"
@@ -3967,7 +3980,7 @@ Returns the current time.
 .br
 
 .br
-The time is the number of seconds since the epoch (start
+The time is the number of seconds since the Epoch (start
 of 1970).
 
 .IP "\fBvoid lguSleep(double sleepSecs)\fP"
@@ -4565,6 +4578,14 @@ typedef struct
 .br
 
 .EE
+
+.br
+
+.br
+Early kernels used to provide a timestamp as the number of nanoseconds
+since the Epoch (start of 1970).  Later kernels use the number of
+nanoseconds since boot.  It's probably best not to make any assumption
+as to the timestamp origin.
 
 .br
 

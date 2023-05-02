@@ -12,7 +12,7 @@ with open('README.md') as f:
 lgpio_module = Extension('_lgpio', sources=['lgpio_wrap.c',], libraries=['lgpio',],)
 
 setup (name = 'lgpio',
-       version = '0.2.0.0',
+       version = '0.2.2.0',
        zip_safe=False,
        author='joan',
        author_email='joan@abyz.me.uk',

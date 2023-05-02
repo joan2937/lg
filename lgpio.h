@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <pthread.h>
 #include <linux/gpio.h>
 
-#define LGPIO_VERSION 0x00020000
+#define LGPIO_VERSION 0x00020200
 
 #define LG_CD "LG_CD"  /* configuration directory */
 #define LG_WD "LG_WD"  /* working directory */
@@ -1556,9 +1556,16 @@ typedef struct
 } lgGpioReport_t;
 . .
 
-timestamp: the number of nanoseconds since the epoch (start of 1970)
-level: indicates the level of the GPIO 
-flags: no flags are currently defined
+timestamp: the number of nanoseconds since a kernel dependent origin. 
+ 
+Early kernels used to provide a timestamp as the number of nanoseconds
+since the Epoch (start of 1970).  Later kernels use the number of
+nanoseconds since boot.  It's probably best not to make any assumption
+as to the timestamp origin.
+
+level: indicates the level of the GPIO. 
+ 
+flags: no flags are currently defined.
 
 For future proofing it is probably best to ignore any notification
 with non-zero flags.
@@ -2379,7 +2386,7 @@ uint64_t lguTimestamp(void);
 /*D
 Returns the current timestamp.
 
-The timestamp is the number of nanoseconds since the epoch (start
+The timestamp is the number of nanoseconds since the Epoch (start
 of 1970).
 D*/
 
@@ -2388,7 +2395,7 @@ double lguTime(void);
 /*D
 Returns the current time.
 
-The time is the number of seconds since the epoch (start
+The time is the number of seconds since the Epoch (start
 of 1970).
 D*/
 
@@ -2684,6 +2691,11 @@ typedef struct
    uint8_t flags;      // none defined, ignore report if non-zero
 } lgGpioReport_t;
 . .
+
+Early kernels used to provide a timestamp as the number of nanoseconds
+since the Epoch (start of 1970).  Later kernels use the number of
+nanoseconds since boot.  It's probably best not to make any assumption
+as to the timestamp origin.
 
 lgI2cMsg_t::
 . .

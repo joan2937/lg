@@ -37,8 +37,8 @@ typedef struct lgAlertRec_s
 {
    uint64_t last_rpt_ts;
    uint64_t last_evt_ts;
-   uint64_t debounce_nanos;
-   uint64_t watchdog_nanos;
+   int64_t debounce_nanos;
+   int64_t watchdog_nanos;
    int last_evt_lv;
    int last_rpt_lv;
    int debounced;

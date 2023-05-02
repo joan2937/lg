@@ -390,9 +390,9 @@ lgu_set_internal           Set a SBC configuration value
 .br
 
 .br
-lgu_time                   Returns the number of seconds since the epoch
+lgu_time                   Returns the number of seconds since the Epoch
 .br
-lgu_timestamp              Returns the number of nanoseconds since the epoch
+lgu_timestamp              Returns the number of nanoseconds since the Epoch
 .br
 
 .br
@@ -2221,7 +2221,7 @@ On failure returns a negative error code.
 .br
 
 .br
-The user supplied callback receives the chip, GPIO, edge, timestamp,
+The user supplied callback receives the chip, GPIO, level, timestamp,
 and the userdata pointer, whenever the GPIO has the identified edge.
 
 .br
@@ -2233,14 +2233,18 @@ The reported level will be one of
 
 .br
 0: change to low (a falling edge)
+.br
 1: change to high (a rising edge)
+.br
 2: no level change (a watchdog timeout)
 
 .br
 
 .br
-The timestamp is when the change happened reported as the
-number of nanoseconds since the epoch (start of 1970).
+Early kernels used to provide a timestamp as the number of nanoseconds
+since the Epoch (start of 1970).  Later kernels use the number of
+nanoseconds since boot.  It's probably best not to make any assumption
+as to the timestamp origin.
 
 .br
 
@@ -3220,14 +3224,35 @@ typedef struct
 .br
 
 .br
-timestamp: the number of nanoseconds since the epoch (start of 1970)
+timestamp: the number of nanoseconds since a kernel dependent origin.
+
+.br
+
+.br
+Early kernels used to provide a timestamp as the number of nanoseconds
+since the Epoch (start of 1970).  Later kernels use the number of
+nanoseconds since boot.  It's probably best not to make any assumption
+as to the timestamp origin.
+
+.br
+
+.br
 chip: the gpiochip device number (NOT the handle).
+
+.br
+
 .br
 gpio: the GPIO.
+
 .br
-level: indicates the level of the GPIO
+
 .br
-flags: no flags are currently defined
+level: indicates the level of the GPIO.
+
+.br
+
+.br
+flags: no flags are currently defined.
 
 .br
 
@@ -4437,11 +4462,11 @@ sleepSecs: the number of seconds to delay.
 
 .IP "\fBdouble lgu_time(void)\fP"
 .IP "" 4
-Return the current time in seconds since the Epoch.
+Return the current time in seconds since the Epoch (start of 1970).
 
 .IP "\fBuint64_t lgu_timestamp(void)\fP"
 .IP "" 4
-Return the current time in nanoseconds since the Epoch.
+Return the current time in nanoseconds since the Epoch (start of 1970).
 .SH PARAMETERS
 
 .br
@@ -4500,6 +4525,14 @@ typedef void (*CBFunc_t)
 .br
 
 .EE
+
+.br
+
+.br
+Early kernels used to provide a timestamp as the number of nanoseconds
+since the Epoch (start of 1970).  Later kernels use the number of
+nanoseconds since boot.  It's probably best not to make any assumption
+as to the timestamp origin.
 
 .br
 

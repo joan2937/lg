@@ -240,7 +240,7 @@ import os
 import atexit
 import hashlib
 
-RGPIO_PY_VERSION = 0x00020000
+RGPIO_PY_VERSION = 0x00020200
 
 exceptions = True
 
@@ -2063,8 +2063,10 @@ class sbc():
       1: change to high (a rising edge) 
       2: no level change (a watchdog timeout)
 
-      The timestamp is when the change happened reported as the
-      number of nanoseconds since the epoch (start of 1970).
+      Early kernels used to provide a timestamp as the number of nanoseconds
+      since the Epoch (start of 1970).  Later kernels use the number of
+      nanoseconds since boot.  It's probably best not to make any assumption
+      as to the timestamp origin.
 
       If a user callback is not specified a default tally callback is
       provided which simply counts edges.  The count may be retrieved
@@ -2712,10 +2714,19 @@ class sbc():
       B flags
       . .
 
-      timestamp: the number of nanoseconds since the epoch (start of 1970). 
+      timestamp: the number of nanoseconds since a kernel dependent origin.
+
+      Early kernels used to provide a timestamp as the number of nanoseconds
+      since the Epoch (start of 1970).  Later kernels use the number of
+      nanoseconds since boot.  It's probably best not to make any assumption
+      as to the timestamp origin.
+
       chip: the gpiochip device number (NOT the handle). 
+
       gpio: the GPIO. 
+
       level: indicates the level of the GPIO (0=low, 1=high, 2=timeout). 
+
       flags: no flags are currently defined.
 
       ...
