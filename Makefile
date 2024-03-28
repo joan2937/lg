@@ -9,6 +9,7 @@ SIZE         = $(CROSS_PREFIX)size
 STRIP        = $(CROSS_PREFIX)strip
 SHLIB        = $(CC) -shared
 STRIPLIB     = $(STRIP) --strip-unneeded
+PYTHON       ?= python3
 
 SOVERSION    = 1
 
@@ -134,19 +135,11 @@ install: $(ALL)
 ifeq ($(DESTDIR),)
 	ldconfig
 endif
-	@if which python2; then cd PY_RGPIO && python2 setup.py -q install $(PYINSTALLARGS) || echo "*** install of Python2 rgpio.py failed ***"; fi
-	@if which python3; then cd PY_RGPIO && python3 setup.py -q install $(PYINSTALLARGS) || echo "*** install of Python3 rgpio.py failed ***"; fi
-	@if which swig; then cd PY_LGPIO && swig -python lgpio.i || echo "*** need swig package to install lgpio.py ***"; fi
-	@if which swig python2; then \
+	@if which $(PYTHON); then cd PY_RGPIO && $(PYTHON) setup.py -q install $(PYINSTALLARGS) || echo "*** install of Python3 rgpio.py failed ***"; fi
+	@if which swig $(PYTHON); then \
 		cd PY_LGPIO && \
-		python2 setup.py build_ext $(PYBUILDARGS) && \
-		python2 setup.py -q install $(PYINSTALLARGS) || \
-		echo "*** install of Python2 lgpio.py failed ***"; \
-	fi
-	@if which swig python3; then \
-		cd PY_LGPIO && \
-		python3 setup.py build_ext $(PYBUILDARGS) && \
-		python3 setup.py -q install $(PYINSTALLARGS) || \
+		$(PYTHON) setup.py build_ext $(PYBUILDARGS) && \
+		$(PYTHON) setup.py -q install $(PYINSTALLARGS) || \
 		echo "*** install of Python3 lgpio.py failed ***"; \
 	fi
 
