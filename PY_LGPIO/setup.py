@@ -26,7 +26,6 @@ setup (name = 'lgpio',
        license='unlicense.org',
        keywords=['linux', 'sbc', 'gpio',],
        classifiers=[
-         "Programming Language :: Python :: 2",
          "Programming Language :: Python :: 3",
        ],
        ext_modules = [lgpio_module],
