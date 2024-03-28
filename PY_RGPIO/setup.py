@@ -21,7 +21,6 @@ setup(name='rgpio',
       py_modules=['rgpio'],
       keywords=['linux', 'sbc', 'gpio',],
       classifiers=[
-         "Programming Language :: Python :: 2",
          "Programming Language :: Python :: 3",
       ]
      )
