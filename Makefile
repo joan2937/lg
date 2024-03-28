@@ -9,6 +9,7 @@ SIZE         = $(CROSS_PREFIX)size
 STRIP        = $(CROSS_PREFIX)strip
 SHLIB        = $(CC) -shared
 STRIPLIB     = $(STRIP) --strip-unneeded
+PYTHON       ?= python3
 
 SOVERSION    = 1
 
@@ -134,11 +135,11 @@ install: $(ALL)
 ifeq ($(DESTDIR),)
 	ldconfig
 endif
-	@if which python3; then cd PY_RGPIO && python3 setup.py -q install $(PYINSTALLARGS) || echo "*** install of Python3 rgpio.py failed ***"; fi
-	@if which swig python3; then \
+	@if which $(PYTHON); then cd PY_RGPIO && $(PYTHON) setup.py -q install $(PYINSTALLARGS) || echo "*** install of Python3 rgpio.py failed ***"; fi
+	@if which swig $(PYTHON); then \
 		cd PY_LGPIO && \
-		python3 setup.py build_ext $(PYBUILDARGS) && \
-		python3 setup.py -q install $(PYINSTALLARGS) || \
+		$(PYTHON) setup.py build_ext $(PYBUILDARGS) && \
+		$(PYTHON) setup.py -q install $(PYINSTALLARGS) || \
 		echo "*** install of Python3 lgpio.py failed ***"; \
 	fi
 
