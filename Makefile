@@ -1,12 +1,12 @@
 #
-# Set CROSS_PREFIX to prepend to all compiler tools at once for easier
+# Set CROSS_COMPILE to prepend to all compiler tools at once for easier
 # cross-compilation.
-CROSS_PREFIX ?=
-CC           ?= $(CROSS_PREFIX)gcc
-AR           ?= $(CROSS_PREFIX)ar
-RANLIB       ?= $(CROSS_PREFIX)ranlib
-SIZE         ?= $(CROSS_PREFIX)size
-STRIP        ?= $(CROSS_PREFIX)strip
+CROSS_COMPILE ?=
+CC           ?= $(CROSS_COMPILE)gcc
+AR           ?= $(CROSS_COMPILE)ar
+RANLIB       ?= $(CROSS_COMPILE)ranlib
+SIZE         ?= $(CROSS_COMPILE)size
+STRIP        ?= $(CROSS_COMPILE)strip
 SHLIB        ?= $(CC) -shared
 STRIPLIB     ?= $(STRIP) --strip-unneeded
 PYTHON       ?= python3
