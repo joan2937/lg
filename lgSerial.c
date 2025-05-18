@@ -95,7 +95,7 @@ int lgSerialOpen(const char *serDev, int serBaud, int serFlags)
    }
 
    handle = lgHdlAlloc(LG_HDL_TYPE_SERIAL, sizeof(lgSerialObj_t),
-               (void**)&ser, _lgSerialClose);
+               (void**)&ser, (void*)_lgSerialClose);
 
    if (handle < 0)
    {

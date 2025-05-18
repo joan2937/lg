@@ -374,7 +374,7 @@ typedef struct
    int      max_emits;
 } lgNotify_t;
 
-typedef void (*callbk_t) ();
+typedef void (*callbk_t) (void *cb);
 
 typedef struct
 {
@@ -419,6 +419,8 @@ typedef struct
 typedef void (*lgGpioAlertsFunc_t)  (int           num_alerts,
                                     lgGpioAlert_p alerts,
                                     void          *userdata);
+
+typedef void (*callbk_alert_t) (int i, struct lgGpioAlert_s *data, void *cb);
 
 typedef void *(lgThreadFunc_t) (void *);
 
