@@ -1285,7 +1285,7 @@ Note that level changes will be timestamped debounce microseconds
 after the actual level change.
 
 ...
-lgSetDebounceTime(h, 16, 1000); // set a millisecond of debounce
+lgGpioSetDebounce(h, 16, 1000); // set a millisecond of debounce
 ...
 D*/
 
