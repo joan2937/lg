@@ -375,6 +375,7 @@ typedef struct
 } lgNotify_t;
 
 typedef void (*callbk_t) ();
+typedef void (*destructor_t) (void*);
 
 typedef struct
 {
