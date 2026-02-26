@@ -381,7 +381,7 @@ typedef struct
 {
    uint64_t timestamp; /* alert time in nanoseconds*/
    uint8_t chip; /* gpiochip device number */
-   uint8_t gpio; /* offset into gpio device */
+   uint32_t gpio; /* offset into gpio device */
    uint8_t level; /* 0=low, 1=high, 2=watchdog */
    uint8_t flags; /* none defined, ignore report if non-zero */
 } lgGpioReport_t;
