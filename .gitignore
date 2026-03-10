@@ -19,3 +19,4 @@ PY_RGPIO/build
 PY_RGPIO/dist
 PY_RGPIO/rgpio.egg-info/
 
+build/
