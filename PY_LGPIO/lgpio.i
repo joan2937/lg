@@ -296,12 +296,12 @@ error_text                Get the error text for an error code
 // lgSpiRead
 %typemap(in) (char *rxBuf, int count)
 {
-   if (!PyInt_Check($input))
+   if (!PyLong_Check($input))
    {
       PyErr_SetString(PyExc_ValueError, "Expecting an integer");
       SWIG_fail;
    }
-   $2 = PyInt_AsLong($input);
+   $2 = PyLong_AsLong($input);
    if ($2 < 0)
    {
       PyErr_SetString(PyExc_ValueError, "Positive integer expected");
@@ -360,7 +360,7 @@ error_text                Get the error text for an error code
    Py_XDECREF($result);   /* Blow away any previous result */
 
    $result = PyList_New(2);
-   o1 = PyInt_FromLong(result);
+   o1 = PyLong_FromLong(result);
    PyList_SetItem($result, 0, o1);
 
    if (result > 0) o2 = PyByteArray_FromStringAndSize($2, result);
@@ -408,7 +408,7 @@ error_text                Get the error text for an error code
    PyObject *o1, *o2;
    Py_XDECREF($result);   /* Blow away any previous result */
    $result = PyList_New(2);
-   o1 = PyInt_FromLong(result);
+   o1 = PyLong_FromLong(result);
    PyList_SetItem($result, 0, o1);
    if (result > 0) o2 = PyByteArray_FromStringAndSize($1, result);
    else o2 = PyByteArray_FromStringAndSize("", 0);
@@ -428,7 +428,7 @@ error_text                Get the error text for an error code
    Py_XDECREF($result);   /* Blow away any previous result */
    $result = PyList_New(2);
 
-   o1 = PyInt_FromLong(result);
+   o1 = PyLong_FromLong(result);
    PyList_SetItem($result, 0, o1);
 
    if (result > 0) o2 = PyByteArray_FromStringAndSize($1, result);
@@ -494,18 +494,18 @@ error_text                Get the error text for an error code
    {
       result = 0;
 
-      o2 = PyInt_FromLong(chipInf2.lines);
-      o3 = PyString_FromString(chipInf2.name);
-      o4 = PyString_FromString(chipInf2.label);
+      o2 = PyLong_FromLong(chipInf2.lines);
+      o3 = PyUnicode_FromString(chipInf2.name);
+      o4 = PyUnicode_FromString(chipInf2.label);
    }
    else
    {
-      o2 = PyInt_FromLong(0);
-      o3 = PyString_FromString("");
-      o4 = PyString_FromString("");
+      o2 = PyLong_FromLong(0);
+      o3 = PyUnicode_FromString("");
+      o4 = PyUnicode_FromString("");
    }
 
-   o1 = PyInt_FromLong(result);
+   o1 = PyLong_FromLong(result);
 
    PyList_SetItem($result, 0, o1);
    PyList_SetItem($result, 1, o2);
@@ -530,20 +530,20 @@ error_text                Get the error text for an error code
    {
       result = 0;
 
-      o2 = PyInt_FromLong(lineInf3.offset);
-      o3 = PyInt_FromLong(lineInf3.lFlags);
-      o4 = PyString_FromString(lineInf3.name);
-      o5 = PyString_FromString(lineInf3.user);
+      o2 = PyLong_FromLong(lineInf3.offset);
+      o3 = PyLong_FromLong(lineInf3.lFlags);
+      o4 = PyUnicode_FromString(lineInf3.name);
+      o5 = PyUnicode_FromString(lineInf3.user);
    }
    else
    {
-      o2 = PyInt_FromLong(0);
-      o3 = PyInt_FromLong(0);
-      o4 = PyString_FromString("");
-      o5 = PyString_FromString("");
+      o2 = PyLong_FromLong(0);
+      o3 = PyLong_FromLong(0);
+      o4 = PyUnicode_FromString("");
+      o5 = PyUnicode_FromString("");
    }
 
-   o1 = PyInt_FromLong(result);
+   o1 = PyLong_FromLong(result);
 
    PyList_SetItem($result, 0, o1);
    PyList_SetItem($result, 1, o2);
