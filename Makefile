@@ -2,8 +2,16 @@
 # Set CROSS_COMPILE to prepend to all compiler tools at once for easier
 # cross-compilation.
 CROSS_COMPILE ?=
-CC           ?= $(CROSS_COMPILE)gcc
-AR           ?= $(CROSS_COMPILE)ar
+
+# allow passing CC and AR as via commandline as CC=...
+# otherwise use the user-provided compiler
+ifeq ($(origin CC),default)
+  CC = $(CROSS_COMPILE)gcc
+endif
+ifeq ($(origin AR),default)
+  AR = $(CROSS_COMPILE)ar
+endif
+
 RANLIB       ?= $(CROSS_COMPILE)ranlib
 SIZE         ?= $(CROSS_COMPILE)size
 STRIP        ?= $(CROSS_COMPILE)strip
